@@ -22,6 +22,24 @@ class Receipt extends Model
         return $this->belongsTo(Payment::class);
     }
 
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<Subscription, $this> */
+    public function subscription(): BelongsTo
+    {
+        return $this->belongsTo(Subscription::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function issuedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'issued_by');
+    }
+
     protected function casts(): array
     {
         return ['amount' => 'decimal:2', 'issued_at' => 'datetime'];

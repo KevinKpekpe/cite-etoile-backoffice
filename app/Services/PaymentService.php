@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 class PaymentService
 {
-    public function __construct(private InstallmentScheduleService $scheduleService) {}
+    public function __construct(private InstallmentScheduleService $scheduleService, private ReceiptService $receiptService) {}
 
     /** @param array<string, mixed> $data */
     public function record(Subscription $subscription, User $user, array $data): Payment
@@ -61,6 +61,7 @@ class PaymentService
 
             $this->recalculate($subscription);
             $this->scheduleService->refreshStatuses($subscription);
+            $this->receiptService->createForPayment($payment, $user);
             $this->audit($user, 'payment.created', $payment, ['amount' => $payment->amount, 'subscription_id' => $subscription->id]);
 
             return $payment->load('allocations.installment');
@@ -84,6 +85,7 @@ class PaymentService
             }
 
             $payment->update(['status' => 'reversed', 'reversal_reason' => $reason, 'reversed_by' => $user->id, 'reversed_at' => now()]);
+            $this->receiptService->cancelForPayment($payment);
             $this->recalculate($subscription);
             $this->scheduleService->refreshStatuses($subscription);
             $this->audit($user, 'payment.reversed', $payment, ['reason' => $reason, 'amount' => $payment->amount]);

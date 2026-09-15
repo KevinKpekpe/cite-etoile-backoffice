@@ -15,9 +15,13 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentPlanController;
 use App\Http\Controllers\PaymentReversalController;
 use App\Http\Controllers\PlotController;
+use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SubscriptionStatusController;
+use App\Http\Controllers\VerifyReceiptController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/verify/receipts/{verificationCode}', VerifyReceiptController::class)->middleware('throttle:30,1')->name('receipts.verify');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
@@ -69,5 +73,7 @@ Route::middleware('auth')->group(function (): void {
         Route::post('/payments', [PaymentController::class, 'store'])->middleware('can:payments.create')->name('payments.store');
         Route::get('/payments/{payment}', [PaymentController::class, 'show'])->middleware('can:payments.view')->name('payments.show');
         Route::patch('/payments/{payment}/reverse', PaymentReversalController::class)->middleware('can:payments.cancel')->name('payments.reverse');
+        Route::get('/receipts/{receipt}', [ReceiptController::class, 'show'])->middleware('can:receipts.view')->name('receipts.show');
+        Route::get('/receipts/{receipt}/download', [ReceiptController::class, 'download'])->middleware('can:receipts.download')->name('receipts.download');
     });
 });
