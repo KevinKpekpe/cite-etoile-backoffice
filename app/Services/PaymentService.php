@@ -1,0 +1,127 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\AuditLog;
+use App\Models\Payment;
+use App\Models\Subscription;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+
+class PaymentService
+{
+    public function __construct(private InstallmentScheduleService $scheduleService) {}
+
+    /** @param array<string, mixed> $data */
+    public function record(Subscription $subscription, User $user, array $data): Payment
+    {
+        return DB::transaction(function () use ($subscription, $user, $data): Payment {
+            $existing = Payment::query()->where('idempotency_key', $data['idempotency_key'])->first();
+
+            if ($existing !== null) {
+                return $existing;
+            }
+
+            $subscription = Subscription::query()->lockForUpdate()->findOrFail($subscription->id);
+            $amountCents = $this->toCents($data['amount']);
+
+            if ($amountCents > $this->toCents($subscription->balance)) {
+                throw ValidationException::withMessages(['amount' => __('Le montant dépasse le solde de la souscription.')]);
+            }
+
+            if ($subscription->duration_months > 0) {
+                $this->scheduleService->generate($subscription);
+            }
+
+            $payment = Payment::query()->create([
+                ...$data, 'payment_reference' => 'PAY-'.now()->format('Ymd').'-'.Str::upper(Str::random(8)),
+                'customer_id' => $subscription->customer_id, 'subscription_id' => $subscription->id,
+                'status' => 'validated', 'received_by' => $user->id,
+            ]);
+
+            $remainingCents = $amountCents;
+            $installments = $subscription->installments()->whereRaw('amount_paid < amount_due')->orderBy('due_date')->orderBy('installment_number')->lockForUpdate()->get();
+
+            foreach ($installments as $installment) {
+                if ($remainingCents === 0) {
+                    break;
+                }
+
+                $allocationCents = min($remainingCents, $this->toCents($installment->balance));
+                $payment->allocations()->create(['installment_id' => $installment->id, 'amount' => $this->fromCents($allocationCents)]);
+                $installment->update(['amount_paid' => $this->fromCents($this->toCents($installment->amount_paid) + $allocationCents)]);
+                $remainingCents -= $allocationCents;
+            }
+
+            if ($subscription->duration_months > 0 && $remainingCents > 0) {
+                throw ValidationException::withMessages(['amount' => __('Le montant ne peut pas être entièrement affecté à l’échéancier.')]);
+            }
+
+            $this->recalculate($subscription);
+            $this->scheduleService->refreshStatuses($subscription);
+            $this->audit($user, 'payment.created', $payment, ['amount' => $payment->amount, 'subscription_id' => $subscription->id]);
+
+            return $payment->load('allocations.installment');
+        }, 3);
+    }
+
+    public function reverse(Payment $payment, User $user, string $reason): Payment
+    {
+        return DB::transaction(function () use ($payment, $user, $reason): Payment {
+            $payment = Payment::query()->lockForUpdate()->findOrFail($payment->id);
+
+            if ($payment->status !== 'validated') {
+                throw ValidationException::withMessages(['reason' => __('Seul un paiement validé peut être extourné.')]);
+            }
+
+            $subscription = Subscription::query()->lockForUpdate()->findOrFail($payment->subscription_id);
+
+            foreach ($payment->allocations()->with('installment')->lockForUpdate()->get() as $allocation) {
+                $newPaidCents = $this->toCents($allocation->installment->amount_paid) - $this->toCents($allocation->amount);
+                $allocation->installment->update(['amount_paid' => $this->fromCents($newPaidCents), 'paid_at' => null]);
+            }
+
+            $payment->update(['status' => 'reversed', 'reversal_reason' => $reason, 'reversed_by' => $user->id, 'reversed_at' => now()]);
+            $this->recalculate($subscription);
+            $this->scheduleService->refreshStatuses($subscription);
+            $this->audit($user, 'payment.reversed', $payment, ['reason' => $reason, 'amount' => $payment->amount]);
+
+            return $payment->refresh();
+        }, 3);
+    }
+
+    private function recalculate(Subscription $subscription): void
+    {
+        $paid = Payment::query()->where('subscription_id', $subscription->id)->where('status', 'validated')->sum('amount');
+        $paidCents = $this->toCents($paid);
+        $totalCents = $this->toCents($subscription->contract_total);
+        $status = match (true) {
+            $paidCents === 0 => 'unpaid', $paidCents >= $totalCents => 'paid', default => 'partially_paid',
+        };
+
+        DB::table('subscriptions')->where('id', $subscription->id)->update(['amount_paid' => $this->fromCents($paidCents), 'financial_status' => $status]);
+        $subscription->plot()->update(['financial_status' => $status === 'paid' ? 'paid' : $status]);
+        $subscription->refresh();
+    }
+
+    /** @param array<string, mixed> $values */
+    private function audit(User $user, string $action, Payment $payment, array $values): void
+    {
+        AuditLog::query()->create(['user_id' => $user->id, 'action' => $action, 'entity_type' => Payment::class, 'entity_id' => $payment->id, 'new_values' => $values]);
+    }
+
+    private function toCents(string|float|int $amount): int
+    {
+        $amount = number_format((float) $amount, 2, '.', '');
+        [$units, $decimals] = explode('.', $amount);
+
+        return ((int) $units * 100) + (int) $decimals;
+    }
+
+    private function fromCents(int $cents): string
+    {
+        return sprintf('%d.%02d', intdiv($cents, 100), $cents % 100);
+    }
+}
