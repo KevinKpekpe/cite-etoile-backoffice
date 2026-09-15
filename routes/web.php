@@ -8,6 +8,8 @@ use App\Http\Controllers\AvenueController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDocumentController;
+use App\Http\Controllers\InstallmentController;
+use App\Http\Controllers\InstallmentScheduleController;
 use App\Http\Controllers\NeighborhoodController;
 use App\Http\Controllers\PaymentPlanController;
 use App\Http\Controllers\PlotController;
@@ -58,5 +60,7 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/subscriptions/{subscription}/status', SubscriptionStatusController::class)->middleware('can:subscriptions.update')->name('subscriptions.status');
         Route::post('/subscriptions/{subscription}/contract', [ContractController::class, 'store'])->middleware('can:subscriptions.update')->name('subscriptions.contract.store');
         Route::get('/subscriptions/{subscription}/contract/{contract}', [ContractController::class, 'download'])->middleware('can:documents.download')->scopeBindings()->name('subscriptions.contract.download');
+        Route::get('/subscriptions/{subscription}/installments', [InstallmentController::class, 'index'])->middleware('can:installments.view')->name('subscriptions.installments.index');
+        Route::post('/subscriptions/{subscription}/installments/generate', [InstallmentScheduleController::class, 'store'])->middleware('can:installments.manage')->name('subscriptions.installments.generate');
     });
 });

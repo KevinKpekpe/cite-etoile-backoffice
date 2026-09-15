@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\PaymentPlan;
 use App\Models\Plot;
 use App\Models\Subscription;
+use App\Services\InstallmentScheduleService;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -32,9 +33,9 @@ class SubscriptionController extends Controller
         ]);
     }
 
-    public function store(StoreSubscriptionRequest $request): RedirectResponse
+    public function store(StoreSubscriptionRequest $request, InstallmentScheduleService $scheduleService): RedirectResponse
     {
-        $subscription = DB::transaction(function () use ($request): Subscription {
+        $subscription = DB::transaction(function () use ($request, $scheduleService): Subscription {
             $plot = Plot::query()->lockForUpdate()->findOrFail($request->integer('plot_id'));
             $plan = PaymentPlan::query()->lockForUpdate()->findOrFail($request->integer('payment_plan_id'));
             $subscriptionDate = CarbonImmutable::parse($request->date('subscription_date'));
@@ -53,6 +54,7 @@ class SubscriptionController extends Controller
                 'duration_months' => $plan->duration_months, 'created_by' => $request->user()->id,
             ]);
             $plot->update(['commercial_status' => 'subscribed']);
+            $scheduleService->generate($subscription);
             $this->audit($request, 'subscription.created', $subscription, null, $subscription->getAttributes());
 
             return $subscription;
