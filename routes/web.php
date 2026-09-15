@@ -5,11 +5,14 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use App\Http\Controllers\AvenueController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDocumentController;
 use App\Http\Controllers\NeighborhoodController;
 use App\Http\Controllers\PaymentPlanController;
 use App\Http\Controllers\PlotController;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\SubscriptionStatusController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function (): void {
@@ -48,5 +51,12 @@ Route::middleware('auth')->group(function (): void {
         Route::resource('plots', PlotController::class)->except(['index', 'show'])->middleware('can:plots.manage');
         Route::get('/payment-plans', [PaymentPlanController::class, 'index'])->middleware('can:payment_plans.view')->name('payment-plans.index');
         Route::resource('payment-plans', PaymentPlanController::class)->except(['index', 'show'])->middleware('can:payment_plans.manage');
+        Route::get('/subscriptions', [SubscriptionController::class, 'index'])->middleware('can:subscriptions.view')->name('subscriptions.index');
+        Route::get('/subscriptions/create', [SubscriptionController::class, 'create'])->middleware('can:subscriptions.create')->name('subscriptions.create');
+        Route::post('/subscriptions', [SubscriptionController::class, 'store'])->middleware('can:subscriptions.create')->name('subscriptions.store');
+        Route::get('/subscriptions/{subscription}', [SubscriptionController::class, 'show'])->middleware('can:subscriptions.view')->name('subscriptions.show');
+        Route::patch('/subscriptions/{subscription}/status', SubscriptionStatusController::class)->middleware('can:subscriptions.update')->name('subscriptions.status');
+        Route::post('/subscriptions/{subscription}/contract', [ContractController::class, 'store'])->middleware('can:subscriptions.update')->name('subscriptions.contract.store');
+        Route::get('/subscriptions/{subscription}/contract/{contract}', [ContractController::class, 'download'])->middleware('can:documents.download')->scopeBindings()->name('subscriptions.contract.download');
     });
 });
