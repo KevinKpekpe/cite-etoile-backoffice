@@ -45,9 +45,12 @@ Pour travailler sur les assets, lancer `npm run dev` dans un second terminal.
 ```bash
 php artisan test --compact
 vendor/bin/pint --dirty --format agent
+composer analyse
 ```
 
-La configuration de tests actuelle utilise SQLite en mémoire. Un succès de cette suite ne prouve pas une connexion à MySQL. Vérifier séparément la connexion locale avec `php artisan db:show --no-interaction`.
+`composer format` applique le style Laravel avec Pint. `composer analyse` exécute Larastan au niveau 6 sur le code applicatif et la base de données. `composer quality` enchaîne formatage, analyse statique et tests avant un commit. L’analyse est volontairement séquentielle afin de rester déterministe et de fonctionner dans les environnements qui interdisent les serveurs TCP internes.
+
+La suite utilise la base MySQL dédiée `cite_etoile_du_monde_testing`. Vérifier séparément la connexion locale de développement avec `php artisan db:show --no-interaction`.
 
 ## Contribution et branches
 
