@@ -8,6 +8,7 @@ use App\Http\Controllers\AvenueController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDocumentController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\InstallmentScheduleController;
 use App\Http\Controllers\NeighborhoodController;
@@ -38,7 +39,7 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
     Route::middleware('2fa')->group(function (): void {
-        Route::view('/', 'dashboard')->middleware('can:dashboard.view')->name('dashboard');
+        Route::get('/', DashboardController::class)->middleware('can:dashboard.view')->name('dashboard');
         Route::get('/account/two-factor', [TwoFactorAuthenticationController::class, 'setup'])->name('two-factor.setup');
         Route::post('/account/two-factor', [TwoFactorAuthenticationController::class, 'enable'])->middleware('throttle:6,1')->name('two-factor.enable');
         Route::delete('/account/two-factor', [TwoFactorAuthenticationController::class, 'disable'])->name('two-factor.disable');
