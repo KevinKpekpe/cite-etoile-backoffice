@@ -29,7 +29,7 @@ class PermissionSeeder extends Seeder
         $matrix = [
             'admin' => $permissions,
             'direction' => ['dashboard.view', 'customers.view', 'plots.view', 'payment_plans.view', 'subscriptions.view', 'installments.view', 'payments.view', 'receipts.view', 'reports.view', 'audit_logs.view'],
-            'commercial' => ['dashboard.view', 'customers.view', 'customers.create', 'customers.update', 'plots.view', 'payment_plans.view', 'subscriptions.view', 'subscriptions.create', 'subscriptions.update', 'installments.view'],
+            'commercial' => ['dashboard.view', 'customers.view', 'customers.create', 'customers.update', 'plots.view', 'payment_plans.view', 'subscriptions.view', 'subscriptions.create', 'subscriptions.update', 'installments.view', 'documents.view', 'documents.download'],
             'cashier' => ['dashboard.view', 'customers.view', 'subscriptions.view', 'installments.view', 'payments.view', 'payments.create', 'receipts.view', 'receipts.download'],
             'finance_manager' => ['dashboard.view', 'customers.view', 'plots.view', 'payment_plans.view', 'subscriptions.view', 'installments.view', 'installments.manage', 'payments.view', 'payments.create', 'payments.cancel', 'receipts.view', 'receipts.download', 'reports.view'],
             'customer' => ['portal.view', 'profile.view', 'profile.update', 'documents.view', 'documents.download', 'payments.view', 'receipts.view', 'receipts.download', 'installments.view', 'subscriptions.view'],
