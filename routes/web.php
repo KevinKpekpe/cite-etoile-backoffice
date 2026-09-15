@@ -1,7 +1,29 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::middleware('guest')->group(function (): void {
+    Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
+    Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+    Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:3,1')->name('password.email');
+    Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
+    Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.update');
+});
+
+Route::middleware('auth')->group(function (): void {
+    Route::get('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'challenge'])->name('two-factor.challenge');
+    Route::post('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'verify'])->middleware('throttle:6,1')->name('two-factor.verify');
+    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+
+    Route::middleware('2fa')->group(function (): void {
+        Route::view('/', 'dashboard')->middleware('can:dashboard.view')->name('dashboard');
+        Route::get('/account/two-factor', [TwoFactorAuthenticationController::class, 'setup'])->name('two-factor.setup');
+        Route::post('/account/two-factor', [TwoFactorAuthenticationController::class, 'enable'])->middleware('throttle:6,1')->name('two-factor.enable');
+        Route::delete('/account/two-factor', [TwoFactorAuthenticationController::class, 'disable'])->name('two-factor.disable');
+    });
 });
