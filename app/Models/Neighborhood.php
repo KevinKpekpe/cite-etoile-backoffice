@@ -6,10 +6,17 @@ use Database\Factories\NeighborhoodFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['code', 'name', 'description', 'status'])]
 class Neighborhood extends Model
 {
     /** @use HasFactory<NeighborhoodFactory> */
     use HasFactory;
+
+    /** @return HasMany<Avenue, $this> */
+    public function avenues(): HasMany
+    {
+        return $this->hasMany(Avenue::class);
+    }
 }

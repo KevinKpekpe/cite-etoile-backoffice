@@ -4,8 +4,11 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\TwoFactorAuthenticationController;
+use App\Http\Controllers\AvenueController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDocumentController;
+use App\Http\Controllers\NeighborhoodController;
+use App\Http\Controllers\PlotController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function (): void {
@@ -37,5 +40,10 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/customers/{customer}/archive', [CustomerController::class, 'archive'])->middleware('can:customers.delete')->name('customers.archive');
         Route::post('/customers/{customer}/documents', [CustomerDocumentController::class, 'store'])->middleware('can:customers.update')->name('customers.documents.store');
         Route::get('/customers/{customer}/documents/{document}', [CustomerDocumentController::class, 'download'])->middleware('can:documents.download')->scopeBindings()->name('customers.documents.download');
+        Route::resource('neighborhoods', NeighborhoodController::class)->except(['show'])->middleware('can:plots.manage');
+        Route::resource('avenues', AvenueController::class)->except(['show'])->middleware('can:plots.manage');
+        Route::get('/plots', [PlotController::class, 'index'])->middleware('can:plots.view')->name('plots.index');
+        Route::get('/plots/{plot}', [PlotController::class, 'show'])->middleware('can:plots.view')->name('plots.show');
+        Route::resource('plots', PlotController::class)->except(['index', 'show'])->middleware('can:plots.manage');
     });
 });
