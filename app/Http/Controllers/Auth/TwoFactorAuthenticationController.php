@@ -84,7 +84,7 @@ class TwoFactorAuthenticationController extends Controller
         $request->session()->forget('auth.two_factor_pending');
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended($user->hasRole('customer') ? route('portal.dashboard') : route('dashboard'));
     }
 
     private function ensureSensitiveAccount(Request $request): void

@@ -16,6 +16,12 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentPlanController;
 use App\Http\Controllers\PaymentReversalController;
 use App\Http\Controllers\PlotController;
+use App\Http\Controllers\Portal\DashboardController as PortalDashboardController;
+use App\Http\Controllers\Portal\InstallmentController as PortalInstallmentController;
+use App\Http\Controllers\Portal\PaymentController as PortalPaymentController;
+use App\Http\Controllers\Portal\ProfileController as PortalProfileController;
+use App\Http\Controllers\Portal\ReceiptController as PortalReceiptController;
+use App\Http\Controllers\Portal\SubscriptionController as PortalSubscriptionController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SubscriptionStatusController;
@@ -76,5 +82,17 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/payments/{payment}/reverse', PaymentReversalController::class)->middleware('can:payments.cancel')->name('payments.reverse');
         Route::get('/receipts/{receipt}', [ReceiptController::class, 'show'])->middleware('can:receipts.view')->name('receipts.show');
         Route::get('/receipts/{receipt}/download', [ReceiptController::class, 'download'])->middleware('can:receipts.download')->name('receipts.download');
+
+        Route::prefix('portal')->middleware('can:portal.view')->name('portal.')->group(function (): void {
+            Route::get('/', PortalDashboardController::class)->name('dashboard');
+            Route::get('/subscriptions', [PortalSubscriptionController::class, 'index'])->name('subscriptions.index');
+            Route::get('/subscriptions/{subscription}', [PortalSubscriptionController::class, 'show'])->whereNumber('subscription')->name('subscriptions.show');
+            Route::get('/payments', [PortalPaymentController::class, 'index'])->name('payments.index');
+            Route::get('/installments', [PortalInstallmentController::class, 'index'])->name('installments.index');
+            Route::get('/receipts', [PortalReceiptController::class, 'index'])->name('receipts.index');
+            Route::get('/receipts/{receipt}/download', [PortalReceiptController::class, 'download'])->middleware('signed')->whereNumber('receipt')->name('receipts.download');
+            Route::get('/profile', [PortalProfileController::class, 'edit'])->middleware('can:profile.view')->name('profile.edit');
+            Route::put('/profile', [PortalProfileController::class, 'update'])->middleware('can:profile.update')->name('profile.update');
+        });
     });
 });

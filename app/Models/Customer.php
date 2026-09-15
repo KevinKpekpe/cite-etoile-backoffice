@@ -40,6 +40,12 @@ class Customer extends Model
     }
 
     /** @return BelongsTo<User, $this> */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
     public function assignedAgent(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');

@@ -42,7 +42,7 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('two-factor.challenge');
         }
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended($user->hasRole('customer') ? route('portal.dashboard') : route('dashboard'));
     }
 
     public function destroy(Request $request): RedirectResponse
