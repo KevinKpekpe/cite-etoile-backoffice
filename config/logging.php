@@ -1,5 +1,6 @@
 <?php
 
+use App\Logging\ConfigureApplicationLogger;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -60,6 +61,7 @@ return [
 
         'single' => [
             'driver' => 'single',
+            'tap' => [ConfigureApplicationLogger::class],
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
@@ -67,9 +69,10 @@ return [
 
         'daily' => [
             'driver' => 'daily',
+            'tap' => [ConfigureApplicationLogger::class],
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'max_files' => env('LOG_DAILY_DAYS', 14),
+            'max_files' => env('LOG_DAILY_DAYS', 30),
             'replace_placeholders' => true,
         ],
 
@@ -104,6 +107,7 @@ return [
 
         'stderr' => [
             'driver' => 'monolog',
+            'tap' => [ConfigureApplicationLogger::class],
             'level' => env('LOG_LEVEL', 'debug'),
             'handler' => StreamHandler::class,
             'handler_with' => [

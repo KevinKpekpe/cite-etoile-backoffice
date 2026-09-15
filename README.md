@@ -52,6 +52,12 @@ composer analyse
 
 La suite utilise la base MySQL dédiée `cite_etoile_du_monde_testing`. Vérifier séparément la connexion locale de développement avec `php artisan db:show --no-interaction`.
 
+## Journalisation technique
+
+Les environnements local et production utilisent des logs JSON quotidiens avec une rétention de 30 jours. La production écrit également sur `stderr` pour l’intégration aux plateformes d’hébergement. Les clés sensibles présentes dans le contexte structuré, y compris les tableaux imbriqués et les placeholders PSR-3, sont remplacées par `[REDACTED]`. Ne jamais placer volontairement un secret directement dans le texte libre d’un message de log.
+
+Les logs techniques servent au diagnostic des erreurs et du fonctionnement de l’application. L’audit des actions métier sensibles sera implémenté séparément dans la phase prévue par le plan.
+
 ## Contribution et branches
 
 - `main` est la branche d’intégration des tâches validées.
