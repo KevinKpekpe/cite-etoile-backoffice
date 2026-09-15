@@ -8,6 +8,7 @@ use App\Http\Controllers\AvenueController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDocumentController;
 use App\Http\Controllers\NeighborhoodController;
+use App\Http\Controllers\PaymentPlanController;
 use App\Http\Controllers\PlotController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,5 +46,7 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/plots', [PlotController::class, 'index'])->middleware('can:plots.view')->name('plots.index');
         Route::get('/plots/{plot}', [PlotController::class, 'show'])->middleware('can:plots.view')->name('plots.show');
         Route::resource('plots', PlotController::class)->except(['index', 'show'])->middleware('can:plots.manage');
+        Route::get('/payment-plans', [PaymentPlanController::class, 'index'])->middleware('can:payment_plans.view')->name('payment-plans.index');
+        Route::resource('payment-plans', PaymentPlanController::class)->except(['index', 'show'])->middleware('can:payment_plans.manage');
     });
 });
