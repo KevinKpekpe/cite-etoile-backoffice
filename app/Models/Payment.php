@@ -28,6 +28,12 @@ class Payment extends Model
         return $this->belongsTo(Subscription::class);
     }
 
+    /** @return BelongsTo<User, $this> */
+    public function receivedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'received_by');
+    }
+
     /** @return HasMany<PaymentAllocation, $this> */
     public function allocations(): HasMany
     {

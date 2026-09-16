@@ -8,6 +8,7 @@ use App\Http\Controllers\AvenueController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDocumentController;
+use App\Http\Controllers\CustomerStatementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\InstallmentScheduleController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Portal\ProfileController as PortalProfileController;
 use App\Http\Controllers\Portal\ReceiptController as PortalReceiptController;
 use App\Http\Controllers\Portal\SubscriptionController as PortalSubscriptionController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SubscriptionStatusController;
 use App\Http\Controllers\VerifyReceiptController;
@@ -82,6 +84,9 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/payments/{payment}/reverse', PaymentReversalController::class)->middleware('can:payments.cancel')->name('payments.reverse');
         Route::get('/receipts/{receipt}', [ReceiptController::class, 'show'])->middleware('can:receipts.view')->name('receipts.show');
         Route::get('/receipts/{receipt}/download', [ReceiptController::class, 'download'])->middleware('can:receipts.download')->name('receipts.download');
+        Route::get('/reports', [ReportController::class, 'index'])->middleware('can:reports.view')->name('reports.index');
+        Route::get('/reports/export/{report}', [ReportController::class, 'export'])->middleware('can:reports.view')->name('reports.export');
+        Route::get('/reports/customers/{customer}/statement', CustomerStatementController::class)->middleware('can:reports.view')->name('reports.customers.statement');
 
         Route::prefix('portal')->middleware('can:portal.view')->name('portal.')->group(function (): void {
             Route::get('/', PortalDashboardController::class)->name('dashboard');
