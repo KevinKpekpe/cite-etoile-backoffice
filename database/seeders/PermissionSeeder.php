@@ -27,7 +27,7 @@ class PermissionSeeder extends Seeder
         }
 
         $matrix = [
-            'admin' => $permissions,
+            'admin' => array_values(array_diff($permissions, ['audit_logs.view'])),
             'direction' => ['dashboard.view', 'customers.view', 'plots.view', 'payment_plans.view', 'subscriptions.view', 'installments.view', 'payments.view', 'receipts.view', 'reports.view', 'audit_logs.view'],
             'commercial' => ['dashboard.view', 'customers.view', 'customers.create', 'customers.update', 'plots.view', 'payment_plans.view', 'subscriptions.view', 'subscriptions.create', 'subscriptions.update', 'installments.view', 'documents.view', 'documents.download'],
             'cashier' => ['dashboard.view', 'customers.view', 'subscriptions.view', 'installments.view', 'payments.view', 'payments.create', 'receipts.view', 'receipts.download'],

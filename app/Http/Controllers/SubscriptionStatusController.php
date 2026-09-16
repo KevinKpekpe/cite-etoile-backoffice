@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateSubscriptionStatusRequest;
-use App\Models\AuditLog;
 use App\Models\Subscription;
+use App\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class SubscriptionStatusController extends Controller
 {
-    public function __invoke(UpdateSubscriptionStatusRequest $request, Subscription $subscription): RedirectResponse
+    public function __invoke(UpdateSubscriptionStatusRequest $request, Subscription $subscription, AuditService $auditService): RedirectResponse
     {
         $transitions = [
             'draft' => ['pending', 'cancelled'], 'pending' => ['active', 'cancelled'],
@@ -24,7 +24,7 @@ class SubscriptionStatusController extends Controller
             throw ValidationException::withMessages(['commercial_status' => __('Transition de statut non autorisée.')]);
         }
 
-        DB::transaction(function () use ($request, $subscription, $newStatus): void {
+        DB::transaction(function () use ($request, $subscription, $newStatus, $auditService): void {
             $oldStatus = $subscription->commercial_status;
             $subscription->update(['commercial_status' => $newStatus]);
 
@@ -34,7 +34,7 @@ class SubscriptionStatusController extends Controller
                 $subscription->plot()->update(['commercial_status' => 'subscribed']);
             }
 
-            AuditLog::query()->create(['user_id' => $request->user()->id, 'action' => 'subscription.status_changed', 'entity_type' => Subscription::class, 'entity_id' => $subscription->id, 'old_values' => ['commercial_status' => $oldStatus], 'new_values' => ['commercial_status' => $newStatus], 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent()]);
+            $auditService->record($request->user(), 'subscription.status_changed', $subscription, ['commercial_status' => $oldStatus], ['commercial_status' => $newStatus], $request);
         });
 
         return back()->with('status', __('Statut mis à jour.'));

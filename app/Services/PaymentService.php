@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\AuditLog;
 use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\User;
@@ -12,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class PaymentService
 {
-    public function __construct(private InstallmentScheduleService $scheduleService, private ReceiptService $receiptService) {}
+    public function __construct(private InstallmentScheduleService $scheduleService, private ReceiptService $receiptService, private AuditService $auditService) {}
 
     /** @param array<string, mixed> $data */
     public function record(Subscription $subscription, User $user, array $data): Payment
@@ -62,7 +61,7 @@ class PaymentService
             $this->recalculate($subscription);
             $this->scheduleService->refreshStatuses($subscription);
             $this->receiptService->createForPayment($payment, $user);
-            $this->audit($user, 'payment.created', $payment, ['amount' => $payment->amount, 'subscription_id' => $subscription->id]);
+            $this->auditService->record($user, 'payment.created', $payment, null, ['status' => $payment->status, 'amount' => $payment->amount, 'subscription_id' => $subscription->id]);
 
             return $payment->load('allocations.installment');
         }, 3);
@@ -84,11 +83,12 @@ class PaymentService
                 $allocation->installment->update(['amount_paid' => $this->fromCents($newPaidCents), 'paid_at' => null]);
             }
 
+            $oldValues = $payment->only(['status', 'reversal_reason', 'reversed_by', 'reversed_at']);
             $payment->update(['status' => 'reversed', 'reversal_reason' => $reason, 'reversed_by' => $user->id, 'reversed_at' => now()]);
             $this->receiptService->cancelForPayment($payment);
             $this->recalculate($subscription);
             $this->scheduleService->refreshStatuses($subscription);
-            $this->audit($user, 'payment.reversed', $payment, ['reason' => $reason, 'amount' => $payment->amount]);
+            $this->auditService->record($user, 'payment.reversed', $payment, $oldValues, $payment->only(['status', 'reversal_reason', 'reversed_by', 'reversed_at']));
 
             return $payment->refresh();
         }, 3);
@@ -106,12 +106,6 @@ class PaymentService
         DB::table('subscriptions')->where('id', $subscription->id)->update(['amount_paid' => $this->fromCents($paidCents), 'financial_status' => $status]);
         $subscription->plot()->update(['financial_status' => $status === 'paid' ? 'paid' : $status]);
         $subscription->refresh();
-    }
-
-    /** @param array<string, mixed> $values */
-    private function audit(User $user, string $action, Payment $payment, array $values): void
-    {
-        AuditLog::query()->create(['user_id' => $user->id, 'action' => $action, 'entity_type' => Payment::class, 'entity_id' => $payment->id, 'new_values' => $values]);
     }
 
     private function toCents(string|float|int $amount): int

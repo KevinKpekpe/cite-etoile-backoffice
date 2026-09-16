@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -87,6 +88,7 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/reports', [ReportController::class, 'index'])->middleware('can:reports.view')->name('reports.index');
         Route::get('/reports/export/{report}', [ReportController::class, 'export'])->middleware('can:reports.view')->name('reports.export');
         Route::get('/reports/customers/{customer}/statement', CustomerStatementController::class)->middleware('can:reports.view')->name('reports.customers.statement');
+        Route::get('/audit-logs', AuditLogController::class)->middleware('can:audit_logs.view')->name('audit-logs.index');
 
         Route::prefix('portal')->middleware('can:portal.view')->name('portal.')->group(function (): void {
             Route::get('/', PortalDashboardController::class)->name('dashboard');

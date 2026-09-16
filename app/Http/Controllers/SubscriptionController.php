@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSubscriptionRequest;
-use App\Models\AuditLog;
 use App\Models\Customer;
 use App\Models\PaymentPlan;
 use App\Models\Plot;
 use App\Models\Subscription;
+use App\Services\AuditService;
 use App\Services\InstallmentScheduleService;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -33,9 +33,9 @@ class SubscriptionController extends Controller
         ]);
     }
 
-    public function store(StoreSubscriptionRequest $request, InstallmentScheduleService $scheduleService): RedirectResponse
+    public function store(StoreSubscriptionRequest $request, InstallmentScheduleService $scheduleService, AuditService $auditService): RedirectResponse
     {
-        $subscription = DB::transaction(function () use ($request, $scheduleService): Subscription {
+        $subscription = DB::transaction(function () use ($request, $scheduleService, $auditService): Subscription {
             $plot = Plot::query()->lockForUpdate()->findOrFail($request->integer('plot_id'));
             $plan = PaymentPlan::query()->lockForUpdate()->findOrFail($request->integer('payment_plan_id'));
             $subscriptionDate = CarbonImmutable::parse($request->date('subscription_date'));
@@ -55,7 +55,7 @@ class SubscriptionController extends Controller
             ]);
             $plot->update(['commercial_status' => 'subscribed']);
             $scheduleService->generate($subscription);
-            $this->audit($request, 'subscription.created', $subscription, null, $subscription->getAttributes());
+            $auditService->record($request->user(), 'subscription.created', $subscription, null, $subscription->getAttributes(), $request);
 
             return $subscription;
         });
@@ -68,14 +68,5 @@ class SubscriptionController extends Controller
         $subscription->load(['customer', 'plot.avenue.neighborhood', 'paymentPlan', 'contract', 'installments', 'payments', 'receipts']);
 
         return view('subscriptions.show', compact('subscription'));
-    }
-
-    /**
-     * @param  array<string, mixed>|null  $oldValues
-     * @param  array<string, mixed>|null  $newValues
-     */
-    private function audit(StoreSubscriptionRequest $request, string $action, Subscription $subscription, ?array $oldValues, ?array $newValues): void
-    {
-        AuditLog::query()->create(['user_id' => $request->user()->id, 'action' => $action, 'entity_type' => Subscription::class, 'entity_id' => $subscription->id, 'old_values' => $oldValues, 'new_values' => $newValues, 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent()]);
     }
 }
