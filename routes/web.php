@@ -26,6 +26,7 @@ use App\Http\Controllers\Portal\ReceiptController as PortalReceiptController;
 use App\Http\Controllers\Portal\SubscriptionController as PortalSubscriptionController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\SubscriptionStatusController;
 use App\Http\Controllers\VerifyReceiptController;
@@ -89,6 +90,8 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/reports/export/{report}', [ReportController::class, 'export'])->middleware('can:reports.view')->name('reports.export');
         Route::get('/reports/customers/{customer}/statement', CustomerStatementController::class)->middleware('can:reports.view')->name('reports.customers.statement');
         Route::get('/audit-logs', AuditLogController::class)->middleware('can:audit_logs.view')->name('audit-logs.index');
+        Route::get('/settings', [SettingController::class, 'index'])->middleware('can:settings.manage')->name('settings.index');
+        Route::put('/settings', [SettingController::class, 'update'])->middleware('can:settings.manage')->name('settings.update');
 
         Route::prefix('portal')->middleware('can:portal.view')->name('portal.')->group(function (): void {
             Route::get('/', PortalDashboardController::class)->name('dashboard');

@@ -6,15 +6,15 @@ use App\Http\Requests\StoreContractRequest;
 use App\Models\AuditLog;
 use App\Models\Contract;
 use App\Models\Subscription;
+use App\Services\ReferenceGenerator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ContractController extends Controller
 {
-    public function store(StoreContractRequest $request, Subscription $subscription): RedirectResponse
+    public function store(StoreContractRequest $request, Subscription $subscription, ReferenceGenerator $references): RedirectResponse
     {
         $attributes = $request->safe()->only(['signed_at', 'status']);
 
@@ -24,7 +24,7 @@ class ContractController extends Controller
 
         $contract = Contract::query()->updateOrCreate(
             ['subscription_id' => $subscription->id],
-            [...$attributes, 'contract_number' => Contract::query()->where('subscription_id', $subscription->id)->value('contract_number') ?? 'CTR-'.now()->format('Ymd').'-'.Str::upper(Str::random(8))],
+            [...$attributes, 'contract_number' => Contract::query()->where('subscription_id', $subscription->id)->value('contract_number') ?? $references->generate(Contract::class, 'contract_number', 'contract', 'CTR')],
         );
         AuditLog::query()->create(['user_id' => $request->user()->id, 'action' => 'contract.saved', 'entity_type' => Contract::class, 'entity_id' => $contract->id, 'new_values' => ['subscription_id' => $subscription->id, 'status' => $contract->status], 'ip_address' => $request->ip(), 'user_agent' => $request->userAgent()]);
 

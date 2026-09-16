@@ -6,6 +6,7 @@ use App\Http\Requests\StorePaymentRequest;
 use App\Models\Payment;
 use App\Models\Subscription;
 use App\Services\PaymentService;
+use App\Services\SettingService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,11 +30,15 @@ class PaymentController extends Controller
         return view('payments.index', compact('subscriptions', 'search'));
     }
 
-    public function create(Subscription $subscription): View
+    public function create(Subscription $subscription, SettingService $settings): View
     {
         $subscription->load(['customer', 'plot', 'installments' => fn ($query) => $query->orderBy('due_date')]);
 
-        return view('payments.create', ['subscription' => $subscription, 'idempotencyKey' => (string) Str::uuid()]);
+        return view('payments.create', [
+            'subscription' => $subscription, 'idempotencyKey' => (string) Str::uuid(),
+            'currency' => $settings->value('finance', 'currency', 'USD'),
+            'paymentMethods' => $settings->stringList('finance', 'payment_methods', ['cash', 'bank_transfer', 'mobile_money', 'card', 'other']),
+        ]);
     }
 
     public function store(StorePaymentRequest $request, PaymentService $paymentService): RedirectResponse

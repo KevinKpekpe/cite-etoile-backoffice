@@ -6,12 +6,11 @@ use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class PaymentService
 {
-    public function __construct(private InstallmentScheduleService $scheduleService, private ReceiptService $receiptService, private AuditService $auditService) {}
+    public function __construct(private InstallmentScheduleService $scheduleService, private ReceiptService $receiptService, private AuditService $auditService, private SettingService $settings, private ReferenceGenerator $references) {}
 
     /** @param array<string, mixed> $data */
     public function record(Subscription $subscription, User $user, array $data): Payment
@@ -30,12 +29,23 @@ class PaymentService
                 throw ValidationException::withMessages(['amount' => __('Le montant dépasse le solde de la souscription.')]);
             }
 
+            if (! $this->settings->boolean('subscription', 'allow_partial_payment', true)) {
+                $this->ensurePaymentIsNotPartial($subscription, $amountCents);
+            }
+
+            if (! $this->settings->boolean('subscription', 'allow_advance_payment', true)) {
+                $dueCents = $subscription->installments()->whereDate('due_date', '<=', now())->get()->sum(fn ($installment): int => $this->toCents($installment->balance));
+                if ($subscription->duration_months > 0 && $amountCents > $dueCents) {
+                    throw ValidationException::withMessages(['amount' => __('Les paiements anticipés sont désactivés.')]);
+                }
+            }
+
             if ($subscription->duration_months > 0) {
                 $this->scheduleService->generate($subscription);
             }
 
             $payment = Payment::query()->create([
-                ...$data, 'payment_reference' => 'PAY-'.now()->format('Ymd').'-'.Str::upper(Str::random(8)),
+                ...$data, 'payment_reference' => $this->references->generate(Payment::class, 'payment_reference', 'payment', 'PAY'),
                 'customer_id' => $subscription->customer_id, 'subscription_id' => $subscription->id,
                 'status' => 'validated', 'received_by' => $user->id,
             ]);
@@ -106,6 +116,25 @@ class PaymentService
         DB::table('subscriptions')->where('id', $subscription->id)->update(['amount_paid' => $this->fromCents($paidCents), 'financial_status' => $status]);
         $subscription->plot()->update(['financial_status' => $status === 'paid' ? 'paid' : $status]);
         $subscription->refresh();
+    }
+
+    private function ensurePaymentIsNotPartial(Subscription $subscription, int $amountCents): void
+    {
+        if ($subscription->duration_months === 0 && $amountCents !== $this->toCents($subscription->balance)) {
+            throw ValidationException::withMessages(['amount' => __('Les paiements partiels sont désactivés.')]);
+        }
+
+        $remaining = $amountCents;
+        foreach ($subscription->installments()->whereRaw('amount_paid < amount_due')->orderBy('due_date')->get() as $installment) {
+            $balance = $this->toCents($installment->balance);
+            if ($remaining < $balance) {
+                throw ValidationException::withMessages(['amount' => __('Les paiements partiels sont désactivés.')]);
+            }
+            $remaining -= $balance;
+            if ($remaining === 0) {
+                return;
+            }
+        }
     }
 
     private function toCents(string|float|int $amount): int

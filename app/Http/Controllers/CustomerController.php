@@ -7,12 +7,12 @@ use App\Http\Requests\UpdateCustomerRequest;
 use App\Models\AuditLog;
 use App\Models\Customer;
 use App\Models\User;
+use App\Services\ReferenceGenerator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
@@ -49,12 +49,12 @@ class CustomerController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCustomerRequest $request): RedirectResponse
+    public function store(StoreCustomerRequest $request, ReferenceGenerator $references): RedirectResponse
     {
-        $customer = DB::transaction(function () use ($request): Customer {
+        $customer = DB::transaction(function () use ($request, $references): Customer {
             $customer = Customer::query()->create([
                 ...$request->validated(),
-                'customer_number' => 'CLI-'.now()->format('Ymd').'-'.Str::upper(Str::random(8)),
+                'customer_number' => $references->generate(Customer::class, 'customer_number', 'customer', 'CLI'),
                 'created_by' => $request->user()->id,
             ]);
             $this->audit($request, 'customer.created', $customer, null, $customer->getAttributes());
