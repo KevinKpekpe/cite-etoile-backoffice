@@ -25,10 +25,13 @@
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="mysql" force="true"/>
         <env name="DB_DATABASE" value="cite_etoile_du_monde_testing" force="true"/>
+        <env name="DB_USERNAME" value="cite_etoile_testing" force="true"/>
+        <env name="DB_PASSWORD" value="root" force="true"/>
         <env name="DB_URL" value="" force="true"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <env name="SESSION_ENCRYPT" value="true" force="true"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
