@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
+use App\Mail\UserCredentialsMail;
 use App\Models\AuditLog;
 use App\Models\Customer;
 use App\Models\PaymentPlan;
 use App\Models\Plot;
+use App\Models\Role;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Services\AuditService;
@@ -15,12 +17,15 @@ use App\Services\InstallmentScheduleService;
 use App\Services\PaymentService;
 use App\Services\ReferenceGenerator;
 use App\Services\SettingService;
+use App\Services\UserCredentialsMarkdownService;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class CustomerController extends Controller
@@ -85,6 +90,7 @@ class CustomerController extends Controller
         AuditService $auditService,
         PaymentService $paymentService,
         SettingService $settings,
+        UserCredentialsMarkdownService $markdownService,
     ): RedirectResponse {
         $customerFields = $request->safe()->only([
             'first_name', 'last_name', 'middle_name', 'gender', 'birth_date',
@@ -94,7 +100,7 @@ class CustomerController extends Controller
         ]);
 
         [$customer, $subscription] = DB::transaction(function () use (
-            $request, $references, $customerFields, $scheduleService, $auditService
+            $request, $references, $customerFields, $scheduleService, $auditService, $markdownService
         ): array {
             $customer = Customer::query()->create([
                 ...$customerFields,
@@ -102,6 +108,41 @@ class CustomerController extends Controller
                 'created_by' => $request->user()->id,
             ]);
             $this->audit($request, 'customer.created', $customer, null, $customer->getAttributes());
+
+            // Création automatique du compte utilisateur lié
+            $email = $customerFields['email'] ?? null;
+            if (blank($email)) {
+                $email = strtolower(Str::slug($customer->customer_number)).'@client.cite-etoile.cd';
+            }
+
+            $temporaryPassword = Str::password(12);
+            $customerRole = Role::query()->where('name', 'customer')->first();
+
+            $clientUser = User::query()->create([
+                'first_name' => $customer->first_name,
+                'last_name' => $customer->last_name,
+                'email' => $email,
+                'phone' => $customer->phone,
+                'password' => Hash::make($temporaryPassword),
+                'status' => 'active',
+                'must_change_password' => true,
+            ]);
+
+            if ($customerRole !== null) {
+                $clientUser->roles()->syncWithoutDetaching([$customerRole->id]);
+            }
+
+            $customer->update(['user_id' => $clientUser->id]);
+
+            $markdown = $markdownService->generate($clientUser, $temporaryPassword, 'Client Portail');
+            session()->flash('user_credentials_markdown', $markdown);
+            session()->flash('temporary_password', $temporaryPassword);
+
+            try {
+                Mail::to($clientUser->email)->send(new UserCredentialsMail($clientUser, $temporaryPassword, $markdown, 'Client Portail'));
+            } catch (\Throwable) {
+                // Ignore mail failure if mail driver is offline
+            }
 
             $subscription = null;
 

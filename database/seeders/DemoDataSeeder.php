@@ -38,43 +38,43 @@ class DemoDataSeeder extends Seeder
 
         $superAdmin = User::query()->firstOrCreate(
             ['email' => 'superadmin@cite-etoile.cd'],
-            ['first_name' => 'Super', 'last_name' => 'Admin', 'phone' => '+243810000001', 'password' => $password, 'status' => 'active']
+            ['first_name' => 'Super', 'last_name' => 'Admin', 'phone' => '+243810000001', 'password' => $password, 'status' => 'active', 'must_change_password' => false]
         );
         $superAdmin->roles()->syncWithoutDetaching([$superAdminRole->id]);
 
         $admin = User::query()->firstOrCreate(
             ['email' => 'admin@cite-etoile.cd'],
-            ['first_name' => 'Alain', 'last_name' => 'Mukendi', 'phone' => '+243810000002', 'password' => $password, 'status' => 'active']
+            ['first_name' => 'Alain', 'last_name' => 'Mukendi', 'phone' => '+243810000002', 'password' => $password, 'status' => 'active', 'must_change_password' => false]
         );
         $admin->roles()->syncWithoutDetaching([$adminRole->id]);
 
         $commercial1 = User::query()->firstOrCreate(
             ['email' => 'commercial@cite-etoile.cd'],
-            ['first_name' => 'Joseph', 'last_name' => 'Bakanza', 'phone' => '+243820000003', 'password' => $password, 'status' => 'active']
+            ['first_name' => 'Joseph', 'last_name' => 'Bakanza', 'phone' => '+243820000003', 'password' => $password, 'status' => 'active', 'must_change_password' => false]
         );
         $commercial1->roles()->syncWithoutDetaching([$commercialRole->id]);
 
         $commercial2 = User::query()->firstOrCreate(
             ['email' => 'n.mwamba@cite-etoile.cd'],
-            ['first_name' => 'Nadine', 'last_name' => 'Mwamba', 'phone' => '+243840000004', 'password' => $password, 'status' => 'active']
+            ['first_name' => 'Nadine', 'last_name' => 'Mwamba', 'phone' => '+243840000004', 'password' => $password, 'status' => 'active', 'must_change_password' => false]
         );
         $commercial2->roles()->syncWithoutDetaching([$commercialRole->id]);
 
         $cashier = User::query()->firstOrCreate(
             ['email' => 'caissier@cite-etoile.cd'],
-            ['first_name' => 'Ruth', 'last_name' => 'Bolamba', 'phone' => '+243850000005', 'password' => $password, 'status' => 'active']
+            ['first_name' => 'Ruth', 'last_name' => 'Bolamba', 'phone' => '+243850000005', 'password' => $password, 'status' => 'active', 'must_change_password' => false]
         );
         $cashier->roles()->syncWithoutDetaching([$cashierRole->id]);
 
         $finance = User::query()->firstOrCreate(
             ['email' => 'finance@cite-etoile.cd'],
-            ['first_name' => 'Jean-Marc', 'last_name' => 'Mbayo', 'phone' => '+243890000006', 'password' => $password, 'status' => 'active']
+            ['first_name' => 'Jean-Marc', 'last_name' => 'Mbayo', 'phone' => '+243890000006', 'password' => $password, 'status' => 'active', 'must_change_password' => false]
         );
         $finance->roles()->syncWithoutDetaching([$financeRole->id]);
 
         $direction = User::query()->firstOrCreate(
             ['email' => 'direction@cite-etoile.cd'],
-            ['first_name' => 'Roger', 'last_name' => 'Kiala', 'phone' => '+243990000007', 'password' => $password, 'status' => 'active']
+            ['first_name' => 'Roger', 'last_name' => 'Kiala', 'phone' => '+243990000007', 'password' => $password, 'status' => 'active', 'must_change_password' => false]
         );
         $direction->roles()->syncWithoutDetaching([$directionRole->id]);
 

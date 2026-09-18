@@ -17,13 +17,7 @@
         </div>
     </div>
 
-    @if(session('temporary_password'))
-    <div class="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-5">
-        <p class="mb-2 font-bold text-amber-900">⚠️ Mot de passe temporaire — à communiquer maintenant à l'utilisateur</p>
-        <p class="text-sm text-amber-800">Ce mot de passe n'est affiché qu'une seule fois et ne sera plus accessible par la suite.</p>
-        <p class="mt-3 rounded-lg bg-white px-4 py-3 font-mono text-lg font-bold tracking-widest text-slate-950">{{ session('temporary_password') }}</p>
-    </div>
-    @endif
+    <x-user-credentials-markdown />
 
     <div class="grid gap-5 lg:grid-cols-3">
         <section class="rounded-xl bg-white p-5 shadow-sm">

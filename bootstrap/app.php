@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AddSecurityHeaders;
+use App\Http\Middleware\EnsurePasswordIsChanged;
 use App\Http\Middleware\EnsureTwoFactorChallengeIsComplete;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,7 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['2fa' => EnsureTwoFactorChallengeIsComplete::class]);
+        $middleware->alias([
+            '2fa' => EnsureTwoFactorChallengeIsComplete::class,
+            'force_password_change' => EnsurePasswordIsChanged::class,
+        ]);
         $middleware->appendToGroup('web', AddSecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

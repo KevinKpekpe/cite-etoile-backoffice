@@ -1,5 +1,7 @@
 <x-layouts.app :title="$customer->first_name.' '.$customer->last_name">
 
+    <x-user-credentials-markdown />
+
     @php
         $allCustomerInstallments = $customer->subscriptions->pluck('installments')->flatten();
         $overdueInstallments = $allCustomerInstallments->where('status', 'overdue');

@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Mail\UserCredentialsMail;
 use App\Models\AuditLog;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\UserCredentialsMarkdownService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class UserController extends Controller
@@ -61,11 +64,11 @@ class UserController extends Controller
      * Store a newly created staff user.
      *
      * Generates a random initial password that the admin must communicate
-     * to the new user, who should enable 2FA on first login.
+     * to the new user, who should change password on first login.
      */
-    public function store(StoreUserRequest $request): RedirectResponse
+    public function store(StoreUserRequest $request, UserCredentialsMarkdownService $markdownService): RedirectResponse
     {
-        $user = DB::transaction(function () use ($request): User {
+        $user = DB::transaction(function () use ($request, $markdownService): User {
             $temporaryPassword = Str::password(16);
 
             $user = User::query()->create([
@@ -75,6 +78,7 @@ class UserController extends Controller
                 'phone' => $request->validated('phone'),
                 'password' => Hash::make($temporaryPassword),
                 'status' => 'active',
+                'must_change_password' => true,
             ]);
 
             $role = Role::query()->findOrFail($request->validated('role_id'));
@@ -85,9 +89,15 @@ class UserController extends Controller
                 'role' => $role->name,
             ]);
 
-            // Store the temporary password in the session so the admin can
-            // communicate it to the new user. It is never persisted anywhere else.
+            $markdown = $markdownService->generate($user, $temporaryPassword, $role->name);
+            session()->flash('user_credentials_markdown', $markdown);
             session()->flash('temporary_password', $temporaryPassword);
+
+            try {
+                Mail::to($user->email)->send(new UserCredentialsMail($user, $temporaryPassword, $markdown, $role->name));
+            } catch (\Throwable) {
+                // Ignore mail failure if mail driver is offline
+            }
 
             return $user;
         });
