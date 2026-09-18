@@ -16,7 +16,7 @@ use Illuminate\Notifications\Notifiable;
  * @property string|null $two_factor_secret
  * @property array<int, string>|null $two_factor_recovery_codes
  */
-#[Fillable(['first_name', 'last_name', 'email', 'phone', 'password'])]
+#[Fillable(['first_name', 'last_name', 'email', 'phone', 'password', 'status'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable
 {

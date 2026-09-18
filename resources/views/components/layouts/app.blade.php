@@ -34,6 +34,7 @@
                         <a href="{{ route('avenues.index') }}">Avenues</a>
                     @endcan
                     @can('audit_logs.view')<a href="{{ route('audit-logs.index') }}">Audit</a>@endcan
+                    @can('users.manage')<a href="{{ route('users.index') }}">Utilisateurs</a>@endcan
                     @can('settings.manage')<a href="{{ route('settings.index') }}">Paramètres</a>@endcan
                 @endif
                 <form method="POST" action="{{ route('logout') }}">
