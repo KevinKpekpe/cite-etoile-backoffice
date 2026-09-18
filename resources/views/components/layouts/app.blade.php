@@ -1,5 +1,8 @@
 @php
     $isPortalClient = auth()->user()?->hasRole('customer') && auth()->user()?->customer !== null;
+    $overdueNavCount = (!$isPortalClient && auth()->user()?->can('subscriptions.view'))
+        ? \App\Models\Installment::query()->where('status', 'overdue')->distinct('subscription_id')->count('subscription_id')
+        : 0;
 @endphp
 <!DOCTYPE html>
 <html lang="fr">
@@ -25,8 +28,18 @@
                     @can('dashboard.view')<a href="{{ route('dashboard') }}">Tableau de bord</a>@endcan
                     @can('customers.view')<a href="{{ route('customers.index') }}">Clients</a>@endcan
                     @can('plots.view')<a href="{{ route('plots.index') }}">Parcelles</a>@endcan
-                    @can('subscriptions.view')<a href="{{ route('subscriptions.index') }}">Souscriptions</a>@endcan
+                    @can('subscriptions.view')
+                        <a href="{{ route('subscriptions.index') }}" class="inline-flex items-center gap-1.5">
+                            Souscriptions
+                            @if($overdueNavCount > 0)
+                                <span class="rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white leading-none" title="{{ $overdueNavCount }} souscription(s) en retard">
+                                    {{ $overdueNavCount }}
+                                </span>
+                            @endif
+                        </a>
+                    @endcan
                     @can('payments.view')<a href="{{ route('payments.index') }}">Paiements</a>@endcan
+
                     @can('payment_plans.view')<a href="{{ route('payment-plans.index') }}">Formules</a>@endcan
                     @can('reports.view')<a href="{{ route('reports.index') }}">Rapports</a>@endcan
                     @can('plots.manage')

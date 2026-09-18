@@ -350,3 +350,40 @@ it('creates a pending subscription with deposit and activates it immediately', f
     $this->assertDatabaseHas('audit_logs', ['action' => 'subscription.activated', 'entity_id' => $subscription->id]);
     $this->assertDatabaseHas('payments', ['subscription_id' => $subscription->id, 'amount' => '250.00']);
 });
+
+it('creates customer and initial subscription seamlessly from customer store form', function () {
+    Storage::fake('local');
+
+    $plot = Plot::factory()->create(['commercial_status' => 'available']);
+    $plan = PaymentPlan::factory()->create([
+        'total_price' => '3000.00',
+        'duration_months' => 6,
+        'monthly_amount' => '500.00',
+        'active' => true,
+    ]);
+
+    $response = $this->actingAs($this->commercial)
+        ->post(route('customers.store'), [
+            'first_name' => 'Jean',
+            'last_name' => 'Kabila',
+            'email' => 'jean.kabila@example.com',
+            'phone' => '+243810000999',
+            'status' => 'active',
+            'plot_id' => $plot->id,
+            'payment_plan_id' => $plan->id,
+            'subscription_date' => now()->toDateString(),
+            'start_date' => now()->toDateString(),
+            'deposit' => '500.00',
+            'deposit_method' => 'cash',
+        ]);
+
+    $customer = Customer::query()->where('email', 'jean.kabila@example.com')->firstOrFail();
+    $subscription = Subscription::query()->where('customer_id', $customer->id)->firstOrFail();
+    $payment = Payment::query()->where('subscription_id', $subscription->id)->firstOrFail();
+
+    $response->assertRedirect(route('payments.show', $payment));
+
+    expect($subscription->commercial_status)->toBe('active')
+        ->and($plot->refresh()->commercial_status)->toBe('subscribed')
+        ->and((float) $subscription->amount_paid)->toBe(500.0);
+});

@@ -1,7 +1,28 @@
 <x-layouts.app :title="$subscription->subscription_number">
 
-{{-- Bandeau : en attente de premier versement --}}
-@if($subscription->commercial_status === 'pending')
+{{-- Flash warning (redirigé depuis payments.create) --}}
+@if(session('warning'))
+<div class="mb-6 rounded-xl border border-red-300 bg-red-50 p-4 text-sm font-semibold text-red-800">
+    ⚠️ {{ session('warning') }}
+</div>
+@endif
+
+{{-- ── Bandeau : Soldée ──────────────────────────────────────────────── --}}
+@if($subscription->financial_status === 'paid' || $subscription->commercial_status === 'completed')
+<div class="mb-6 rounded-xl border border-emerald-300 bg-emerald-50 p-5">
+    <p class="font-bold text-emerald-900">✅ Souscription soldée</p>
+    <p class="mt-1 text-sm text-emerald-800">Tous les paiements ont été reçus. Aucun encaissement supplémentaire n'est possible.</p>
+</div>
+
+{{-- ── Bandeau : Annulée / Résiliée ───────────────────────────────────── --}}
+@elseif(in_array($subscription->commercial_status, ['cancelled', 'terminated']))
+<div class="mb-6 rounded-xl border border-red-300 bg-red-50 p-5">
+    <p class="font-bold text-red-900">🚫 Souscription {{ $subscription->commercial_status === 'cancelled' ? 'annulée' : 'résiliée' }}</p>
+    <p class="mt-1 text-sm text-red-800">Aucun encaissement n'est possible sur cette souscription.</p>
+</div>
+
+{{-- ── Bandeau : En attente premier versement ─────────────────────────── --}}
+@elseif($subscription->commercial_status === 'pending')
 <div class="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-5">
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -15,8 +36,29 @@
         @endcan
     </div>
 </div>
+
+{{-- ── Encadré : Prochain paiement (actif + crédit + non soldé) ───────── --}}
+@elseif($subscription->commercial_status === 'active' && $subscription->duration_months > 0 && $nextInstallment)
+<div class="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-5">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <p class="font-bold text-blue-900">📅 Prochain paiement</p>
+            <div class="mt-2 grid gap-1 text-sm text-blue-800">
+                <p>Échéance : <strong>{{ \Carbon\Carbon::parse($nextInstallment->due_date)->translatedFormat('d F Y') }}</strong></p>
+                <p>Montant minimum : <strong>{{ $nextInstallment->amount_due }} USD</strong></p>
+                <p>Solde total restant : <strong>{{ $subscription->balance }} USD</strong></p>
+            </div>
+        </div>
+        @can('payments.create')
+        <a href="{{ route('payments.create', $subscription) }}" class="rounded-lg bg-blue-700 px-5 py-2.5 font-semibold text-white">
+            Encaisser ce paiement →
+        </a>
+        @endcan
+    </div>
+</div>
 @endif
 
+{{-- ── En-tête ──────────────────────────────────────────────────────── --}}
 <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
     <div>
         <p class="font-mono text-amber-700">{{ $subscription->subscription_number }}</p>
@@ -24,13 +66,17 @@
         <p>{{ $subscription->plot->reference }} · {{ $subscription->plot->avenue->neighborhood->name }}</p>
     </div>
     <div class="flex flex-wrap gap-2">
-        @if($subscription->commercial_status === 'active')
+        {{-- Bouton Encaisser : seulement si active + pas soldée + pas annulée --}}
+        @if($subscription->commercial_status === 'active'
+            && $subscription->financial_status !== 'paid'
+            && !in_array($subscription->commercial_status, ['completed', 'cancelled', 'terminated']))
         @can('payments.create')
         <a href="{{ route('payments.create', $subscription) }}" class="rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white">
             Encaisser un paiement
         </a>
         @endcan
         @endif
+
         @can('customers.view')
         <a href="{{ route('customers.show', $subscription->customer) }}" class="rounded-lg border bg-white px-4 py-2">
             Fiche client
@@ -39,6 +85,7 @@
     </div>
 </div>
 
+{{-- ── Grille principale ────────────────────────────────────────────── --}}
 <div class="grid gap-5 lg:grid-cols-3">
 
     {{-- Conditions figées --}}
@@ -47,10 +94,14 @@
         <dl class="mt-4 grid gap-2 text-sm">
             <div>Formule : <strong>{{ $subscription->paymentPlan->name }}</strong></div>
             <div>Total : <strong>{{ $subscription->contract_total }} USD</strong></div>
-            <div>Mensualité : <strong>{{ $subscription->monthly_amount ?? '—' }} {{ $subscription->monthly_amount ? 'USD' : '' }}</strong></div>
-            <div>Durée : <strong>{{ $subscription->duration_months > 0 ? $subscription->duration_months.' mois' : 'Comptant' }}</strong></div>
+            @if($subscription->duration_months > 0)
+            <div>Mensualité : <strong>{{ $subscription->monthly_amount }} USD</strong></div>
+            <div>Durée : <strong>{{ $subscription->duration_months }} mois</strong></div>
+            @else
+            <div>Type : <strong>Comptant</strong></div>
+            @endif
             <div class="border-t pt-2">Payé : <strong>{{ $subscription->amount_paid }} USD</strong></div>
-            <div>Solde : <strong class="{{ (float)$subscription->balance > 0 ? 'text-red-700' : 'text-emerald-700' }}">{{ $subscription->balance }} USD</strong></div>
+            <div>Solde : <strong class="{{ (float) $subscription->balance > 0 ? 'text-red-700' : 'text-emerald-700' }}">{{ $subscription->balance }} USD</strong></div>
         </dl>
     </section>
 
@@ -67,15 +118,12 @@
                         'completed' => 'bg-blue-100 text-blue-800',
                         'suspended','cancelled','terminated' => 'bg-red-100 text-red-800',
                         default     => 'bg-slate-100 text-slate-700',
-                    } }}">
-                    {{ ucfirst($subscription->commercial_status) }}
-                </span></dd>
+                    } }}">{{ ucfirst($subscription->commercial_status) }}</span></dd>
             </div>
             <div><dt class="text-slate-500">Financier</dt><dd>{{ $subscription->financial_status }}</dd></div>
             <div><dt class="text-slate-500">Administratif</dt><dd>{{ $subscription->administrative_status }}</dd></div>
         </dl>
 
-        {{-- Changement de statut : réservé aux admins --}}
         @if(auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('super_admin'))
         @can('subscriptions.update')
         <details class="mt-4">
@@ -108,7 +156,6 @@
         @else
             <p class="mt-3 text-sm text-slate-500">Aucun contrat attaché.</p>
         @endif
-
         @can('subscriptions.update')
         <form method="POST" enctype="multipart/form-data" action="{{ route('subscriptions.contract.store', $subscription) }}" class="mt-4 grid gap-3">
             @csrf

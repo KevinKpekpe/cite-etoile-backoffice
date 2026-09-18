@@ -30,12 +30,17 @@ class ReceiptService
             'issued_at' => now(), 'verification_code' => Str::random(48), 'issued_by' => $issuer->id, 'status' => 'valid',
         ]);
         $receipt->load(['payment', 'customer', 'subscription.plot.avenue.neighborhood', 'subscription.paymentPlan', 'issuedBy']);
+
+        $nextInstallment = $payment->subscription?->installments
+            ->whereIn('status', ['overdue', 'due', 'upcoming'])
+            ->sortBy('due_date')
+            ->first();
         $verificationUrl = route('receipts.verify', $receipt->verification_code);
         $options = new Options;
         $options->set('isRemoteEnabled', false);
         $dompdf = new Dompdf($options);
         $branding = ['company' => $this->settings->value('company', 'name', 'MJIC IMMOBILIER SARL'), 'project' => $this->settings->value('project', 'name', 'Cité Étoile du Monde'), 'currency' => $this->settings->value('finance', 'currency', 'USD')];
-        $dompdf->loadHtml(view('receipts.pdf', compact('receipt', 'verificationUrl', 'branding'))->render());
+        $dompdf->loadHtml(view('receipts.pdf', compact('receipt', 'verificationUrl', 'branding', 'nextInstallment'))->render());
         $dompdf->setPaper('A4');
         $dompdf->render();
         $path = "receipts/{$receipt->receipt_number}.pdf";

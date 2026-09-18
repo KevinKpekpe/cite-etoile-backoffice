@@ -6,34 +6,54 @@ use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Models\AuditLog;
 use App\Models\Customer;
+use App\Models\PaymentPlan;
+use App\Models\Plot;
+use App\Models\Subscription;
 use App\Models\User;
+use App\Services\AuditService;
+use App\Services\InstallmentScheduleService;
+use App\Services\PaymentService;
 use App\Services\ReferenceGenerator;
+use App\Services\SettingService;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): View
+    public function index(Request $request, InstallmentScheduleService $scheduleService): View
     {
-        $filters = $request->validate(['search' => ['nullable', 'string', 'max:100'], 'status' => ['nullable', 'in:prospect,active,settled,suspended,archived']]);
+        $scheduleService->syncOverdueStatuses();
+
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', 'string', 'in:prospect,active,settled,suspended,archived,overdue'],
+        ]);
         $search = trim((string) ($filters['search'] ?? ''));
 
-        $customers = Customer::query()
-            ->with('assignedAgent:id,first_name,last_name')
+        $query = Customer::query()
+            ->with(['assignedAgent:id,first_name,last_name', 'subscriptions.installments'])
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search): void {
                 $query->where('customer_number', 'like', "%{$search}%")
                     ->orWhere('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%");
-            }))
-            ->when(isset($filters['status']), fn ($query) => $query->where('status', $filters['status']))
-            ->latest()->paginate(20)->withQueryString();
+            }));
+
+        if (($filters['status'] ?? null) === 'overdue') {
+            $query->whereHas('subscriptions.installments', fn ($q) => $q->where('status', 'overdue'));
+        } elseif (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        $customers = $query->latest()->paginate(20)->withQueryString();
 
         return view('customers.index', compact('customers', 'filters'));
     }
@@ -43,36 +63,118 @@ class CustomerController extends Controller
      */
     public function create(): View
     {
-        return view('customers.create', ['agents' => $this->agents()]);
+        $today = now()->toDateString();
+
+        return view('customers.create', [
+            'agents' => $this->agents(),
+            'plots' => Plot::query()->where('commercial_status', 'available')->with('avenue.neighborhood')->orderBy('reference')->get(),
+            'paymentPlans' => PaymentPlan::query()->where('active', true)
+                ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $today))
+                ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $today))
+                ->orderBy('total_price')->get(),
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCustomerRequest $request, ReferenceGenerator $references): RedirectResponse
-    {
-        $customer = DB::transaction(function () use ($request, $references): Customer {
+    public function store(
+        StoreCustomerRequest $request,
+        ReferenceGenerator $references,
+        InstallmentScheduleService $scheduleService,
+        AuditService $auditService,
+        PaymentService $paymentService,
+        SettingService $settings,
+    ): RedirectResponse {
+        $customerFields = $request->safe()->only([
+            'first_name', 'last_name', 'middle_name', 'gender', 'birth_date',
+            'phone', 'secondary_phone', 'whatsapp', 'email', 'address',
+            'commune', 'city', 'country', 'nationality', 'internal_notes',
+            'status', 'assigned_to',
+        ]);
+
+        [$customer, $subscription] = DB::transaction(function () use (
+            $request, $references, $customerFields, $scheduleService, $auditService
+        ): array {
             $customer = Customer::query()->create([
-                ...$request->validated(),
+                ...$customerFields,
                 'customer_number' => $references->generate(Customer::class, 'customer_number', 'customer', 'CLI'),
                 'created_by' => $request->user()->id,
             ]);
             $this->audit($request, 'customer.created', $customer, null, $customer->getAttributes());
 
-            return $customer;
+            $subscription = null;
+
+            if ($request->filled('plot_id') && $request->filled('payment_plan_id')) {
+                $plot = Plot::query()->lockForUpdate()->findOrFail($request->integer('plot_id'));
+                $plan = PaymentPlan::query()->findOrFail($request->integer('payment_plan_id'));
+
+                abort_unless(in_array($plot->commercial_status, ['available', 'reserved'], true), 422, 'Cette parcelle n\'est plus disponible.');
+
+                $subscriptionDate = CarbonImmutable::parse($request->input('subscription_date') ?? now());
+                $startDate = CarbonImmutable::parse($request->input('start_date') ?? now());
+
+                $subscription = Subscription::query()->create([
+                    'customer_id' => $customer->id,
+                    'plot_id' => $plot->id,
+                    'payment_plan_id' => $plan->id,
+                    'subscription_number' => 'SUB-'.now()->format('Ymd').'-'.Str::upper(Str::random(8)),
+                    'subscription_date' => $subscriptionDate->toDateString(),
+                    'start_date' => $startDate->toDateString(),
+                    'expected_end_date' => $plan->duration_months > 0
+                        ? $startDate->addMonths($plan->duration_months)->toDateString()
+                        : $startDate->toDateString(),
+                    'contract_total' => $plan->total_price,
+                    'monthly_amount' => $plan->monthly_amount,
+                    'duration_months' => $plan->duration_months,
+                    'commercial_status' => 'pending',
+                    'created_by' => $request->user()->id,
+                ]);
+
+                $plot->update(['commercial_status' => 'reserved']);
+                $scheduleService->generate($subscription);
+                $auditService->record($request->user(), 'subscription.created', $subscription, null, $subscription->getAttributes(), $request);
+            }
+
+            return [$customer, $subscription];
         });
 
+        // Si une souscription a été créée avec un acompte, on l'enregistre hors transaction principale.
+        if ($subscription !== null && $request->filled('deposit') && (float) $request->input('deposit') > 0) {
+            $payment = $paymentService->record($subscription, $request->user(), [
+                'idempotency_key' => (string) Str::uuid(),
+                'payment_date' => now(),
+                'amount' => $request->input('deposit'),
+                'currency' => $settings->value('finance', 'currency', 'USD'),
+                'payment_method' => $request->input('deposit_method', 'cash'),
+                'notes' => 'Acompte initial à la souscription.',
+            ]);
+
+            return redirect()
+                ->route('payments.show', $payment)
+                ->with('status', __('Client et souscription créés. Voici le reçu de l\'acompte.'));
+        }
+
+        // Souscription sans acompte → formulaire de paiement pré-rempli.
+        if ($subscription !== null) {
+            return redirect()
+                ->route('payments.create', $subscription)
+                ->with('status', __('Client et souscription créés. Encaissez le premier paiement.'));
+        }
+
+        // Pas de souscription → fiche client.
         return redirect()->route('customers.show', $customer)->with('status', __('Client créé.'));
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Customer $customer): View
+    public function show(Customer $customer, InstallmentScheduleService $scheduleService): View
     {
+        $scheduleService->syncOverdueStatuses();
         $customer->load([
             'assignedAgent:id,first_name,last_name', 'documents',
-            'subscriptions' => fn ($query) => $query->with(['plot', 'paymentPlan'])->latest(),
+            'subscriptions' => fn ($query) => $query->with(['plot', 'paymentPlan', 'installments'])->latest(),
             'payments' => fn ($query) => $query->latest('payment_date'),
             'receipts' => fn ($query) => $query->latest('issued_at'),
         ]);

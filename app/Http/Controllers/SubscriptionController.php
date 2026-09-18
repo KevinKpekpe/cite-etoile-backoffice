@@ -19,9 +19,41 @@ use Illuminate\Support\Str;
 
 class SubscriptionController extends Controller
 {
-    public function index(): View
+    public function index(InstallmentScheduleService $scheduleService): View
     {
-        return view('subscriptions.index', ['subscriptions' => Subscription::query()->with(['customer', 'plot.avenue.neighborhood', 'paymentPlan'])->latest()->paginate(20)]);
+        $scheduleService->syncOverdueStatuses();
+
+        $statusFilter = request()->string('status', 'all')->toString();
+
+        $query = Subscription::query()->with([
+            'customer',
+            'plot.avenue.neighborhood',
+            'paymentPlan',
+            'installments' => fn ($q) => $q->orderBy('installment_number'),
+        ]);
+
+        if ($statusFilter === 'overdue') {
+            $query->whereHas('installments', fn ($q) => $q->where('status', 'overdue'));
+        } elseif ($statusFilter === 'active') {
+            $query->where('commercial_status', 'active')
+                ->whereDoesntHave('installments', fn ($q) => $q->where('status', 'overdue'));
+        } elseif ($statusFilter === 'paid') {
+            $query->where('financial_status', 'paid');
+        } elseif ($statusFilter === 'cancelled') {
+            $query->whereIn('commercial_status', ['cancelled', 'terminated']);
+        }
+
+        $subscriptions = $query->latest()->paginate(20)->withQueryString();
+
+        $counts = [
+            'all' => Subscription::query()->count(),
+            'overdue' => Subscription::query()->whereHas('installments', fn ($q) => $q->where('status', 'overdue'))->count(),
+            'active' => Subscription::query()->where('commercial_status', 'active')->whereDoesntHave('installments', fn ($q) => $q->where('status', 'overdue'))->count(),
+            'paid' => Subscription::query()->where('financial_status', 'paid')->count(),
+            'cancelled' => Subscription::query()->whereIn('commercial_status', ['cancelled', 'terminated'])->count(),
+        ];
+
+        return view('subscriptions.index', compact('subscriptions', 'statusFilter', 'counts'));
     }
 
     public function create(): View
@@ -98,6 +130,11 @@ class SubscriptionController extends Controller
     {
         $subscription->load(['customer', 'plot.avenue.neighborhood', 'paymentPlan', 'contract', 'installments', 'payments', 'receipts']);
 
-        return view('subscriptions.show', compact('subscription'));
+        $nextInstallment = $subscription->installments
+            ->whereIn('status', ['overdue', 'due', 'upcoming'])
+            ->sortBy('due_date')
+            ->first();
+
+        return view('subscriptions.show', compact('subscription', 'nextInstallment'));
     }
 }
