@@ -37,7 +37,11 @@ it('sends a Permissions-Policy restricting unused browser features', function ()
     $response->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
 });
 
-it('sends a restrictive Content-Security-Policy on HTML pages', function () {
+it('sends a restrictive Content-Security-Policy on HTML pages in production', function () {
+    // CSP is withheld in non-production environments to allow the Vite dev
+    // server (running on a different port) to load assets without being blocked.
+    config(['app.env' => 'production']);
+
     $response = $this->get(route('login'));
 
     $csp = $response->headers->get('Content-Security-Policy');
@@ -46,15 +50,21 @@ it('sends a restrictive Content-Security-Policy on HTML pages', function () {
         ->toContain("script-src 'self'")
         ->toContain("frame-ancestors 'none'")
         ->toContain("form-action 'self'")
-        ->toContain("base-uri 'self'");
+        ->toContain("base-uri 'self'")
+        ->toContain('fonts.bunny.net');
 });
 
-it('omits Content-Security-Policy on file download responses', function () {
+it('omits Content-Security-Policy outside of production and on file downloads', function () {
+    // Non-production: no CSP so that the Vite dev server is not blocked.
+    $response = $this->get(route('login'));
+    expect($response->headers->get('Content-Security-Policy'))->toBeNull();
+
+    // Production + file download: CSP is also omitted to not break streaming.
+    config(['app.env' => 'production']);
     $this->seed([RoleSeeder::class, PermissionSeeder::class]);
     $admin = User::factory()->create();
     $admin->roles()->attach(Role::query()->where('name', 'finance_manager')->firstOrFail());
 
-    // CSV export returns a streamed response with Content-Disposition attachment.
     $response = $this->actingAs($admin)->get(route('reports.export', 'customers'));
 
     $response->assertOk()->assertDownload();

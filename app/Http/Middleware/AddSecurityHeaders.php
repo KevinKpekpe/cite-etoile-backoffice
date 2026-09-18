@@ -11,25 +11,34 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Hardens the application against clickjacking, MIME-type sniffing,
  * information leakage, and cross-site scripting at the transport layer.
+ *
+ * The Content-Security-Policy is only applied in production because the
+ * Vite development server runs on a separate port (e.g. localhost:5173)
+ * which would be blocked by a strict 'self'-only policy.
  */
 class AddSecurityHeaders
 {
     /**
-     * Content-Security-Policy directives.
+     * Build the Content-Security-Policy directive string.
      *
-     * Restricts origins for each resource type. 'unsafe-inline' is allowed
-     * only for styles to support Blade-rendered class attributes.
-     * 'unsafe-eval' is intentionally excluded.
+     * - Fonts are loaded from Bunny Fonts (fonts.bunny.net), which is the
+     *   privacy-friendly CDN used by the laravel-vite-plugin fonts helper.
+     * - 'unsafe-inline' is allowed for styles only, to support Blade-rendered
+     *   class attributes and framework-injected style blocks.
+     * - 'unsafe-eval' is intentionally excluded.
      */
-    private const CSP = "default-src 'self'; "
-        ."script-src 'self'; "
-        ."style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-        ."font-src 'self' https://fonts.gstatic.com; "
-        ."img-src 'self' data:; "
-        ."connect-src 'self'; "
-        ."frame-ancestors 'none'; "
-        ."base-uri 'self'; "
-        ."form-action 'self';";
+    private function csp(): string
+    {
+        return "default-src 'self'; "
+            ."script-src 'self'; "
+            ."style-src 'self' 'unsafe-inline' https://fonts.bunny.net; "
+            ."font-src 'self' https://fonts.bunny.net data:; "
+            ."img-src 'self' data:; "
+            ."connect-src 'self'; "
+            ."frame-ancestors 'none'; "
+            ."base-uri 'self'; "
+            ."form-action 'self';";
+    }
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -50,10 +59,12 @@ class AddSecurityHeaders
             'camera=(), microphone=(), geolocation=(), payment=()',
         );
 
-        // Apply the Content-Security-Policy on non-download responses only.
-        // Streaming file downloads must not be constrained by CSP.
-        if (! $this->isFileDownload($response)) {
-            $response->headers->set('Content-Security-Policy', self::CSP);
+        // Apply CSP only in production.
+        // In local/staging environments the Vite dev server runs on a different
+        // port (e.g. localhost:5173) and would be blocked by a strict same-origin
+        // policy, breaking hot module replacement and asset loading.
+        if (config('app.env') === 'production' && ! $this->isFileDownload($response)) {
+            $response->headers->set('Content-Security-Policy', $this->csp());
         }
 
         return $response;
