@@ -216,7 +216,7 @@ class CustomerController extends Controller
         $customer->load([
             'assignedAgent:id,first_name,last_name', 'documents',
             'subscriptions' => fn ($query) => $query->with(['plot', 'paymentPlan', 'installments'])->latest(),
-            'payments' => fn ($query) => $query->latest('payment_date'),
+            'payments' => fn ($query) => $query->with('receipt')->latest('payment_date'),
             'receipts' => fn ($query) => $query->latest('issued_at'),
         ]);
 

@@ -166,15 +166,27 @@
 
     <div class="mt-5 grid gap-5 lg:grid-cols-2">
         <section class="rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
-            <h2 class="mb-4 font-bold text-slate-900">Paiements et reçus</h2>
+            <h2 class="mb-4 font-bold text-slate-900">Paiements et reçus (Factures)</h2>
             <ul class="divide-y divide-slate-100 text-sm">
                 @forelse($customer->payments as $payment)
-                    <li class="flex items-center justify-between py-3">
+                    <li class="flex flex-wrap items-center justify-between gap-3 py-3">
                         <div>
-                            <p class="font-mono font-semibold text-slate-900">{{ $payment->payment_reference }}</p>
-                            <p class="text-xs text-slate-500">{{ $payment->payment_date->format('d/m/Y') }} · {{ ucfirst($payment->payment_method) }}</p>
+                            <a href="{{ route('payments.show', $payment) }}" class="font-mono font-semibold text-amber-800 hover:underline">
+                                {{ $payment->payment_reference }}
+                            </a>
+                            <p class="text-xs text-slate-500">{{ $payment->payment_date->format('d/m/Y H:i') }} · {{ ucfirst($payment->payment_method) }}</p>
                         </div>
-                        <strong class="text-slate-900">{{ number_format((float) $payment->amount, 2) }} {{ $payment->currency }}</strong>
+                        <div class="flex items-center gap-3">
+                            <strong class="text-slate-900">{{ number_format((float) $payment->amount, 2) }} {{ $payment->currency }}</strong>
+                            @if($payment->receipt)
+                                @can('receipts.download')
+                                    <a href="{{ route('receipts.download', $payment->receipt) }}"
+                                       class="inline-flex items-center gap-1 rounded-xl bg-slate-950 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition">
+                                        📥 PDF Reçu
+                                    </a>
+                                @endcan
+                            @endif
+                        </div>
                     </li>
                 @empty
                     <li class="py-3 text-slate-500">Aucun paiement effectué.</li>

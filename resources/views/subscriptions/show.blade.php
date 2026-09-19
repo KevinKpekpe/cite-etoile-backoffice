@@ -172,6 +172,54 @@
     </section>
 </div>
 
+{{-- Historique des versements & Reçus (Factures PDF) --}}
+<section class="mt-6 rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
+    <h2 class="mb-4 font-bold text-slate-900">🧾 Historique des paiements & reçus (Factures PDF)</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-400">
+                <tr>
+                    <th class="p-3">Référence</th>
+                    <th class="p-3">Date</th>
+                    <th class="p-3">Mode</th>
+                    <th class="p-3">Montant</th>
+                    <th class="p-3 text-right">Facture / Reçu PDF</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @forelse($subscription->payments as $payment)
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 font-mono font-bold">
+                            <a href="{{ route('payments.show', $payment) }}" class="text-amber-800 hover:underline">
+                                {{ $payment->payment_reference }}
+                            </a>
+                        </td>
+                        <td class="p-3 text-slate-600">{{ $payment->payment_date->format('d/m/Y H:i') }}</td>
+                        <td class="p-3 text-slate-600">{{ ucfirst($payment->payment_method) }}</td>
+                        <td class="p-3 font-bold text-slate-900">{{ number_format((float) $payment->amount, 2) }} {{ $payment->currency }}</td>
+                        <td class="p-3 text-right">
+                            @if($payment->receipt)
+                                @can('receipts.download')
+                                    <a href="{{ route('receipts.download', $payment->receipt) }}"
+                                       class="inline-flex items-center gap-1.5 rounded-xl bg-slate-950 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition">
+                                        📥 Télécharger PDF ({{ $payment->receipt->receipt_number }})
+                                    </a>
+                                @endcan
+                            @else
+                                <span class="text-xs text-slate-400">Pas de reçu</span>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="p-4 text-center text-slate-500">Aucun versement enregistré sur cette souscription.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</section>
+
 {{-- Compteurs --}}
 <div class="mt-5 grid gap-5 md:grid-cols-3">
     @foreach([['Échéances', $subscription->installments->count()], ['Paiements', $subscription->payments->count()], ['Reçus', $subscription->receipts->count()]] as [$label, $count])

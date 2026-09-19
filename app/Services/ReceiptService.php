@@ -39,9 +39,9 @@ class ReceiptService
         $options = new Options;
         $options->set('isRemoteEnabled', false);
         $dompdf = new Dompdf($options);
-        $branding = ['company' => $this->settings->value('company', 'name', 'MJIC IMMOBILIER SARL'), 'project' => $this->settings->value('project', 'name', 'Cité Étoile du Monde'), 'currency' => $this->settings->value('finance', 'currency', 'USD')];
+        $branding = ['company' => $this->settings->value('company', 'name', 'MJIC IMMOBILIER SARL'), 'project' => $this->settings->value('project', 'name', 'Cité Étoile du Monde'), 'currency' => $this->settings->value('finance', 'currency', 'USD'), 'phone' => $this->settings->value('company', 'phone', '')];
         $dompdf->loadHtml(view('receipts.pdf', compact('receipt', 'verificationUrl', 'branding', 'nextInstallment'))->render());
-        $dompdf->setPaper('A4');
+        $dompdf->setPaper([0, 0, 226.77, 680], 'portrait');
         $dompdf->render();
         $path = "receipts/{$receipt->receipt_number}.pdf";
         Storage::disk('local')->put($path, $dompdf->output());

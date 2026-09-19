@@ -31,11 +31,17 @@ class PaymentController extends Controller
                     ->orWhereHas('contract', fn ($query) => $query->where('contract_number', 'like', "%{$search}%"));
             }))->latest()->paginate(20)->withQueryString();
 
+        $recentPayments = Payment::query()
+            ->with(['customer', 'subscription.plot', 'receipt'])
+            ->latest('payment_date')
+            ->take(30)
+            ->get();
+
         $overdueInstallments = Installment::query()->where('status', 'overdue')->get();
         $overdueCount = $overdueInstallments->count();
         $overdueTotal = (float) $overdueInstallments->sum('balance');
 
-        return view('payments.index', compact('subscriptions', 'search', 'overdueCount', 'overdueTotal'));
+        return view('payments.index', compact('subscriptions', 'recentPayments', 'search', 'overdueCount', 'overdueTotal'));
     }
 
     public function create(Subscription $subscription, SettingService $settings): View

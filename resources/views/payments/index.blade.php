@@ -120,4 +120,70 @@
     <div class="mt-5">
         {{ $subscriptions->links() }}
     </div>
+
+    {{-- Section Historique des reçus / factures téléchargeables --}}
+    <div class="mt-10">
+        <div class="mb-4 flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-slate-900">🧾 Historique des versements & Reçus PDF</h2>
+                <p class="text-sm text-slate-500">Téléchargez directement les reçus / factures de tous les versements déjà enregistrés.</p>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        <th class="py-3">Réf. Paiement</th>
+                        <th>Client</th>
+                        <th>Parcelle</th>
+                        <th>Date & Heure</th>
+                        <th>Mode</th>
+                        <th>Montant</th>
+                        <th class="text-right">Reçu / Facture PDF</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($recentPayments as $payment)
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-3 font-mono font-bold">
+                                <a href="{{ route('payments.show', $payment) }}" class="text-amber-800 hover:underline">
+                                    {{ $payment->payment_reference }}
+                                </a>
+                            </td>
+                            <td class="font-semibold text-slate-900">
+                                {{ $payment->customer->first_name }} {{ $payment->customer->last_name }}
+                            </td>
+                            <td>
+                                <span class="rounded bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+                                    {{ $payment->subscription->plot->reference }}
+                                </span>
+                            </td>
+                            <td class="text-slate-600">{{ $payment->payment_date->format('d/m/Y H:i') }}</td>
+                            <td class="text-slate-600">{{ ucfirst($payment->payment_method) }}</td>
+                            <td class="font-bold text-slate-900">{{ number_format((float) $payment->amount, 2) }} {{ $payment->currency }}</td>
+                            <td class="text-right">
+                                @if($payment->receipt)
+                                    @can('receipts.download')
+                                        <a href="{{ route('receipts.download', $payment->receipt) }}"
+                                           class="inline-flex items-center gap-1.5 rounded-xl bg-slate-950 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition">
+                                            📥 Télécharger PDF ({{ $payment->receipt->receipt_number }})
+                                        </a>
+                                    @endcan
+                                @else
+                                    <span class="text-xs text-slate-400">Pas de reçu</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="py-6 text-center text-slate-500">
+                                Aucun versement enregistré.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 </x-layouts.app>
