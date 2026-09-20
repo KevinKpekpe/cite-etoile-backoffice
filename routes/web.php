@@ -100,12 +100,16 @@ Route::middleware('auth')->group(function (): void {
 
         Route::middleware('can:users.manage')->group(function (): void {
             Route::get('/users', [UserController::class, 'index'])->name('users.index');
+            Route::get('/users/trashed', [UserController::class, 'trashed'])->middleware('can:users.delete')->name('users.trashed');
             Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
             Route::post('/users', [UserController::class, 'store'])->name('users.store');
-            Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+            Route::get('/users/{user}', [UserController::class, 'show'])->withTrashed()->name('users.show');
             Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
             Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
             Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+            Route::delete('/users/{user}', [UserController::class, 'destroy'])->middleware('can:users.delete')->name('users.destroy');
+            Route::post('/users/{user}/restore', [UserController::class, 'restore'])->middleware('can:users.delete')->withTrashed()->name('users.restore');
+            Route::delete('/users/{user}/force', [UserController::class, 'forceDelete'])->middleware('can:users.force_delete')->withTrashed()->name('users.force-delete');
         });
 
         Route::prefix('portal')->middleware('can:portal.view')->name('portal.')->group(function (): void {

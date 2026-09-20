@@ -8,6 +8,9 @@
     <label class="flex flex-col gap-2 text-sm font-medium">Rôle
         <select name="role_id" class="rounded-lg border border-slate-300 px-3 py-2.5">
             @foreach($roles as $role)
+                @if($role->name === 'super_admin' && ! auth()->user()?->hasRole('super_admin'))
+                    @continue
+                @endif
                 <option value="{{ $role->id }}" @selected((string) old('role_id', $user?->roles->where('name', '!=', 'customer')->first()?->id) === (string) $role->id)>
                     {{ ucfirst(str_replace('_', ' ', $role->name)) }} — {{ $role->description }}
                 </option>

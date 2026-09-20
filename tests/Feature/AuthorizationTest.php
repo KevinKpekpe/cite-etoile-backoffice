@@ -15,7 +15,7 @@ beforeEach(function () {
 
 it('assigns the explicit permission matrix to all seven roles', function () {
     expect(Role::query()->count())->toBe(7)
-        ->and(Role::query()->where('name', 'super_admin')->firstOrFail()->permissions()->count())->toBe(29)
+        ->and(Role::query()->where('name', 'super_admin')->firstOrFail()->permissions()->count())->toBe(31)
         ->and(Role::query()->where('name', 'cashier')->firstOrFail()->permissions()->where('name', 'payments.create')->exists())->toBeTrue()
         ->and(Role::query()->where('name', 'commercial')->firstOrFail()->permissions()->where('name', 'payments.create')->exists())->toBeFalse();
 });

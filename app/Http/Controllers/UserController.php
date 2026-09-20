@@ -183,6 +183,69 @@ class UserController extends Controller
     }
 
     /**
+     * Soft-delete a staff user (admin + super_admin only).
+     * Cannot delete oneself or a super_admin (unless caller is super_admin).
+     */
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        abort_if($user->id === $request->user()?->id, 403, 'Vous ne pouvez pas vous supprimer vous-même.');
+        abort_if($user->hasRole('super_admin') && ! $request->user()?->hasRole('super_admin'), 403);
+
+        DB::transaction(function () use ($request, $user): void {
+            $user->delete();
+            $this->audit($request, 'user.deleted', $user, $user->only(['first_name', 'last_name', 'email']), null);
+        });
+
+        return redirect()->route('users.index')->with('status', "{$user->first_name} {$user->last_name} a été supprimé.");
+    }
+
+    /**
+     * Restore a soft-deleted user (admin + super_admin only).
+     * Admin cannot restore a super_admin.
+     */
+    public function restore(Request $request, User $user): RedirectResponse
+    {
+        abort_if($user->hasRole('super_admin') && ! $request->user()?->hasRole('super_admin'), 403);
+
+        DB::transaction(function () use ($request, $user): void {
+            $user->restore();
+            $this->audit($request, 'user.restored', $user, null, $user->only(['first_name', 'last_name', 'email']));
+        });
+
+        return redirect()->route('users.show', $user)->with('status', 'Utilisateur restauré.');
+    }
+
+    /**
+     * Permanently delete a user (super_admin only).
+     */
+    public function forceDelete(Request $request, User $user): RedirectResponse
+    {
+        abort_if(! $request->user()?->hasRole('super_admin'), 403);
+        abort_if($user->id === $request->user()?->id, 403, 'Vous ne pouvez pas vous supprimer définitivement.');
+
+        DB::transaction(function () use ($request, $user): void {
+            $this->audit($request, 'user.force_deleted', $user, $user->only(['first_name', 'last_name', 'email']), null);
+            $user->forceDelete();
+        });
+
+        return redirect()->route('users.trashed')->with('status', 'Utilisateur supprimé définitivement.');
+    }
+
+    /**
+     * List soft-deleted users (corbeille).
+     */
+    public function trashed(Request $request): View
+    {
+        $users = User::onlyTrashed()
+            ->with('roles')
+            ->whereDoesntHave('roles', fn ($q) => $q->where('name', 'customer'))
+            ->latest('deleted_at')
+            ->paginate(20);
+
+        return view('users.trashed', compact('users'));
+    }
+
+    /**
      * @param  array<string, mixed>|null  $oldValues
      * @param  array<string, mixed>|null  $newValues
      */

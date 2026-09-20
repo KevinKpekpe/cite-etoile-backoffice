@@ -101,9 +101,9 @@ test('foreign keys preserve customers and cascade their documents deliberately',
         'uploaded_by' => $uploader->id,
     ]);
 
-    $portalUser->delete();
-    $creator->delete();
-    $uploader->delete();
+    $portalUser->forceDelete();
+    $creator->forceDelete();
+    $uploader->forceDelete();
 
     $this->assertDatabaseHas('customers', [
         'id' => $customerId,

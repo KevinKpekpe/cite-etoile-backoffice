@@ -1,7 +1,12 @@
 <x-layouts.app title="Utilisateurs">
 <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
     <div><h1 class="text-3xl font-bold">Utilisateurs</h1><p class="text-slate-600">Agents et administrateurs de la plateforme.</p></div>
-    @can('users.manage')<a href="{{ route('users.create') }}" class="rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white">Nouvel utilisateur</a>@endcan
+    <div class="flex gap-2">
+        @can('users.delete')
+            <a href="{{ route('users.trashed') }}" class="rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 transition">🗑 Corbeille</a>
+        @endcan
+        @can('users.manage')<a href="{{ route('users.create') }}" class="rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white">Nouvel utilisateur</a>@endcan
+    </div>
 </div>
 <form class="mb-6 grid gap-3 rounded-xl bg-white p-4 shadow-sm md:grid-cols-[1fr_200px_180px_auto]">
     <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom ou e-mail" class="rounded-lg border px-3 py-2">
