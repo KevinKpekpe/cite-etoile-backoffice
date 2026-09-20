@@ -29,7 +29,7 @@ test('reset link request shows error for unknown email', function () {
         'email' => 'nonexistent@example.com',
     ]);
 
-    $response->assertSessionHasErrors('email');
+    $response->assertSessionHasErrors(['email' => 'Votre adresse e-mail n\'existe pas dans le système.']);
 });
 
 test('password can be reset with valid token', function () {

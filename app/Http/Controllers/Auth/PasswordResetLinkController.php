@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -23,6 +24,12 @@ class PasswordResetLinkController extends Controller
         $request->merge(['email' => $email]);
 
         $request->validate(['email' => ['required', 'email']]);
+
+        if (! User::where('email', $email)->exists()) {
+            return back()
+                ->withInput(['email' => $email])
+                ->withErrors(['email' => __('Votre adresse e-mail n\'existe pas dans le système.')]);
+        }
 
         try {
             $status = Password::sendResetLink(['email' => $email]);

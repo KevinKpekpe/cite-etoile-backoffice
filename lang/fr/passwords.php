@@ -12,6 +12,6 @@ return [
     'sent' => 'Un lien de réinitialisation de mot de passe a été envoyé à votre adresse e-mail.',
     'throttled' => 'Veuillez patienter avant de demander un nouveau lien.',
     'token' => 'Ce jeton de réinitialisation de mot de passe n\'est pas valide ou a expiré.',
-    'user' => 'Aucun utilisateur n\'a été trouvé avec cette adresse e-mail.',
+    'user' => 'Votre adresse e-mail n\'existe pas dans le système.',
 
 ];
