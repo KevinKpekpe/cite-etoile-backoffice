@@ -1,18 +1,15 @@
 <x-layouts.guest title="Mot de passe oublié">
-    <p class="mb-5 text-sm text-slate-600">Saisissez votre adresse e-mail pour recevoir un lien sécurisé.</p>
-
-    {{-- Message de succès --}}
+    {{-- Message unique : succès, erreur, ou instruction --}}
     @if(session('status'))
         <div class="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm font-medium text-emerald-800">
             ✅ {{ session('status') }}
         </div>
-    @endif
-
-    {{-- Erreurs (throttle, etc.) --}}
-    @if($errors->has('email'))
+    @elseif($errors->has('email'))
         <div class="mb-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
             ⚠️ {{ $errors->first('email') }}
         </div>
+    @else
+        <p class="mb-5 text-sm text-slate-600">Saisissez votre adresse e-mail pour recevoir un lien sécurisé.</p>
     @endif
 
     <form method="POST" action="{{ route('password.email') }}" class="flex flex-col gap-5">
