@@ -46,10 +46,45 @@ class PaymentPlanController extends Controller
 
     public function destroy(Request $request, PaymentPlan $paymentPlan): RedirectResponse
     {
-        $paymentPlan->update(['active' => false]);
-        $this->audit($request, 'payment_plan.disabled', $paymentPlan, ['active' => true], ['active' => false]);
+        abort_unless($request->user()?->can('payment_plans.manage'), 403);
 
-        return redirect()->route('payment-plans.index')->with('status', __('Formule désactivée.'));
+        $paymentPlan->delete();
+        $this->audit($request, 'payment_plan.deleted', $paymentPlan, $paymentPlan->only(['code', 'name']), null);
+
+        return redirect()->route('payment-plans.index')->with('status', __('Formule placée en corbeille.'));
+    }
+
+    public function trashed(Request $request): View
+    {
+        abort_unless($request->user()?->can('payment_plans.manage'), 403);
+
+        $paymentPlans = PaymentPlan::onlyTrashed()
+            ->withCount('subscriptions')
+            ->latest('deleted_at')
+            ->get();
+
+        return view('payment-plans.trashed', compact('paymentPlans'));
+    }
+
+    public function restore(Request $request, PaymentPlan $paymentPlan): RedirectResponse
+    {
+        abort_unless($request->user()?->can('payment_plans.restore'), 403);
+
+        $paymentPlan->restore();
+        $this->audit($request, 'payment_plan.restored', $paymentPlan, null, $paymentPlan->only(['code', 'name']));
+
+        return redirect()->route('payment-plans.index')->with('status', __('Formule restaurée avec succès.'));
+    }
+
+    public function forceDelete(Request $request, PaymentPlan $paymentPlan): RedirectResponse
+    {
+        abort_unless($request->user()?->can('payment_plans.force_delete'), 403);
+        abort_if($paymentPlan->subscriptions()->exists(), 409, __('Cette formule possède des souscriptions associées et ne peut pas être supprimée définitivement.'));
+
+        $this->audit($request, 'payment_plan.force_deleted', $paymentPlan, $paymentPlan->only(['code', 'name']), null);
+        $paymentPlan->forceDelete();
+
+        return redirect()->route('payment-plans.trashed')->with('status', __('Formule supprimée définitivement.'));
     }
 
     /**

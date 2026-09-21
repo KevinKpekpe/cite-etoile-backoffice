@@ -35,6 +35,38 @@
         </div>
     @endif
 
+    @if($customer->trashed())
+        <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-red-900 shadow-sm flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">🗑</span>
+                <div>
+                    <h3 class="font-bold text-lg text-red-800">Client supprimé (Corbeille)</h3>
+                    <p class="text-sm text-red-700">Supprimé le {{ $customer->deleted_at->format('d/m/Y à H:i') }}. Ce client peut être restauré ou supprimé définitivement.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                @can('customers.restore')
+                    <form method="POST" action="{{ route('customers.restore', $customer) }}">
+                        @csrf
+                        <button class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition shadow-sm">
+                            ♻ Restaurer le client
+                        </button>
+                    </form>
+                @endcan
+                @can('customers.force_delete')
+                    <form method="POST" action="{{ route('customers.force-delete', $customer) }}"
+                          onsubmit="return confirm('SUPPRESSION DÉFINITIVE de {{ $customer->first_name }} {{ $customer->last_name }}. Irréversible !')">
+                        @csrf
+                        @method('DELETE')
+                        <button class="rounded-xl bg-red-800 px-4 py-2 text-sm font-semibold text-white hover:bg-red-900 transition shadow-sm">
+                            ☠ Supprimer définitivement
+                        </button>
+                    </form>
+                @endcan
+            </div>
+        </div>
+    @endif
+
     <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
             <p class="font-mono text-sm text-amber-700 font-bold">{{ $customer->customer_number }}</p>
@@ -42,21 +74,28 @@
             <p class="text-slate-600">{{ $customer->phone }} · {{ $customer->email ?: 'Sans e-mail' }}</p>
         </div>
         <div class="flex flex-wrap gap-2">
-            @can('customers.update')
-                <a href="{{ route('customers.edit', $customer) }}" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition">Modifier</a>
-            @endcan
-            @can('subscriptions.create')
-                <a href="{{ route('subscriptions.create', ['customer_id' => $customer->id]) }}" class="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 transition shadow-sm">Réserver une parcelle</a>
-            @endcan
-            @can('customers.delete')
-                @if($customer->status !== 'archived')
-                    <form method="POST" action="{{ route('customers.archive', $customer) }}">
+            @if(! $customer->trashed())
+                @can('customers.update')
+                    <a href="{{ route('customers.edit', $customer) }}" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition">Modifier</a>
+                @endcan
+                @can('subscriptions.create')
+                    <a href="{{ route('subscriptions.create', ['customer_id' => $customer->id]) }}" class="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 transition shadow-sm">Réserver une parcelle</a>
+                @endcan
+                @can('customers.delete')
+                    <form method="POST" action="{{ route('customers.destroy', $customer) }}" onsubmit="return confirm('Placer ce client en corbeille ?')">
                         @csrf
-                        @method('PATCH')
-                        <button class="rounded-xl bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800 transition">Archiver</button>
+                        @method('DELETE')
+                        <button class="rounded-xl bg-red-100 text-red-800 border border-red-200 px-4 py-2 text-sm font-semibold hover:bg-red-200 transition">🗑 Placer en corbeille</button>
                     </form>
-                @endif
-            @endcan
+                    @if($customer->status !== 'archived')
+                        <form method="POST" action="{{ route('customers.archive', $customer) }}">
+                            @csrf
+                            @method('PATCH')
+                            <button class="rounded-xl bg-slate-700 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition">Archiver</button>
+                        </form>
+                    @endif
+                @endcan
+            @endif
         </div>
     </div>
 

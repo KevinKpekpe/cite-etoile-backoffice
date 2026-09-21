@@ -64,12 +64,47 @@ class PlotController extends Controller
         return redirect()->route('plots.show', $plot)->with('status', __('Parcelle mise à jour.'));
     }
 
-    public function destroy(Plot $plot): RedirectResponse
+    public function destroy(Request $request, Plot $plot): RedirectResponse
     {
-        abort_if($plot->subscriptions()->exists(), 409, __('Cette parcelle possède un historique de souscriptions.'));
-        $plot->delete();
+        abort_unless($request->user()?->can('plots.manage'), 403);
 
-        return redirect()->route('plots.index')->with('status', __('Parcelle supprimée.'));
+        $plot->delete();
+        $this->audit($request, 'plot.deleted', $plot, $plot->only(['reference', 'plot_number']), null);
+
+        return redirect()->route('plots.index')->with('status', __('Parcelle placée en corbeille.'));
+    }
+
+    public function trashed(Request $request): View
+    {
+        abort_unless($request->user()?->can('plots.manage'), 403);
+
+        $plots = Plot::onlyTrashed()
+            ->with('avenue.neighborhood')
+            ->latest('deleted_at')
+            ->paginate(24);
+
+        return view('land.plots.trashed', compact('plots'));
+    }
+
+    public function restore(Request $request, Plot $plot): RedirectResponse
+    {
+        abort_unless($request->user()?->can('plots.restore'), 403);
+
+        $plot->restore();
+        $this->audit($request, 'plot.restored', $plot, null, $plot->only(['reference', 'plot_number']));
+
+        return redirect()->route('plots.show', $plot)->with('status', __('Parcelle restaurée avec succès.'));
+    }
+
+    public function forceDelete(Request $request, Plot $plot): RedirectResponse
+    {
+        abort_unless($request->user()?->can('plots.force_delete'), 403);
+        abort_if($plot->subscriptions()->exists(), 409, __('Cette parcelle possède un historique de souscriptions et ne peut pas être supprimée définitivement.'));
+
+        $this->audit($request, 'plot.force_deleted', $plot, $plot->only(['reference', 'plot_number']), null);
+        $plot->forceDelete();
+
+        return redirect()->route('plots.trashed')->with('status', __('Parcelle supprimée définitivement.'));
     }
 
     private function form(Plot $plot): View

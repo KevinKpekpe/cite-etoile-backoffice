@@ -4,11 +4,18 @@
             <h1 class="text-3xl font-bold">Clients</h1>
             <p class="text-sm text-slate-500">Recherche, dossiers souscripteurs et suivi des paiements.</p>
         </div>
-        @can('customers.create')
-            <a href="{{ route('customers.create') }}" class="rounded-xl bg-amber-600 px-4 py-2.5 font-semibold text-white transition hover:bg-amber-700 shadow-sm">
-                + Nouveau client
-            </a>
-        @endcan
+        <div class="flex items-center gap-3">
+            @can('customers.delete')
+                <a href="{{ route('customers.trashed') }}" class="rounded-xl border bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm">
+                    🗑 Corbeille
+                </a>
+            @endcan
+            @can('customers.create')
+                <a href="{{ route('customers.create') }}" class="rounded-xl bg-amber-600 px-4 py-2.5 font-semibold text-white transition hover:bg-amber-700 shadow-sm">
+                    + Nouveau client
+                </a>
+            @endcan
+        </div>
     </div>
 
     <form class="mb-6 grid gap-3 rounded-2xl bg-white p-4 shadow-sm border border-slate-100 md:grid-cols-[1fr_240px_auto]">

@@ -246,7 +246,67 @@ class CustomerController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Soft-delete a customer.
+     */
+    public function destroy(Request $request, Customer $customer): RedirectResponse
+    {
+        abort_unless($request->user()?->can('customers.delete'), 403);
+
+        DB::transaction(function () use ($request, $customer): void {
+            $customer->delete();
+            $this->audit($request, 'customer.deleted', $customer, $customer->only(['first_name', 'last_name', 'customer_number', 'email']), null);
+        });
+
+        return redirect()->route('customers.index')->with('status', "{$customer->first_name} {$customer->last_name} a été placé en corbeille.");
+    }
+
+    /**
+     * List soft-deleted customers (corbeille).
+     */
+    public function trashed(Request $request): View
+    {
+        abort_unless($request->user()?->can('customers.delete'), 403);
+
+        $customers = Customer::onlyTrashed()
+            ->with(['assignedAgent:id,first_name,last_name'])
+            ->latest('deleted_at')
+            ->paginate(20);
+
+        return view('customers.trashed', compact('customers'));
+    }
+
+    /**
+     * Restore a soft-deleted customer.
+     */
+    public function restore(Request $request, Customer $customer): RedirectResponse
+    {
+        abort_unless($request->user()?->can('customers.restore'), 403);
+
+        DB::transaction(function () use ($request, $customer): void {
+            $customer->restore();
+            $this->audit($request, 'customer.restored', $customer, null, $customer->only(['first_name', 'last_name', 'customer_number', 'email']));
+        });
+
+        return redirect()->route('customers.show', $customer)->with('status', __('Client restauré avec succès.'));
+    }
+
+    /**
+     * Permanently delete a customer (super_admin only).
+     */
+    public function forceDelete(Request $request, Customer $customer): RedirectResponse
+    {
+        abort_unless($request->user()?->can('customers.force_delete'), 403);
+
+        DB::transaction(function () use ($request, $customer): void {
+            $this->audit($request, 'customer.force_deleted', $customer, $customer->only(['first_name', 'last_name', 'customer_number', 'email']), null);
+            $customer->forceDelete();
+        });
+
+        return redirect()->route('customers.trashed')->with('status', __('Client supprimé définitivement.'));
+    }
+
+    /**
+     * Archive a customer.
      */
     public function archive(Request $request, Customer $customer): RedirectResponse
     {
