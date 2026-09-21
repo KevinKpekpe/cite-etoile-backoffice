@@ -1,7 +1,161 @@
 <x-layouts.app title="Tableau de bord">
-    <div class="mb-6 flex flex-wrap items-end justify-between gap-4"><div><h1 class="text-3xl font-bold">Tableau de bord</h1><p class="text-slate-600">Situation commerciale et financière en temps réel.</p></div><form><select name="period" onchange="this.form.submit()" class="rounded-lg border bg-white px-4 py-2">@foreach(['day'=>'Aujourd’hui','week'=>'7 jours','month'=>'Ce mois','year'=>'Cette année'] as $value=>$label)<option value="{{ $value }}" @selected($period===$value)>{{ $label }}</option>@endforeach</select></form></div>
-    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">@foreach([['Clients',$clients['total'],$clients['active'].' actifs'],['Parcelles',array_sum($plots),($plots['available']??0).' disponibles'],['Contractuel',number_format($finances['contractual'],2).' USD','Portefeuille'],['Encaissé',number_format($finances['collected'],2).' USD',number_format($finances['remaining'],2).' USD restant']] as [$label,$value,$caption])<article class="rounded-xl bg-white p-5 shadow-sm"><p class="text-sm text-slate-500">{{ $label }}</p><p class="mt-2 text-2xl font-bold">{{ $value }}</p><p class="mt-1 text-xs text-slate-500">{{ $caption }}</p></article>@endforeach</section>
-    <div class="mt-5 grid gap-5 xl:grid-cols-3"><section class="rounded-xl bg-white p-5 shadow-sm xl:col-span-2"><div class="flex justify-between"><h2 class="font-bold">Encaissements</h2><span class="text-sm text-slate-500">{{ number_format($finances['month'],2) }} USD ce mois</span></div>@php($maxPayment=max(1,(float)$payment_chart->max('total')))<div class="mt-6 flex h-56 items-end gap-2 overflow-x-auto border-b border-l p-3">@forelse($payment_chart as $point)<div class="flex min-w-12 flex-1 flex-col items-center justify-end gap-2"><span class="text-xs font-semibold">{{ number_format((float)$point->total,0) }}</span><div class="w-full rounded-t bg-amber-500" style="height: {{ max(4,((float)$point->total/$maxPayment)*160) }}px"></div><span class="text-[10px] text-slate-500">{{ $point->label }}</span></div>@empty<p class="m-auto text-slate-500">Aucun encaissement sur cette période.</p>@endforelse</div></section><section class="rounded-xl bg-white p-5 shadow-sm"><h2 class="font-bold">Formules choisies</h2><div class="mt-4 grid gap-3">@forelse($plan_distribution as $item)<div><div class="flex justify-between text-sm"><span>{{ $item->name }}</span><strong>{{ $item->total }}</strong></div><div class="mt-1 h-2 rounded bg-slate-100"><div class="h-2 rounded bg-slate-900" style="width: {{ min(100,(int)$item->total*10) }}%"></div></div></div>@empty<p class="text-sm text-slate-500">Aucune souscription.</p>@endforelse</div></section></div>
-    <section class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">@foreach([['Nouveaux clients',$clients['new_month']],['Clients soldés',$clients['settled']],['Échéances partielles',$installments['partial']],['Échéances en retard',$installments['overdue']]] as [$label,$value])<div class="rounded-xl bg-slate-900 p-4 text-white"><p class="text-sm text-slate-300">{{ $label }}</p><strong class="text-2xl">{{ $value }}</strong></div>@endforeach</section>
-    @can('reports.view')<div class="mt-5 grid gap-5 lg:grid-cols-2"><section class="rounded-xl bg-white p-5 shadow-sm"><h2 class="mb-4 font-bold text-red-700">Échéances en retard</h2>@forelse($overdue_installments as $item)<a href="{{ route('subscriptions.installments.index',$item->subscription) }}" class="flex justify-between border-b py-3 text-sm"><span>{{ $item->subscription->customer->first_name }} {{ $item->subscription->customer->last_name }}</span><strong>{{ $item->balance }} USD</strong></a>@empty<p class="text-sm text-slate-500">Aucun retard.</p>@endforelse</section><section class="rounded-xl bg-white p-5 shadow-sm"><h2 class="mb-4 font-bold">Échéances dans les 7 jours</h2>@forelse($due_soon as $item)<a href="{{ route('subscriptions.installments.index',$item->subscription) }}" class="flex justify-between border-b py-3 text-sm"><span>{{ $item->subscription->customer->first_name }} · {{ $item->due_date->format('d/m') }}</span><strong>{{ $item->balance }} USD</strong></a>@empty<p class="text-sm text-slate-500">Aucune échéance proche.</p>@endforelse</section></div>@endcan
+    @php
+        $periodLabels = [
+            'day' => 'Aujourd’hui',
+            'week' => '7 derniers jours',
+            'month' => 'Ce mois',
+            'year' => 'Cette année',
+        ];
+        $maxPayment = max(1, (float) $payment_chart->max('total'));
+        $maxPlanTotal = max(1, (int) $plan_distribution->max('total'));
+        $totalPlots = array_sum($plots);
+        $availablePlots = $plots['available'] ?? 0;
+        $contractual = (float) $finances['contractual'];
+        $collected = (float) $finances['collected'];
+        $collectionRate = $contractual > 0 ? min(100, ($collected / $contractual) * 100) : 0;
+    @endphp
+
+    <div class="dashboard-page">
+        <div class="dashboard-heading">
+            <div>
+                <p class="app-kicker">Vue d’ensemble</p>
+                <h1 class="dashboard-heading__title">Pilotage de l’activité</h1>
+                <p class="dashboard-heading__description">Situation commerciale, foncière et financière consolidée.</p>
+            </div>
+
+            <form method="GET" action="{{ route('dashboard') }}" class="dashboard-period">
+                <label for="dashboard-period" class="dashboard-period__label">Période analysée</label>
+                <select id="dashboard-period" name="period" class="form-select dashboard-period__select" data-auto-submit>
+                    @foreach($periodLabels as $value => $label)
+                        <option value="{{ $value }}" @selected($period === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </form>
+        </div>
+
+        <section class="row g-3 g-xl-4" aria-label="Indicateurs principaux">
+            <div class="col-sm-6 col-xl-3">
+                <article class="dashboard-stat dashboard-stat--primary">
+                    <div class="dashboard-stat__header"><span>Portefeuille clients</span><span class="dashboard-stat__index">01</span></div>
+                    <p class="dashboard-stat__value">{{ number_format($clients['total'], 0, ',', ' ') }}</p>
+                    <p class="dashboard-stat__caption"><strong>{{ number_format($clients['active'], 0, ',', ' ') }}</strong> clients actifs</p>
+                </article>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <article class="dashboard-stat dashboard-stat--land">
+                    <div class="dashboard-stat__header"><span>Parcelles</span><span class="dashboard-stat__index">02</span></div>
+                    <p class="dashboard-stat__value">{{ number_format($totalPlots, 0, ',', ' ') }}</p>
+                    <p class="dashboard-stat__caption"><strong>{{ number_format($availablePlots, 0, ',', ' ') }}</strong> disponibles à la vente</p>
+                </article>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <article class="dashboard-stat dashboard-stat--finance">
+                    <div class="dashboard-stat__header"><span>Valeur contractuelle</span><span class="dashboard-stat__index">03</span></div>
+                    <p class="dashboard-stat__value dashboard-stat__value--money">{{ number_format($contractual, 2, ',', ' ') }} <small>USD</small></p>
+                    <p class="dashboard-stat__caption">Portefeuille souscrit</p>
+                </article>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <article class="dashboard-stat dashboard-stat--collected">
+                    <div class="dashboard-stat__header"><span>Total encaissé</span><span class="dashboard-stat__index">04</span></div>
+                    <p class="dashboard-stat__value dashboard-stat__value--money">{{ number_format($collected, 2, ',', ' ') }} <small>USD</small></p>
+                    <div class="dashboard-stat__progress" role="progressbar" aria-label="Taux d’encaissement" aria-valuenow="{{ round($collectionRate) }}" aria-valuemin="0" aria-valuemax="100">
+                        <span style="width: {{ $collectionRate }}%"></span>
+                    </div>
+                    <p class="dashboard-stat__caption">{{ number_format($finances['remaining'], 2, ',', ' ') }} USD restant</p>
+                </article>
+            </div>
+        </section>
+
+        <div class="row g-4">
+            <div class="col-xl-8">
+                <section class="dashboard-panel dashboard-panel--chart">
+                    <div class="dashboard-panel__header">
+                        <div><p class="dashboard-panel__eyebrow">Flux financiers</p><h2>Encaissements</h2></div>
+                        <div class="dashboard-panel__metric"><strong>{{ number_format($finances['month'], 2, ',', ' ') }} USD</strong><span>encaissé ce mois</span></div>
+                    </div>
+
+                    <div class="payment-chart" aria-label="Graphique des encaissements pour la période sélectionnée">
+                        @forelse($payment_chart as $point)
+                            <div class="payment-chart__column">
+                                <span class="payment-chart__amount">{{ number_format((float) $point->total, 0, ',', ' ') }}</span>
+                                <div class="payment-chart__track">
+                                    <span class="payment-chart__bar" style="height: {{ max(3, ((float) $point->total / $maxPayment) * 100) }}%"></span>
+                                </div>
+                                <span class="payment-chart__label">{{ $point->label }}</span>
+                            </div>
+                        @empty
+                            <div class="dashboard-empty"><strong>Aucun encaissement</strong><span>Aucun paiement validé sur cette période.</span></div>
+                        @endforelse
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-xl-4">
+                <section class="dashboard-panel h-100">
+                    <div class="dashboard-panel__header">
+                        <div><p class="dashboard-panel__eyebrow">Répartition</p><h2>Formules choisies</h2></div>
+                    </div>
+                    <div class="plan-list">
+                        @forelse($plan_distribution as $item)
+                            <div class="plan-list__item">
+                                <div class="plan-list__header"><span>{{ $item->name }}</span><strong>{{ number_format($item->total, 0, ',', ' ') }}</strong></div>
+                                <div class="plan-list__track"><span style="width: {{ ((int) $item->total / $maxPlanTotal) * 100 }}%"></span></div>
+                            </div>
+                        @empty
+                            <div class="dashboard-empty"><strong>Aucune souscription</strong><span>La répartition apparaîtra dès la première souscription.</span></div>
+                        @endforelse
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <section class="dashboard-summary" aria-label="Indicateurs opérationnels">
+            <div class="dashboard-summary__item"><span>Nouveaux clients</span><strong>{{ number_format($clients['new_month'], 0, ',', ' ') }}</strong><small>ce mois</small></div>
+            <div class="dashboard-summary__item"><span>Clients soldés</span><strong>{{ number_format($clients['settled'], 0, ',', ' ') }}</strong><small>dossiers finalisés</small></div>
+            <div class="dashboard-summary__item"><span>Échéances partielles</span><strong>{{ number_format($installments['partial'], 0, ',', ' ') }}</strong><small>à compléter</small></div>
+            <div class="dashboard-summary__item dashboard-summary__item--danger"><span>Échéances en retard</span><strong>{{ number_format($installments['overdue'], 0, ',', ' ') }}</strong><small>à régulariser</small></div>
+        </section>
+
+        @can('reports.view')
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <section class="dashboard-panel h-100">
+                        <div class="dashboard-panel__header dashboard-panel__header--bordered">
+                            <div><p class="dashboard-panel__eyebrow dashboard-panel__eyebrow--danger">Attention requise</p><h2>Échéances en retard</h2></div>
+                            <span class="dashboard-count dashboard-count--danger">{{ $overdue_installments->count() }}</span>
+                        </div>
+                        <div class="dashboard-list">
+                            @forelse($overdue_installments as $item)
+                                <a href="{{ route('subscriptions.installments.index', $item->subscription) }}" class="dashboard-list__item">
+                                    <span><strong>{{ $item->subscription->customer->first_name }} {{ $item->subscription->customer->last_name }}</strong><small>{{ $item->subscription->subscription_number }}</small></span>
+                                    <span class="dashboard-list__amount dashboard-list__amount--danger">{{ number_format((float) $item->balance, 2, ',', ' ') }} USD</span>
+                                </a>
+                            @empty
+                                <div class="dashboard-empty"><strong>Aucun retard</strong><span>Toutes les échéances suivies sont à jour.</span></div>
+                            @endforelse
+                        </div>
+                    </section>
+                </div>
+                <div class="col-lg-6">
+                    <section class="dashboard-panel h-100">
+                        <div class="dashboard-panel__header dashboard-panel__header--bordered">
+                            <div><p class="dashboard-panel__eyebrow">Prochains jours</p><h2>Échéances à venir</h2></div>
+                            <span class="dashboard-count">{{ $due_soon->count() }}</span>
+                        </div>
+                        <div class="dashboard-list">
+                            @forelse($due_soon as $item)
+                                <a href="{{ route('subscriptions.installments.index', $item->subscription) }}" class="dashboard-list__item">
+                                    <span><strong>{{ $item->subscription->customer->first_name }} {{ $item->subscription->customer->last_name }}</strong><small>Prévue le {{ $item->due_date->format('d/m/Y') }}</small></span>
+                                    <span class="dashboard-list__amount">{{ number_format((float) $item->balance, 2, ',', ' ') }} USD</span>
+                                </a>
+                            @empty
+                                <div class="dashboard-empty"><strong>Aucune échéance proche</strong><span>Aucun règlement attendu dans les sept prochains jours.</span></div>
+                            @endforelse
+                        </div>
+                    </section>
+                </div>
+            </div>
+        @endcan
+    </div>
 </x-layouts.app>
