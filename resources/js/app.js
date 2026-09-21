@@ -81,3 +81,11 @@ document.querySelectorAll('[data-plan-select]').forEach((select) => {
     select.addEventListener('change', updatePlanSummary);
     updatePlanSummary();
 });
+
+document.querySelectorAll('form[data-confirm]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        if (!window.confirm(form.dataset.confirm)) {
+            event.preventDefault();
+        }
+    });
+});
