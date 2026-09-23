@@ -29,7 +29,7 @@ class PaymentController extends Controller
                     ->orWhereHas('customer', fn ($query) => $query->where('customer_number', 'like', "%{$search}%")->orWhere('first_name', 'like', "%{$search}%")->orWhere('last_name', 'like', "%{$search}%")->orWhere('phone', 'like', "%{$search}%"))
                     ->orWhereHas('plot', fn ($query) => $query->where('reference', 'like', "%{$search}%"))
                     ->orWhereHas('contract', fn ($query) => $query->where('contract_number', 'like', "%{$search}%"));
-            }))->latest()->paginate(20)->withQueryString();
+            }))->latest()->paginate(10)->withQueryString();
 
         $recentPayments = Payment::query()
             ->with(['customer', 'subscription.plot', 'receipt'])

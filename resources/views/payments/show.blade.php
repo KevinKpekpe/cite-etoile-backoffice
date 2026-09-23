@@ -12,7 +12,7 @@
         @if($payment->receipt)
         <a href="{{ route('receipts.show', $payment->receipt) }}"
            class="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white">
-            🧾 Voir / Télécharger le reçu
+            <i class="bi bi-receipt me-1"></i> Voir / Télécharger le reçu
         </a>
         @endif
         <a href="{{ route('subscriptions.show', $payment->subscription) }}"
@@ -27,7 +27,7 @@
 <div class="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-5">
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
-            <p class="font-bold text-blue-900">📅 Prochain paiement à prévoir</p>
+            <p class="font-bold text-blue-900"><i class="bi bi-calendar-event me-1"></i> Prochain paiement à prévoir</p>
             <div class="mt-2 grid gap-1 text-sm text-blue-800">
                 <p>Date d'échéance : <strong>{{ \Carbon\Carbon::parse($nextInstallment->due_date)->translatedFormat('d F Y') }}</strong></p>
                 <p>Montant minimum : <strong>{{ $nextInstallment->amount_due }} USD</strong></p>
@@ -44,7 +44,7 @@
 </div>
 @elseif($payment->subscription->financial_status === 'paid' || $payment->subscription->commercial_status === 'completed')
 <div class="mb-6 rounded-xl border border-emerald-300 bg-emerald-50 p-5">
-    <p class="font-bold text-emerald-900">✅ Souscription soldée — tous les paiements ont été reçus.</p>
+    <p class="font-bold text-emerald-900"><i class="bi bi-check-circle-fill me-1"></i> Souscription soldée — tous les paiements ont été reçus.</p>
 </div>
 @endif
 

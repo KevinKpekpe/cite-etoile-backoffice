@@ -19,7 +19,22 @@
                                 <td><span class="status-badge status-badge--{{ $item->status }}">{{ $statusLabels[$item->status] ?? ucfirst($item->status) }}</span></td>
                                 <td class="record-money text-end">{{ number_format($item->avenues_count, 0, ',', ' ') }}</td>
                                 <td class="record-money text-end">{{ number_format($item->plots_count, 0, ',', ' ') }}</td>
-                                <td class="text-end"><a href="{{ route('neighborhoods.edit', $item) }}" class="resource-row-action">Modifier</a></td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2 align-items-center justify-content-end">
+                                        @can('plots.manage')
+                                            <a href="{{ route('neighborhoods.edit', $item) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Modifier le quartier">
+                                                Modifier
+                                            </a>
+                                            <form method="POST" action="{{ route('neighborhoods.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce quartier ?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer le quartier">
+                                                    Supprimer
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr><td colspan="6"><div class="resource-empty"><strong>Aucun quartier</strong><span>Créez le premier quartier pour structurer le lotissement.</span></div></td></tr>

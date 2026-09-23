@@ -1,22 +1,20 @@
 <x-layouts.guest title="Mot de passe oublié">
-    {{-- Message unique : succès, erreur, ou instruction --}}
     @if(session('status'))
-        <div class="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm font-medium text-emerald-800">
+        <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 p-3 text-sm">
             ✅ {{ session('status') }}
         </div>
     @elseif($errors->has('email'))
-        <div class="mb-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+        <div class="alert alert-warning border-0 shadow-sm rounded-3 mb-4 p-3 text-sm">
             ⚠️ {{ $errors->first('email') }}
         </div>
     @else
-        <p class="mb-5 text-sm text-slate-600">Saisissez votre adresse e-mail pour recevoir un lien sécurisé.</p>
+        <p class="text-secondary small mb-4 text-center">Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation sécurisé.</p>
     @endif
 
-    <form method="POST" action="{{ route('password.email') }}" class="flex flex-col gap-5">
+    <form method="POST" action="{{ route('password.email') }}" class="d-flex flex-column gap-3">
         @csrf
-        {{-- On passe "without-error" pour éviter que x-auth-input affiche aussi l'erreur --}}
-        <div class="flex flex-col gap-2">
-            <label for="email-reset" class="text-sm font-medium text-slate-700">Adresse e-mail</label>
+        <div class="form-field">
+            <label for="email-reset" class="form-field__label">Adresse e-mail <span class="text-danger font-bold">*</span></label>
             <input
                 id="email-reset"
                 name="email"
@@ -25,12 +23,15 @@
                 autocomplete="email"
                 required
                 autofocus
-                class="rounded-lg border border-slate-300 px-3 py-2.5 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200 @error('email') border-red-400 @enderror"
+                class="form-control @error('email') is-invalid @enderror"
+                placeholder="votre.email@exemple.com"
             >
         </div>
-        <button class="rounded-lg bg-slate-950 px-4 py-3 font-semibold text-white hover:bg-slate-800 transition">
+        <button type="submit" class="btn btn-app-primary resource-button w-100 py-2.5 mt-2 font-bold">
             Envoyer le lien de réinitialisation
         </button>
-        <a href="{{ route('login') }}" class="text-center text-sm text-amber-700">← Retour à la connexion</a>
+        <div class="text-center mt-2">
+            <a href="{{ route('login') }}" class="text-sm font-medium text-amber-700 text-decoration-none">← Retour à la connexion</a>
+        </div>
     </form>
 </x-layouts.guest>

@@ -24,7 +24,33 @@
                     <thead><tr><th>Référence</th><th>Numéro</th><th>Localisation</th><th>Superficie</th><th class="text-end">Prix de base</th><th>Statut commercial</th><th class="text-end">Action</th></tr></thead>
                     <tbody>
                         @forelse($plots as $plot)
-                            <tr><td><a href="{{ route('plots.show', $plot) }}" class="resource-reference">{{ $plot->reference }}</a></td><td><strong>{{ $plot->plot_number }}</strong></td><td><span>{{ $plot->avenue->neighborhood->name }}</span><small class="resource-cell-note">{{ $plot->avenue->name }}</small></td><td class="record-money">{{ $plot->surface_area ? number_format((float) $plot->surface_area, 2, ',', ' ').' m²' : 'Non renseignée' }}</td><td class="record-money text-end">{{ $plot->base_price ? number_format((float) $plot->base_price, 2, ',', ' ').' USD' : '—' }}</td><td><span class="status-badge status-badge--{{ $plot->commercial_status }}">{{ $commercialLabels[$plot->commercial_status] ?? ucfirst($plot->commercial_status) }}</span></td><td class="text-end"><a href="{{ route('plots.show', $plot) }}" class="resource-row-action">Voir la parcelle</a></td></tr>
+                            <tr>
+                                <td><a href="{{ route('plots.show', $plot) }}" class="resource-reference">{{ $plot->reference }}</a></td>
+                                <td><strong>{{ $plot->plot_number }}</strong></td>
+                                <td><span>{{ $plot->avenue->neighborhood->name }}</span><small class="resource-cell-note">{{ $plot->avenue->name }}</small></td>
+                                <td class="record-money">{{ $plot->surface_area ? number_format((float) $plot->surface_area, 2, ',', ' ').' m²' : 'Non renseignée' }}</td>
+                                <td class="record-money text-end">{{ $plot->base_price ? number_format((float) $plot->base_price, 2, ',', ' ').' USD' : '—' }}</td>
+                                <td><span class="status-badge status-badge--{{ $plot->commercial_status }}">{{ $commercialLabels[$plot->commercial_status] ?? ucfirst($plot->commercial_status) }}</span></td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2 align-items-center justify-content-end">
+                                        <a href="{{ route('plots.show', $plot) }}" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Voir la parcelle">
+                                            Voir
+                                        </a>
+                                        @can('plots.manage')
+                                            <a href="{{ route('plots.edit', $plot) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Modifier la parcelle">
+                                                Modifier
+                                            </a>
+                                            <form method="POST" action="{{ route('plots.destroy', $plot) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette parcelle ?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer la parcelle">
+                                                    Supprimer
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
                         @empty
                             <tr><td colspan="7"><div class="resource-empty"><strong>Aucune parcelle trouvée</strong><span>{{ $hasFilters ? 'Modifiez ou réinitialisez les critères de recherche.' : 'Créez la première parcelle du patrimoine foncier.' }}</span>@if($hasFilters)<a href="{{ route('plots.index') }}">Afficher toutes les parcelles</a>@endif</div></td></tr>
                         @endforelse

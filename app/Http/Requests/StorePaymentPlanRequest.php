@@ -24,7 +24,7 @@ class StorePaymentPlanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'string', 'max:50', Rule::unique('payment_plans')->ignore($this->route('payment_plan'))],
+            'code' => ['nullable', 'string', 'max:50', Rule::unique('payment_plans')->ignore($this->route('payment_plan'))],
             'name' => ['required', 'string', 'max:150'], 'total_price' => ['required', 'numeric', 'min:0'],
             'monthly_amount' => ['nullable', 'required_if:frequency,monthly', 'numeric', 'min:0'],
             'duration_months' => ['required', 'integer', 'min:0'], 'frequency' => ['required', 'in:once,monthly'],

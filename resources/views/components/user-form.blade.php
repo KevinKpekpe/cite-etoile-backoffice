@@ -5,7 +5,7 @@
     <x-auth-input name="email" label="E-mail" type="email" :value="old('email', $user?->email)" required autocomplete="off" />
     <x-auth-input name="phone" label="Téléphone" :value="old('phone', $user?->phone)" required />
 
-    <label class="flex flex-col gap-2 text-sm font-medium">Rôle
+    <label class="flex flex-col gap-2 text-sm font-medium"><span>Rôle <span class="text-danger text-red-500 ms-1 font-bold" style="color: var(--app-danger, #dc3545);">*</span></span>
         <select name="role_id" class="rounded-lg border border-slate-300 px-3 py-2.5">
             @foreach($roles as $role)
                 @if($role->name === 'super_admin' && ! auth()->user()?->hasRole('super_admin'))
@@ -20,7 +20,7 @@
     </label>
 
     @if($user)
-    <label class="flex flex-col gap-2 text-sm font-medium">Statut
+    <label class="flex flex-col gap-2 text-sm font-medium"><span>Statut <span class="text-danger text-red-500 ms-1 font-bold" style="color: var(--app-danger, #dc3545);">*</span></span>
         <select name="status" class="rounded-lg border border-slate-300 px-3 py-2.5">
             <option value="active" @selected(old('status', $user->status) === 'active')>Actif</option>
             <option value="suspended" @selected(old('status', $user->status) === 'suspended')>Suspendu</option>

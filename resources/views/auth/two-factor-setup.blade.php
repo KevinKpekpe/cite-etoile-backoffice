@@ -1,23 +1,26 @@
 <x-layouts.guest title="Sécurité du compte">
     @if (session('recovery_codes'))
-        <p class="mb-3 text-sm font-semibold">Conservez ces codes de récupération dans un lieu sûr :</p>
-        <ul class="mb-5 grid grid-cols-2 gap-2 rounded-lg bg-slate-100 p-4 font-mono text-xs">
+        <p class="small font-bold mb-2">Conservez ces codes de récupération dans un lieu sûr :</p>
+        <ul class="mb-4 grid grid-cols-2 gap-2 rounded-3 bg-light p-3 font-monospace small">
             @foreach (session('recovery_codes') as $code)<li>{{ $code }}</li>@endforeach
         </ul>
     @elseif (auth()->user()->hasTwoFactorAuthenticationEnabled())
-        <p class="mb-5 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">La double authentification est active.</p>
-        <form method="POST" action="{{ route('two-factor.disable') }}" class="flex flex-col gap-4">
-            @csrf @method('DELETE')
+        <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 p-3 text-sm">
+            La double authentification est active.
+        </div>
+        <form method="POST" action="{{ route('two-factor.disable') }}" class="d-flex flex-column gap-3">
+            @csrf
+            @method('DELETE')
             <x-auth-input name="password" label="Mot de passe actuel" type="password" autocomplete="current-password" required />
-            <button class="rounded-lg bg-red-700 px-4 py-3 font-semibold text-white">Désactiver la 2FA</button>
+            <button type="submit" class="btn btn-outline-danger w-100 py-2.5 font-bold">Désactiver la 2FA</button>
         </form>
     @else
-        <p class="mb-3 text-sm text-slate-600">Ajoutez cette clé dans votre application d’authentification :</p>
-        <p class="mb-5 break-all rounded-lg bg-slate-100 p-4 text-center font-mono text-sm font-bold">{{ $secret }}</p>
-        <form method="POST" action="{{ route('two-factor.enable') }}" class="flex flex-col gap-5">
+        <p class="text-secondary small mb-2 text-center">Ajoutez cette clé dans votre application d’authentification :</p>
+        <p class="mb-4 break-all rounded-3 bg-light p-3 text-center font-monospace font-bold text-dark fs-6">{{ $secret }}</p>
+        <form method="POST" action="{{ route('two-factor.enable') }}" class="d-flex flex-column gap-3">
             @csrf
             <x-auth-input name="code" label="Code de confirmation" autocomplete="one-time-code" inputmode="numeric" required />
-            <button class="rounded-lg bg-slate-950 px-4 py-3 font-semibold text-white">Activer la 2FA</button>
+            <button type="submit" class="btn btn-app-primary resource-button w-100 py-2.5 mt-2 font-bold">Activer la 2FA</button>
         </form>
     @endif
 </x-layouts.guest>

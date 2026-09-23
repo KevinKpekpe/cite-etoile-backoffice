@@ -20,7 +20,7 @@ class AuditLogController extends Controller
             ->when($filters['action'] ?? null, fn ($query, $action) => $query->where('action', 'like', "%{$action}%"))
             ->when($filters['from'] ?? null, fn ($query, $from) => $query->whereDate('created_at', '>=', $from))
             ->when($filters['to'] ?? null, fn ($query, $to) => $query->whereDate('created_at', '<=', $to))
-            ->latest()->paginate(30)->withQueryString();
+            ->latest()->paginate(10)->withQueryString();
 
         return view('audit-logs.index', [
             'logs' => $logs, 'filters' => $filters,

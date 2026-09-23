@@ -174,7 +174,7 @@
 
 {{-- Historique des versements & Reçus (Factures PDF) --}}
 <section class="mt-6 rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
-    <h2 class="mb-4 font-bold text-slate-900">🧾 Historique des paiements & reçus (Factures PDF)</h2>
+    <h2 class="mb-4 font-bold text-slate-900"><i class="bi bi-receipt me-2 text-primary"></i> Historique des paiements & reçus (Factures PDF)</h2>
     <div class="overflow-x-auto">
         <table class="w-full text-left text-sm">
             <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-400">
@@ -202,7 +202,7 @@
                                 @can('receipts.download')
                                     <a href="{{ route('receipts.download', $payment->receipt) }}"
                                        class="inline-flex items-center gap-1.5 rounded-xl bg-slate-950 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition">
-                                        📥 Télécharger PDF ({{ $payment->receipt->receipt_number }})
+                                        <i class="bi bi-download me-1"></i> Télécharger PDF ({{ $payment->receipt->receipt_number }})
                                     </a>
                                 @endcan
                             @else

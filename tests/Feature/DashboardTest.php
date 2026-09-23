@@ -60,14 +60,14 @@ it('shows actionable overdue and upcoming installments to direction roles', func
     Installment::factory()->for($subscription)->create(['installment_number' => 2, 'due_date' => now()->addDays(3), 'status' => 'upcoming']);
 
     $this->actingAs($this->admin)->get(route('dashboard'))->assertOk()
-        ->assertSee('Échéances en retard')->assertSee('Échéances dans les 7 jours');
+        ->assertSee('Échéances en retard')->assertSee('Échéances à venir');
 });
 
 it('hides finance alerts from limited commercial dashboards', function () {
     $commercial = User::factory()->create();
     $commercial->roles()->attach(Role::query()->where('name', 'commercial')->firstOrFail());
 
-    $this->actingAs($commercial)->get(route('dashboard'))->assertOk()->assertDontSee('Échéances dans les 7 jours');
+    $this->actingAs($commercial)->get(route('dashboard'))->assertOk()->assertDontSee('Échéances à venir');
 });
 
 it('rejects unsupported chart periods', function () {

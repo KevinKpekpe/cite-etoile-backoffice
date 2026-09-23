@@ -3,16 +3,16 @@
 
         {{-- Actions rapides --}}
         <div class="mb-6 flex items-center justify-between gap-3 no-print">
-            <a href="{{ route('payments.show', $receipt->payment) }}" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm">
+            <a href="{{ route('payments.show', $receipt->payment) }}" class="btn btn-outline-secondary btn-sm">
                 ← Retour au paiement
             </a>
             <div class="flex gap-2">
-                <button onclick="window.print()" type="button" class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-100 transition shadow-sm">
-                    🖨️ Imprimer
+                <button onclick="window.print()" type="button" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-printer me-1"></i> Imprimer
                 </button>
                 @can('receipts.download')
-                    <a href="{{ route('receipts.download', $receipt) }}" class="rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition shadow-sm">
-                        📥 PDF Ticket
+                    <a href="{{ route('receipts.download', $receipt) }}" class="btn btn-app-primary btn-sm">
+                        <i class="bi bi-download me-1"></i> PDF Ticket
                     </a>
                 @endcan
             </div>

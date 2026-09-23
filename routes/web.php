@@ -76,15 +76,26 @@ Route::middleware('auth')->group(function (): void {
         Route::resource('avenues', AvenueController::class)->except(['show'])->middleware('can:plots.manage');
         Route::get('/plots', [PlotController::class, 'index'])->middleware('can:plots.view')->name('plots.index');
         Route::get('/plots/trashed', [PlotController::class, 'trashed'])->middleware('can:plots.manage')->name('plots.trashed');
+        Route::get('/plots/create', [PlotController::class, 'create'])->middleware('can:plots.manage')->name('plots.create');
+        Route::post('/plots', [PlotController::class, 'store'])->middleware('can:plots.manage')->name('plots.store');
         Route::get('/plots/{plot}', [PlotController::class, 'show'])->middleware('can:plots.view')->withTrashed()->name('plots.show');
+        Route::get('/plots/{plot}/edit', [PlotController::class, 'edit'])->middleware('can:plots.manage')->name('plots.edit');
+        Route::put('/plots/{plot}', [PlotController::class, 'update'])->middleware('can:plots.manage')->name('plots.update');
+        Route::patch('/plots/{plot}', [PlotController::class, 'update'])->middleware('can:plots.manage');
+        Route::delete('/plots/{plot}', [PlotController::class, 'destroy'])->middleware('can:plots.manage')->name('plots.destroy');
         Route::post('/plots/{plot}/restore', [PlotController::class, 'restore'])->middleware('can:plots.restore')->withTrashed()->name('plots.restore');
         Route::delete('/plots/{plot}/force', [PlotController::class, 'forceDelete'])->middleware('can:plots.force_delete')->withTrashed()->name('plots.force-delete');
-        Route::resource('plots', PlotController::class)->except(['index', 'show'])->middleware('can:plots.manage');
+
         Route::get('/payment-plans', [PaymentPlanController::class, 'index'])->middleware('can:payment_plans.view')->name('payment-plans.index');
         Route::get('/payment-plans/trashed', [PaymentPlanController::class, 'trashed'])->middleware('can:payment_plans.manage')->name('payment-plans.trashed');
+        Route::get('/payment-plans/create', [PaymentPlanController::class, 'create'])->middleware('can:payment_plans.manage')->name('payment-plans.create');
+        Route::post('/payment-plans', [PaymentPlanController::class, 'store'])->middleware('can:payment_plans.manage')->name('payment-plans.store');
+        Route::get('/payment-plans/{payment_plan}/edit', [PaymentPlanController::class, 'edit'])->middleware('can:payment_plans.manage')->name('payment-plans.edit');
+        Route::put('/payment-plans/{payment_plan}', [PaymentPlanController::class, 'update'])->middleware('can:payment_plans.manage')->name('payment-plans.update');
+        Route::patch('/payment-plans/{payment_plan}', [PaymentPlanController::class, 'update'])->middleware('can:payment_plans.manage');
+        Route::delete('/payment-plans/{payment_plan}', [PaymentPlanController::class, 'destroy'])->middleware('can:payment_plans.manage')->name('payment-plans.destroy');
         Route::post('/payment-plans/{payment_plan}/restore', [PaymentPlanController::class, 'restore'])->middleware('can:payment_plans.restore')->withTrashed()->name('payment-plans.restore');
         Route::delete('/payment-plans/{payment_plan}/force', [PaymentPlanController::class, 'forceDelete'])->middleware('can:payment_plans.force_delete')->withTrashed()->name('payment-plans.force-delete');
-        Route::resource('payment-plans', PaymentPlanController::class)->except(['index', 'show'])->middleware('can:payment_plans.manage');
         Route::get('/subscriptions', [SubscriptionController::class, 'index'])->middleware('can:subscriptions.view')->name('subscriptions.index');
         Route::get('/subscriptions/create', [SubscriptionController::class, 'create'])->middleware('can:subscriptions.create')->name('subscriptions.create');
         Route::post('/subscriptions', [SubscriptionController::class, 'store'])->middleware('can:subscriptions.create')->name('subscriptions.store');

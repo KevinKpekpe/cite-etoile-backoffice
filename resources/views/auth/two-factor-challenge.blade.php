@@ -1,8 +1,8 @@
 <x-layouts.guest title="Vérification en deux étapes">
-    <p class="mb-5 text-sm text-slate-600">Entrez le code à six chiffres de votre application ou un code de récupération.</p>
-    <form method="POST" action="{{ route('two-factor.verify') }}" class="flex flex-col gap-5">
+    <p class="text-secondary small mb-4 text-center">Entrez le code à six chiffres de votre application d'authentification ou un code de récupération.</p>
+    <form method="POST" action="{{ route('two-factor.verify') }}" class="d-flex flex-column gap-3">
         @csrf
         <x-auth-input name="code" label="Code de sécurité" autocomplete="one-time-code" inputmode="numeric" required autofocus />
-        <button class="rounded-lg bg-slate-950 px-4 py-3 font-semibold text-white">Vérifier</button>
+        <button type="submit" class="btn btn-app-primary resource-button w-100 py-2.5 mt-2 font-bold">Vérifier</button>
     </form>
 </x-layouts.guest>

@@ -18,7 +18,7 @@
                 <p class="text-sm text-amber-800">{{ $preselectedCustomer->first_name }} {{ $preselectedCustomer->last_name }} — {{ $preselectedCustomer->customer_number }}</p>
             </div>
         @else
-            <label class="md:col-span-2">Client
+            <label class="md:col-span-2">Client <span class="text-danger text-red-500 ms-1 font-bold" style="color: var(--app-danger, #dc3545);">*</span>
                 <select name="customer_id" class="mt-2 w-full rounded-lg border p-3">
                     @foreach($customers as $customer)
                         <option value="{{ $customer->id }}" @selected(old('customer_id') == $customer->id)>
@@ -38,7 +38,7 @@
                 <p class="text-sm text-amber-800">{{ $preselectedPlot->reference }} — {{ $preselectedPlot->avenue->neighborhood->name }}</p>
             </div>
         @else
-            <label>Parcelle disponible
+            <label>Parcelle disponible <span class="text-danger text-red-500 ms-1 font-bold" style="color: var(--app-danger, #dc3545);">*</span>
                 <select name="plot_id" class="mt-2 w-full rounded-lg border p-3">
                     @foreach($plots as $plot)
                         <option value="{{ $plot->id }}" @selected(old('plot_id') == $plot->id)>
@@ -52,7 +52,7 @@
         @endif
 
         {{-- Formule --}}
-        <label>Formule
+        <label>Formule <span class="text-danger text-red-500 ms-1 font-bold" style="color: var(--app-danger, #dc3545);">*</span>
             <select name="payment_plan_id" id="payment_plan_id" class="mt-2 w-full rounded-lg border p-3">
                 @foreach($paymentPlans as $plan)
                     <option value="{{ $plan->id }}" @selected(old('payment_plan_id') == $plan->id)>

@@ -67,11 +67,13 @@
                         <tr>
                             <th scope="col">Numéro</th>
                             <th scope="col">Client</th>
+                            <th scope="col">Parcelle(s)</th>
+                            <th scope="col">Formule(s)</th>
                             <th scope="col">Téléphone</th>
                             <th scope="col">Statut</th>
                             <th scope="col">Situation</th>
                             <th scope="col">Responsable</th>
-                            <th scope="col" class="text-end">Action</th>
+                            <th scope="col" class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -90,6 +92,33 @@
                                         <span><strong>{{ $customer->first_name }} {{ $customer->last_name }}</strong><small>{{ $customer->email ?: 'Aucun e-mail renseigné' }}</small></span>
                                     </div>
                                 </td>
+                                <td>
+                                    @forelse($customer->subscriptions as $sub)
+                                        @if($sub->plot)
+                                            <div>
+                                                <a class="resource-reference" href="{{ route('plots.show', $sub->plot) }}">
+                                                    {{ $sub->plot->reference }}
+                                                </a>
+                                                @if($sub->plot->avenue?->neighborhood)
+                                                    <small class="d-block text-muted" style="font-size: 0.72rem;">{{ $sub->plot->avenue->neighborhood->name }}</small>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    @empty
+                                        <span class="text-muted small">—</span>
+                                    @endforelse
+                                </td>
+                                <td>
+                                    @forelse($customer->subscriptions as $sub)
+                                        @if($sub->paymentPlan)
+                                            <span class="status-badge status-badge--neutral me-1 mb-1" style="display: inline-block;">
+                                                {{ $sub->paymentPlan->name }}
+                                            </span>
+                                        @endif
+                                    @empty
+                                        <span class="text-muted small">—</span>
+                                    @endforelse
+                                </td>
                                 <td class="resource-data-table__secondary">{{ $customer->phone }}</td>
                                 <td><span class="status-badge status-badge--{{ $customer->status }}">{{ $statusLabels[$customer->status] ?? ucfirst($customer->status) }}</span></td>
                                 <td>
@@ -102,11 +131,31 @@
                                 <td class="resource-data-table__secondary">
                                     {{ $customer->assignedAgent ? $customer->assignedAgent->first_name.' '.$customer->assignedAgent->last_name : 'Non attribué' }}
                                 </td>
-                                <td class="text-end"><a href="{{ route('customers.show', $customer) }}" class="resource-row-action">Voir le dossier</a></td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2 align-items-center justify-content-end">
+                                        <a href="{{ route('customers.show', $customer) }}" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Voir le dossier">
+                                            Voir
+                                        </a>
+                                        @can('customers.manage')
+                                            <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Modifier le client">
+                                                Modifier
+                                            </a>
+                                        @endcan
+                                        @can('customers.delete')
+                                            <form method="POST" action="{{ route('customers.destroy', $customer) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir placer ce client en corbeille ?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer le client">
+                                                    Supprimer
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7">
+                                <td colspan="9">
                                     <div class="resource-empty">
                                         <strong>Aucun client trouvé</strong>
                                         <span>{{ $hasFilters ? 'Modifiez ou réinitialisez les critères de recherche.' : 'Les dossiers clients apparaîtront ici après leur création.' }}</span>

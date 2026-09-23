@@ -12,9 +12,9 @@
                 <div class="form-section__header"><span class="form-section__number">01</span><div><h2>Informations du quartier</h2><p>Les codes permettent d’identifier rapidement les zones dans les tableaux.</p></div></div>
                 <div class="form-section__body">
                     <div class="form-grid">
-                        <x-auth-input name="code" label="Code" :value="old('code', $neighborhood->code)" required />
+                        @if($neighborhood->exists)<x-auth-input name="code" label="Code" :value="old('code', $neighborhood->code)" readonly />@endif
                         <x-auth-input name="name" label="Nom" :value="old('name', $neighborhood->name)" required />
-                        <label class="form-field"><span class="form-field__label">Statut</span><select name="status" class="form-select">@foreach($statusLabels as $value => $label)<option value="{{ $value }}" @selected(old('status', $neighborhood->status) === $value)>{{ $label }}</option>@endforeach</select>@error('status')<span class="form-field__error">{{ $message }}</span>@enderror</label>
+                        <label class="form-field"><span class="form-field__label">Statut <span class="text-danger text-red-500 ms-1 font-bold" style="color: var(--app-danger, #dc3545);">*</span></span><select name="status" class="form-select">@foreach($statusLabels as $value => $label)<option value="{{ $value }}" @selected(old('status', $neighborhood->status) === $value)>{{ $label }}</option>@endforeach</select>@error('status')<span class="form-field__error">{{ $message }}</span>@enderror</label>
                         <label class="form-field form-grid__wide"><span class="form-field__label">Description</span><textarea name="description" rows="4" class="form-control">{{ old('description', $neighborhood->description) }}</textarea>@error('description')<span class="form-field__error">{{ $message }}</span>@enderror</label>
                     </div>
                 </div>
