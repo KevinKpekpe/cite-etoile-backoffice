@@ -1205,18 +1205,19 @@ textarea:focus {
 
 .dashboard-line-chart__line {
     fill: none;
-    stroke: var(--app-primary);
     stroke-linecap: round;
     stroke-linejoin: round;
-    stroke-width: 3;
+    stroke-width: 2.5;
     vector-effect: non-scaling-stroke;
 }
 
-.dashboard-line-chart__point {
-    fill: var(--app-primary);
-    stroke: var(--app-surface);
-    stroke-width: 3;
-    vector-effect: non-scaling-stroke;
+.dashboard-line-chart__line--current {
+    stroke: #1abb9c;
+}
+
+.dashboard-line-chart__line--previous {
+    stroke: #4299e1;
+    stroke-dasharray: 7 5;
 }
 
 .dashboard-line-chart__labels {
@@ -1250,6 +1251,22 @@ textarea:focus {
     height: 0.2rem;
     margin-right: 0.35rem;
     width: 0.7rem;
+}
+
+.dashboard-chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+
+.dashboard-chart-legend__swatch--current {
+    background: #1abb9c !important;
+}
+
+.dashboard-chart-legend__swatch--previous {
+    background: transparent !important;
+    border-top: 2px dashed #4299e1;
+    height: 0;
 }
 
 .dashboard-activity {

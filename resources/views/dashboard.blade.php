@@ -6,18 +6,46 @@
         $contractual = (float) $finances['contractual'];
         $collected = (float) $finances['collected'];
         $collectionRate = $contractual > 0 ? min(100, ($collected / $contractual) * 100) : 0;
-        $chartValues = $payment_chart->pluck('total')->map(fn ($value) => (float) $value)->values();
-        $chartMaximum = max(1, (float) $chartValues->max());
+        $chartValues = $payment_chart->pluck('current')->map(fn ($value) => (float) $value)->values();
+        $previousChartValues = $payment_chart->pluck('previous')->map(fn ($value) => (float) $value)->values();
+        $chartMaximum = max(1, (float) $chartValues->concat($previousChartValues)->max());
         $chartPeriodTotal = (float) $chartValues->sum();
-        $hasChartData = $chartValues->contains(fn ($value) => $value > 0);
+        $hasChartData = $chartValues->contains(fn ($value) => $value > 0) || $previousChartValues->contains(fn ($value) => $value > 0);
         $chartCount = max(1, $chartValues->count());
-        $chartPoints = $chartValues->map(function ($value, $index) use ($chartMaximum, $chartCount) {
-            $x = $chartCount === 1 ? 500 : ($index / ($chartCount - 1)) * 1000;
-            $y = 210 - (($value / $chartMaximum) * 170);
+        $chartCoordinates = function ($values) use ($chartMaximum, $chartCount) {
+            return $values->map(function ($value, $index) use ($chartMaximum, $chartCount) {
+                return [($index / max(1, $chartCount - 1)) * 1000, 210 - (($value / $chartMaximum) * 170)];
+            })->all();
+        };
+        $buildSmoothPath = function (array $coordinates): string {
+            if ($coordinates === []) {
+                return '';
+            }
 
-            return round($x, 2).','.round($y, 2);
-        })->implode(' ');
-        $chartAreaPoints = $chartPoints !== '' ? '0,210 '.$chartPoints.' 1000,210' : '';
+            $first = $coordinates[0];
+            $path = 'M '.round($first[0], 2).' '.round($first[1], 2);
+
+            for ($index = 0; $index < count($coordinates) - 1; $index++) {
+                $previous = $coordinates[max(0, $index - 1)];
+                $start = $coordinates[$index];
+                $end = $coordinates[$index + 1];
+                $next = $coordinates[min(count($coordinates) - 1, $index + 2)];
+                $controlOne = [$start[0] + (($end[0] - $previous[0]) / 6), $start[1] + (($end[1] - $previous[1]) / 6)];
+                $controlTwo = [$end[0] - (($next[0] - $start[0]) / 6), $end[1] - (($next[1] - $start[1]) / 6)];
+                $path .= ' C '.round($controlOne[0], 2).' '.round($controlOne[1], 2)
+                    .' '.round($controlTwo[0], 2).' '.round($controlTwo[1], 2)
+                    .' '.round($end[0], 2).' '.round($end[1], 2);
+            }
+
+            return $path;
+        };
+        $currentCoordinates = $chartCoordinates($chartValues);
+        $previousCoordinates = $chartCoordinates($previousChartValues);
+        $currentChartPath = $buildSmoothPath($currentCoordinates);
+        $previousChartPath = $buildSmoothPath($previousCoordinates);
+        $currentChartAreaPath = $currentChartPath !== ''
+            ? $currentChartPath.' L 1000 210 L 0 210 Z'
+            : '';
         $chartLabelStep = match (true) { $chartCount > 16 => 5, $chartCount > 8 => 3, $chartCount > 5 => 2, default => 1 };
         $maxPlanTotal = max(1, (int) $plan_distribution->max('total'));
     @endphp
@@ -79,17 +107,16 @@
                         <svg viewBox="0 0 1000 240" preserveAspectRatio="none" role="img" aria-label="Évolution des encaissements">
                             <defs><linearGradient id="dashboard-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1abb9c" stop-opacity=".18"/><stop offset="100%" stop-color="#1abb9c" stop-opacity="0"/></linearGradient></defs>
                             <g class="dashboard-line-chart__axis"><line x1="0" y1="40" x2="1000" y2="40"/><line x1="0" y1="95" x2="1000" y2="95"/><line x1="0" y1="150" x2="1000" y2="150"/><line x1="0" y1="205" x2="1000" y2="205"/></g>
-                            <polygon points="{{ $chartAreaPoints }}" fill="url(#dashboard-area)"/>
-                            <polyline points="{{ $chartPoints }}" class="dashboard-line-chart__line"/>
-                            @foreach($chartValues as $index => $value)
-                                @if($value > 0)
-                                    <circle cx="{{ round(($index / max(1, $chartCount - 1)) * 1000, 2) }}" cy="{{ round(210 - (($value / $chartMaximum) * 170), 2) }}" r="5" class="dashboard-line-chart__point"><title>{{ $payment_chart[$index]->label }} : {{ number_format($value, 0, ',', ' ') }} USD</title></circle>
-                                @endif
-                            @endforeach
+                            <path d="{{ $currentChartAreaPath }}" fill="url(#dashboard-area)"/>
+                            <path d="{{ $previousChartPath }}" class="dashboard-line-chart__line dashboard-line-chart__line--previous"/>
+                            <path d="{{ $currentChartPath }}" class="dashboard-line-chart__line dashboard-line-chart__line--current"/>
                         </svg>
                         <div class="dashboard-line-chart__labels">@foreach($payment_chart as $index => $point)<span>{{ $index === 0 || $index === $chartCount - 1 || $index % $chartLabelStep === 0 ? $point->label : '' }}</span>@endforeach</div>
                     </div>
-                    <div class="dashboard-card__footer"><span><i></i> Encaissements validés</span></div>
+                    <div class="dashboard-card__footer dashboard-chart-legend">
+                        <span><i class="dashboard-chart-legend__swatch dashboard-chart-legend__swatch--current"></i>Période sélectionnée</span>
+                        <span><i class="dashboard-chart-legend__swatch dashboard-chart-legend__swatch--previous"></i>Période précédente</span>
+                    </div>
                 @else
                     <div class="dashboard-empty"><strong>Aucun encaissement</strong><span>Aucun paiement validé sur cette période.</span></div>
                 @endif
