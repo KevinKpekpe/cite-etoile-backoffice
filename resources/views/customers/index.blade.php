@@ -142,7 +142,7 @@
                                             </a>
                                         @endcan
                                         @can('customers.delete')
-                                            <form method="POST" action="{{ route('customers.destroy', $customer) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir placer ce client en corbeille ?');">
+                                            <form method="POST" action="{{ route('customers.destroy', $customer) }}" class="d-inline" data-confirm="Confirmer la suppression de cet élément ?">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer le client">

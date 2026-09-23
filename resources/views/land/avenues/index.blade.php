@@ -23,7 +23,7 @@
                                             <a href="{{ route('avenues.edit', $item) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Modifier l'avenue">
                                                 Modifier
                                             </a>
-                                            <form method="POST" action="{{ route('avenues.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette avenue ?');">
+                                            <form method="POST" action="{{ route('avenues.destroy', $item) }}" class="d-inline" data-confirm="Confirmer la suppression de cet élément ?">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer l'avenue">

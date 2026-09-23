@@ -99,12 +99,58 @@ document.querySelectorAll('[data-suggested-amount]').forEach((button) => {
     });
 });
 
+const confirmationModal = document.querySelector('[data-confirm-modal]');
+const confirmationMessage = confirmationModal?.querySelector('[data-confirm-message]');
+const confirmationTitle = confirmationModal?.querySelector('[data-confirm-title]');
+const confirmationAcceptButton = confirmationModal?.querySelector('[data-confirm-accept]');
+const confirmationCancelButtons = confirmationModal?.querySelectorAll('[data-confirm-cancel]') ?? [];
+let pendingConfirmationForm = null;
+let confirmationTrigger = null;
+
+const closeConfirmationModal = () => {
+    confirmationModal?.close();
+    pendingConfirmationForm = null;
+    confirmationTrigger?.focus();
+    confirmationTrigger = null;
+};
+
 document.querySelectorAll('form[data-confirm]').forEach((form) => {
     form.addEventListener('submit', (event) => {
-        if (!window.confirm(form.dataset.confirm)) {
-            event.preventDefault();
+        event.preventDefault();
+        pendingConfirmationForm = form;
+        confirmationTrigger = event.submitter;
+
+        const message = form.dataset.confirm ?? 'Confirmer cette opération ?';
+        const isDestructive = /supprim|corbeille|irréversible/i.test(message);
+
+        if (confirmationMessage) {
+            confirmationMessage.textContent = message;
         }
+
+        if (confirmationTitle) {
+            confirmationTitle.textContent = isDestructive ? 'Confirmer la suppression' : 'Confirmer l’opération';
+        }
+
+        confirmationModal?.showModal();
     });
+});
+
+confirmationAcceptButton?.addEventListener('click', () => {
+    const form = pendingConfirmationForm;
+    pendingConfirmationForm = null;
+    confirmationModal?.close();
+    form?.submit();
+});
+
+confirmationCancelButtons.forEach((button) => button.addEventListener('click', closeConfirmationModal));
+confirmationModal?.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    closeConfirmationModal();
+});
+confirmationModal?.addEventListener('click', (event) => {
+    if (event.target === confirmationModal) {
+        closeConfirmationModal();
+    }
 });
 
 document.querySelectorAll('[data-credentials-panel]').forEach((panel) => {
@@ -136,4 +182,14 @@ document.querySelectorAll('[data-credentials-panel]').forEach((panel) => {
         link.click();
         URL.revokeObjectURL(url);
     });
+});
+
+document.querySelectorAll('[data-app-toast]').forEach((toast) => {
+    const dismiss = () => {
+        toast.classList.add('is-leaving');
+        window.setTimeout(() => toast.remove(), 180);
+    };
+
+    toast.querySelector('[data-toast-close]')?.addEventListener('click', dismiss);
+    window.setTimeout(dismiss, 5000);
 });

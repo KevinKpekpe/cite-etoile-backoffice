@@ -25,7 +25,7 @@
                                             <a href="{{ route('neighborhoods.edit', $item) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Modifier le quartier">
                                                 Modifier
                                             </a>
-                                            <form method="POST" action="{{ route('neighborhoods.destroy', $item) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce quartier ?');">
+                                            <form method="POST" action="{{ route('neighborhoods.destroy', $item) }}" class="d-inline" data-confirm="Confirmer la suppression de cet élément ?">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer le quartier">

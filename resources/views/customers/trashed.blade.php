@@ -49,7 +49,7 @@
                                             </form>
                                         @endcan
                                         @can('customers.force_delete')
-                                            <form method="POST" action="{{ route('customers.force-delete', $customer) }}" class="d-inline" onsubmit="return confirm('Supprimer définitivement ce client ? Cette action est irréversible.');">
+                                            <form method="POST" action="{{ route('customers.force-delete', $customer) }}" class="d-inline" data-confirm="Confirmer la suppression de cet élément ?">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-sm btn-outline-danger py-1 px-2" type="submit">

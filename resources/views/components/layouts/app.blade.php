@@ -8,6 +8,8 @@
     $userName = trim(($user?->first_name ?? '').' '.($user?->last_name ?? '')) ?: ($user?->email ?? 'Utilisateur');
     $userInitials = mb_strtoupper(mb_substr($user?->first_name ?? '', 0, 1).mb_substr($user?->last_name ?? '', 0, 1));
     $userInitials = $userInitials ?: mb_strtoupper(mb_substr($user?->email ?? 'U', 0, 1));
+    $flashType = session('error') ? 'danger' : (session('warning') ? 'warning' : 'success');
+    $flashMessage = session('error') ?? session('warning') ?? session('success') ?? session('status');
 @endphp
 <!DOCTYPE html>
 <html lang="fr" data-bs-theme="light">
@@ -18,11 +20,22 @@
     <title>{{ $title ?? 'Back-office' }} · Cité Étoile du Monde</title>
     <script>
         document.documentElement.dataset.bsTheme = localStorage.getItem('cite-etoile-theme') || 'light';
+        document.documentElement.dataset.theme = document.documentElement.dataset.bsTheme;
         document.documentElement.dataset.sidebar = localStorage.getItem('cite-etoile-sidebar') || 'expanded';
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="app-shell min-h-screen">
+    @if($flashMessage)
+        <div class="app-toast app-toast--{{ $flashType }}" role="status" aria-live="polite" data-app-toast>
+            <span class="app-toast__icon" aria-hidden="true"><i class="bi bi-{{ $flashType === 'success' ? 'check-lg' : ($flashType === 'warning' ? 'exclamation-lg' : 'x-lg') }}"></i></span>
+            <div class="app-toast__content">
+                <strong>{{ $flashType === 'success' ? 'Opération réussie' : ($flashType === 'warning' ? 'Attention' : 'Erreur') }}</strong>
+                <p>{{ $flashMessage }}</p>
+            </div>
+            <button type="button" class="app-toast__close" data-toast-close aria-label="Fermer la notification"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+        </div>
+    @endif
     <div class="app-sidebar-backdrop" data-sidebar-close></div>
 
     <aside class="app-sidebar" id="app-sidebar" aria-label="Navigation principale">
@@ -148,11 +161,23 @@
         </header>
 
         <main class="app-main">
-            @if(session('status'))
-                <div class="alert alert-success app-alert" role="status">{{ session('status') }}</div>
-            @endif
             {{ $slot }}
         </main>
     </div>
+    <dialog class="confirm-modal" data-confirm-modal aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-message">
+        <div class="confirm-modal__header">
+            <span class="confirm-modal__icon" aria-hidden="true"><i class="bi bi-exclamation-triangle"></i></span>
+            <div>
+                <h2 id="confirm-modal-title" data-confirm-title>Confirmer l’action</h2>
+                <p>Cette opération nécessite votre confirmation.</p>
+            </div>
+            <button type="button" class="confirm-modal__close" data-confirm-cancel aria-label="Fermer"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+        </div>
+        <p class="confirm-modal__message" id="confirm-modal-message" data-confirm-message></p>
+        <div class="confirm-modal__actions">
+            <button type="button" class="btn btn-outline" data-confirm-cancel>Annuler</button>
+            <button type="button" class="btn btn-danger" data-confirm-accept>Confirmer</button>
+        </div>
+    </dialog>
 </body>
 </html>

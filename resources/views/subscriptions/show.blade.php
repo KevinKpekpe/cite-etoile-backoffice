@@ -13,11 +13,6 @@
     @endphp
 
     <div class="customer-record">
-        @if(session('warning'))
-            <div class="record-alert record-alert--danger" role="alert">
-                <div><strong>Opération impossible</strong><p>{{ session('warning') }}</p></div>
-            </div>
-        @endif
 
         @if($subscription->financial_status === 'paid' || $subscription->commercial_status === 'completed')
             <div class="record-alert record-alert--success">
