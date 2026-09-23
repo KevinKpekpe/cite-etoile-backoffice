@@ -74,33 +74,12 @@
             </div>
         </form>
 
-        {{-- KPI Cards --}}
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-md-3">
-                <div class="card shadow-sm border-0 rounded-3 p-3 bg-white">
-                    <p class="text-muted small mb-1">Total Clients</p>
-                    <h3 class="h4 font-bold text-dark mb-0">{{ number_format($customers->count(), 0, ',', ' ') }}</h3>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card shadow-sm border-0 rounded-3 p-3 bg-white">
-                    <p class="text-muted small mb-1">Total Parcelles</p>
-                    <h3 class="h4 font-bold text-dark mb-0">{{ number_format($plots->count(), 0, ',', ' ') }}</h3>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card shadow-sm border-0 rounded-3 p-3 bg-white">
-                    <p class="text-muted small mb-1">Paiements encaissés</p>
-                    <h3 class="h4 font-bold text-success mb-0">{{ number_format((float) $paymentTotal, 2, ',', ' ') }} USD</h3>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card shadow-sm border-0 rounded-3 p-3 bg-white">
-                    <p class="text-muted small mb-1">Total Impayés</p>
-                    <h3 class="h4 font-bold text-danger mb-0">{{ number_format((float) $overdueTotal, 2, ',', ' ') }} USD</h3>
-                </div>
-            </div>
-        </div>
+        <section class="report-metrics" aria-label="Synthèse des rapports">
+            <div><span>Clients</span><strong>{{ number_format($customers->count(), 0, ",", " ") }}</strong><small>Dossiers extraits</small></div>
+            <div><span>Parcelles</span><strong>{{ number_format($plots->count(), 0, ",", " ") }}</strong><small>Biens extraits</small></div>
+            <div class="report-metric--success"><span>Paiements encaissés</span><strong>{{ number_format((float) $paymentTotal, 2, ",", " ") }} <em>USD</em></strong><small>Transactions validées</small></div>
+            <div class="report-metric--danger"><span>Total impayé</span><strong>{{ number_format((float) $overdueTotal, 2, ",", " ") }} <em>USD</em></strong><small>Solde en retard</small></div>
+        </section>
 
         {{-- Sections Rapports --}}
         @foreach(['customers' => 'Rapport des dossiers clients', 'plots' => 'Rapport des parcelles', 'payments' => 'Rapport des paiements', 'overdue' => 'Rapport des impayés'] as $type => $title)

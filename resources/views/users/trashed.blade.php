@@ -51,7 +51,7 @@
                                             </form>
                                         @endif
                                         @can('users.force_delete')
-                                            <form method="POST" action="{{ route('users.force-delete', $user) }}" class="d-inline" onsubmit="return confirm('SUPPRESSION DÉFINITIVE de {{ $user->first_name }} {{ $user->last_name }}. Action irréversible !');">
+                                            <form method="POST" action="{{ route('users.force-delete', $user) }}" class="d-inline" data-confirm="Suppression définitive et irréversible de cet utilisateur ?">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2">

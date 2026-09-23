@@ -112,7 +112,7 @@
                                         @endcan
                                         @can('users.delete')
                                             @if($user->id !== auth()->id())
-                                                <form method="POST" action="{{ route('users.destroy', $user) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir placer cet utilisateur en corbeille ?');">
+                                                <form method="POST" action="{{ route('users.destroy', $user) }}" class="d-inline" data-confirm="Placer cet utilisateur en corbeille ?">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer l'utilisateur">

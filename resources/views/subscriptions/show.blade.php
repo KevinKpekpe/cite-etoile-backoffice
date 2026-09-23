@@ -1,233 +1,199 @@
 <x-layouts.app :title="$subscription->subscription_number">
+    @php
+        $isClosed = in_array($subscription->commercial_status, ['completed', 'cancelled', 'terminated'], true);
+        $canPay = $subscription->commercial_status === 'active' && $subscription->financial_status !== 'paid' && !$isClosed;
+        $commercialStatusLabels = [
+            'pending' => 'En attente',
+            'active' => 'En cours',
+            'suspended' => 'Suspendue',
+            'cancelled' => 'Annulée',
+            'terminated' => 'Résiliée',
+            'completed' => 'Terminée',
+        ];
+    @endphp
 
-{{-- Flash warning (redirigé depuis payments.create) --}}
-@if(session('warning'))
-<div class="mb-6 rounded-xl border border-red-300 bg-red-50 p-4 text-sm font-semibold text-red-800">
-    ⚠️ {{ session('warning') }}
-</div>
-@endif
-
-{{-- ── Bandeau : Soldée ──────────────────────────────────────────────── --}}
-@if($subscription->financial_status === 'paid' || $subscription->commercial_status === 'completed')
-<div class="mb-6 rounded-xl border border-emerald-300 bg-emerald-50 p-5">
-    <p class="font-bold text-emerald-900">✅ Souscription soldée</p>
-    <p class="mt-1 text-sm text-emerald-800">Tous les paiements ont été reçus. Aucun encaissement supplémentaire n'est possible.</p>
-</div>
-
-{{-- ── Bandeau : Annulée / Résiliée ───────────────────────────────────── --}}
-@elseif(in_array($subscription->commercial_status, ['cancelled', 'terminated']))
-<div class="mb-6 rounded-xl border border-red-300 bg-red-50 p-5">
-    <p class="font-bold text-red-900">🚫 Souscription {{ $subscription->commercial_status === 'cancelled' ? 'annulée' : 'résiliée' }}</p>
-    <p class="mt-1 text-sm text-red-800">Aucun encaissement n'est possible sur cette souscription.</p>
-</div>
-
-{{-- ── Bandeau : En attente premier versement ─────────────────────────── --}}
-@elseif($subscription->commercial_status === 'pending')
-<div class="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-5">
-    <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <p class="font-bold text-amber-900">⏳ En attente du premier versement</p>
-            <p class="mt-1 text-sm text-amber-800">La parcelle est réservée. La souscription sera activée automatiquement dès réception de l'acompte.</p>
-        </div>
-        @can('payments.create')
-        <a href="{{ route('payments.create', $subscription) }}" class="rounded-lg bg-amber-600 px-5 py-2.5 font-semibold text-white">
-            Encaisser l'acompte
-        </a>
-        @endcan
-    </div>
-</div>
-
-{{-- ── Encadré : Prochain paiement (actif + crédit + non soldé) ───────── --}}
-@elseif($subscription->commercial_status === 'active' && $subscription->duration_months > 0 && $nextInstallment)
-<div class="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-5">
-    <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <p class="font-bold text-blue-900">📅 Prochain paiement</p>
-            <div class="mt-2 grid gap-1 text-sm text-blue-800">
-                <p>Échéance : <strong>{{ \Carbon\Carbon::parse($nextInstallment->due_date)->translatedFormat('d F Y') }}</strong></p>
-                <p>Montant minimum : <strong>{{ $nextInstallment->amount_due }} USD</strong></p>
-                <p>Solde total restant : <strong>{{ $subscription->balance }} USD</strong></p>
+    <div class="customer-record">
+        @if(session('warning'))
+            <div class="record-alert record-alert--danger" role="alert">
+                <div><strong>Opération impossible</strong><p>{{ session('warning') }}</p></div>
             </div>
-        </div>
-        @can('payments.create')
-        <a href="{{ route('payments.create', $subscription) }}" class="rounded-lg bg-blue-700 px-5 py-2.5 font-semibold text-white">
-            Encaisser ce paiement →
-        </a>
-        @endcan
-    </div>
-</div>
-@endif
-
-{{-- ── En-tête ──────────────────────────────────────────────────────── --}}
-<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
-    <div>
-        <p class="font-mono text-amber-700">{{ $subscription->subscription_number }}</p>
-        <h1 class="text-3xl font-bold">{{ $subscription->customer->first_name }} {{ $subscription->customer->last_name }}</h1>
-        <p>{{ $subscription->plot->reference }} · {{ $subscription->plot->avenue->neighborhood->name }}</p>
-    </div>
-    <div class="flex flex-wrap gap-2">
-        {{-- Bouton Encaisser : seulement si active + pas soldée + pas annulée --}}
-        @if($subscription->commercial_status === 'active'
-            && $subscription->financial_status !== 'paid'
-            && !in_array($subscription->commercial_status, ['completed', 'cancelled', 'terminated']))
-        @can('payments.create')
-        <a href="{{ route('payments.create', $subscription) }}" class="rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white">
-            Encaisser un paiement
-        </a>
-        @endcan
         @endif
 
-        @can('customers.view')
-        <a href="{{ route('customers.show', $subscription->customer) }}" class="rounded-lg border bg-white px-4 py-2">
-            Fiche client
-        </a>
-        @endcan
-    </div>
-</div>
-
-{{-- ── Grille principale ────────────────────────────────────────────── --}}
-<div class="grid gap-5 lg:grid-cols-3">
-
-    {{-- Conditions figées --}}
-    <section class="rounded-xl bg-white p-5 shadow-sm">
-        <h2 class="font-bold">Conditions figées</h2>
-        <dl class="mt-4 grid gap-2 text-sm">
-            <div>Formule : <strong>{{ $subscription->paymentPlan->name }}</strong></div>
-            <div>Total : <strong>{{ $subscription->contract_total }} USD</strong></div>
-            @if($subscription->duration_months > 0)
-            <div>Mensualité : <strong>{{ $subscription->monthly_amount }} USD</strong></div>
-            <div>Durée : <strong>{{ $subscription->duration_months }} mois</strong></div>
-            @else
-            <div>Type : <strong>Comptant</strong></div>
-            @endif
-            <div class="border-t pt-2">Payé : <strong>{{ $subscription->amount_paid }} USD</strong></div>
-            <div>Solde : <strong class="{{ (float) $subscription->balance > 0 ? 'text-red-700' : 'text-emerald-700' }}">{{ $subscription->balance }} USD</strong></div>
-        </dl>
-    </section>
-
-    {{-- Statuts --}}
-    <section class="rounded-xl bg-white p-5 shadow-sm">
-        <h2 class="font-bold">Statuts</h2>
-        <dl class="mt-3 grid gap-3 text-sm">
-            <div>
-                <dt class="text-slate-500">Commercial</dt>
-                <dd><span class="rounded-full px-2 py-0.5 text-xs font-semibold
-                    {{ match($subscription->commercial_status) {
-                        'active'    => 'bg-emerald-100 text-emerald-800',
-                        'pending'   => 'bg-amber-100 text-amber-800',
-                        'completed' => 'bg-blue-100 text-blue-800',
-                        'suspended','cancelled','terminated' => 'bg-red-100 text-red-800',
-                        default     => 'bg-slate-100 text-slate-700',
-                    } }}">{{ ucfirst($subscription->commercial_status) }}</span></dd>
+        @if($subscription->financial_status === 'paid' || $subscription->commercial_status === 'completed')
+            <div class="record-alert record-alert--success">
+                <div><strong>Souscription soldée</strong><p>Tous les paiements ont été reçus. Aucun encaissement supplémentaire n’est possible.</p></div>
             </div>
-            <div><dt class="text-slate-500">Financier</dt><dd>{{ $subscription->financial_status }}</dd></div>
-            <div><dt class="text-slate-500">Administratif</dt><dd>{{ $subscription->administrative_status }}</dd></div>
-        </dl>
-
-        @if(auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('super_admin'))
-        @can('subscriptions.update')
-        <details class="mt-4">
-            <summary class="cursor-pointer text-xs text-slate-500">Forcer le statut (admin)</summary>
-            <form method="POST" action="{{ route('subscriptions.status', $subscription) }}" class="mt-3 flex gap-2">
-                @csrf @method('PATCH')
-                <select name="commercial_status" class="min-w-0 flex-1 rounded-lg border p-2 text-sm">
-                    @foreach(['pending','active','suspended','cancelled','terminated','completed'] as $status)
-                        <option @selected($subscription->commercial_status === $status)>{{ $status }}</option>
-                    @endforeach
-                </select>
-                <button class="rounded-lg bg-slate-950 px-3 text-sm text-white">OK</button>
-            </form>
-        </details>
-        @endcan
-        @endif
-    </section>
-
-    {{-- Dossier contrat --}}
-    <section class="rounded-xl bg-white p-5 shadow-sm">
-        <h2 class="font-bold">Dossier contrat</h2>
-        @if($subscription->contract)
-            <p class="mt-3 font-mono text-sm">{{ $subscription->contract->contract_number }}</p>
-            <p class="text-sm">{{ $subscription->contract->status }}</p>
-            @if($subscription->contract->document_path)
-                @can('documents.download')
-                <a href="{{ route('subscriptions.contract.download', [$subscription, $subscription->contract]) }}" class="mt-2 inline-block text-sm text-amber-700">Télécharger le contrat</a>
+        @elseif(in_array($subscription->commercial_status, ['cancelled', 'terminated'], true))
+            <div class="record-alert record-alert--danger">
+                <div><strong>Souscription {{ $subscription->commercial_status === 'cancelled' ? 'annulée' : 'résiliée' }}</strong><p>Aucun encaissement n’est possible sur ce dossier.</p></div>
+            </div>
+        @elseif($subscription->commercial_status === 'pending')
+            <div class="record-alert record-alert--warning">
+                <div><strong>En attente du premier versement</strong><p>La parcelle est réservée. La souscription sera activée dès réception de l’acompte.</p></div>
+                @can('payments.create')
+                    <a href="{{ route('payments.create', $subscription) }}" class="btn btn-app-primary resource-button">Encaisser l’acompte</a>
                 @endcan
-            @endif
-        @else
-            <p class="mt-3 text-sm text-slate-500">Aucun contrat attaché.</p>
+            </div>
+        @elseif($subscription->commercial_status === 'active' && $subscription->duration_months > 0 && $nextInstallment)
+            <div class="record-alert record-alert--info">
+                <div>
+                    <strong>Prochaine échéance : {{ CarbonCarbon::parse($nextInstallment->due_date)->translatedFormat('d F Y') }}</strong>
+                    <p>{{ number_format((float) $nextInstallment->amount_due, 2, ',', ' ') }} USD attendus · solde total {{ number_format((float) $subscription->balance, 2, ',', ' ') }} USD</p>
+                </div>
+                @can('payments.create')
+                    <a href="{{ route('payments.create', $subscription) }}" class="btn btn-app-primary resource-button">Encaisser le paiement</a>
+                @endcan
+            </div>
         @endif
-        @can('subscriptions.update')
-        <form method="POST" enctype="multipart/form-data" action="{{ route('subscriptions.contract.store', $subscription) }}" class="mt-4 grid gap-3">
-            @csrf
-            <input type="date" name="signed_at" value="{{ $subscription->contract?->signed_at?->format('Y-m-d') }}" class="rounded-lg border p-2 text-sm">
-            <select name="status" class="rounded-lg border p-2 text-sm">
-                @foreach(['draft','signed','cancelled','archived'] as $status)
-                    <option @selected($subscription->contract?->status === $status)>{{ $status }}</option>
-                @endforeach
-            </select>
-            <input type="file" name="document" accept=".pdf" class="text-sm">
-            <button class="rounded-lg bg-slate-950 p-2 text-sm text-white">Enregistrer le contrat</button>
-        </form>
-        @endcan
-    </section>
-</div>
 
-{{-- Historique des versements & Reçus (Factures PDF) --}}
-<section class="mt-6 rounded-2xl bg-white p-6 shadow-sm border border-slate-100">
-    <h2 class="mb-4 font-bold text-slate-900"><i class="bi bi-receipt me-2 text-primary"></i> Historique des paiements & reçus (Factures PDF)</h2>
-    <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
-            <thead class="bg-slate-50 text-xs font-semibold uppercase text-slate-400">
-                <tr>
-                    <th class="p-3">Référence</th>
-                    <th class="p-3">Date</th>
-                    <th class="p-3">Mode</th>
-                    <th class="p-3">Montant</th>
-                    <th class="p-3 text-right">Facture / Reçu PDF</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                @forelse($subscription->payments as $payment)
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-3 font-mono font-bold">
-                            <a href="{{ route('payments.show', $payment) }}" class="text-amber-800 hover:underline">
-                                {{ $payment->payment_reference }}
-                            </a>
-                        </td>
-                        <td class="p-3 text-slate-600">{{ $payment->payment_date->format('d/m/Y H:i') }}</td>
-                        <td class="p-3 text-slate-600">{{ ucfirst($payment->payment_method) }}</td>
-                        <td class="p-3 font-bold text-slate-900">{{ number_format((float) $payment->amount, 2) }} {{ $payment->currency }}</td>
-                        <td class="p-3 text-right">
-                            @if($payment->receipt)
-                                @can('receipts.download')
-                                    <a href="{{ route('receipts.download', $payment->receipt) }}"
-                                       class="inline-flex items-center gap-1.5 rounded-xl bg-slate-950 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition">
-                                        <i class="bi bi-download me-1"></i> Télécharger PDF ({{ $payment->receipt->receipt_number }})
-                                    </a>
-                                @endcan
-                            @else
-                                <span class="text-xs text-slate-400">Pas de reçu</span>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="p-4 text-center text-slate-500">Aucun versement enregistré sur cette souscription.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+        <header class="record-heading">
+            <div class="record-heading__identity">
+                <span class="record-heading__avatar" aria-hidden="true"><i class="bi bi-file-earmark-check"></i></span>
+                <div>
+                    <p class="app-kicker">{{ $subscription->subscription_number }}</p>
+                    <h1>{{ $subscription->customer->first_name }} {{ $subscription->customer->last_name }}</h1>
+                    <p>{{ $subscription->plot->reference }} · {{ $subscription->plot->avenue->neighborhood->name }}</p>
+                </div>
+            </div>
+            <div class="resource-heading__actions">
+                @can('customers.view')
+                    <a href="{{ route('customers.show', $subscription->customer) }}" class="btn btn-outline-secondary resource-button">Fiche client</a>
+                @endcan
+                @can('installments.view')
+                    <a href="{{ route('subscriptions.installments.index', $subscription) }}" class="btn btn-outline-secondary resource-button">Échéancier</a>
+                @endcan
+                @if($canPay)
+                    @can('payments.create')
+                        <a href="{{ route('payments.create', $subscription) }}" class="btn btn-app-primary resource-button">Encaisser</a>
+                    @endcan
+                @endif
+            </div>
+        </header>
+
+        <div class="record-metrics record-metrics--bordered">
+            <div>
+                <span>Montant contractuel</span>
+                <strong>{{ number_format((float) $subscription->contract_total, 2, ',', ' ') }} <small>USD</small></strong>
+                <small>{{ $subscription->paymentPlan->name }}</small>
+            </div>
+            <div class="record-metric--success">
+                <span>Montant encaissé</span>
+                <strong>{{ number_format((float) $subscription->amount_paid, 2, ',', ' ') }} <small>USD</small></strong>
+                <small>{{ $subscription->payments->count() }} paiement(s)</small>
+            </div>
+            <div class="{{ (float) $subscription->balance > 0 ? 'record-metric--danger' : 'record-metric--success' }}">
+                <span>Solde restant</span>
+                <strong>{{ number_format((float) $subscription->balance, 2, ',', ' ') }} <small>USD</small></strong>
+                <small>{{ $subscription->installments->count() }} échéance(s)</small>
+            </div>
+        </div>
+
+        <div class="detail-sheet">
+            <section class="detail-section">
+                <div class="detail-section__heading"><p class="app-kicker">Contrat</p><h2>Conditions figées</h2></div>
+                <dl class="detail-grid">
+                    <div><dt>Formule</dt><dd>{{ $subscription->paymentPlan->name }}</dd></div>
+                    <div><dt>Type de règlement</dt><dd>{{ $subscription->duration_months > 0 ? 'Paiement échelonné' : 'Paiement comptant' }}</dd></div>
+                    <div><dt>Mensualité</dt><dd>{{ $subscription->duration_months > 0 ? number_format((float) $subscription->monthly_amount, 2, ',', ' ').' USD' : 'Non applicable' }}</dd></div>
+                    <div><dt>Durée</dt><dd>{{ $subscription->duration_months > 0 ? $subscription->duration_months.' mois' : 'Comptant' }}</dd></div>
+                    <div><dt>Date de souscription</dt><dd>{{ $subscription->subscription_date?->format('d/m/Y') }}</dd></div>
+                    <div><dt>Début de l’échéancier</dt><dd>{{ $subscription->start_date?->format('d/m/Y') }}</dd></div>
+                </dl>
+            </section>
+
+            <section class="detail-section">
+                <div class="detail-section__heading"><p class="app-kicker">Suivi</p><h2>Statuts du dossier</h2></div>
+                <div>
+                    <dl class="detail-grid">
+                        <div><dt>Commercial</dt><dd><span class="status-badge status-badge--{{ $subscription->commercial_status }}">{{ $commercialStatusLabels[$subscription->commercial_status] ?? ucfirst($subscription->commercial_status) }}</span></dd></div>
+                        <div><dt>Financier</dt><dd>{{ ucfirst($subscription->financial_status) }}</dd></div>
+                        <div><dt>Administratif</dt><dd>{{ ucfirst($subscription->administrative_status) }}</dd></div>
+                    </dl>
+                    @if(auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('super_admin'))
+                        @can('subscriptions.update')
+                            <details class="record-disclosure">
+                                <summary>Modifier le statut commercial</summary>
+                                <form method="POST" action="{{ route('subscriptions.status', $subscription) }}" class="record-inline-form">
+                                    @csrf
+                                    @method('PATCH')
+                                    <select name="commercial_status" class="form-select">
+                                        @foreach(['pending', 'active', 'suspended', 'cancelled', 'terminated', 'completed'] as $status)
+                                            <option value="{{ $status }}" @selected($subscription->commercial_status === $status)>{{ $commercialStatusLabels[$status] }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button class="btn btn-app-primary resource-button" type="submit">Mettre à jour</button>
+                                </form>
+                            </details>
+                        @endcan
+                    @endif
+                </div>
+            </section>
+
+            <section class="detail-section">
+                <div class="detail-section__heading"><p class="app-kicker">Document</p><h2>Dossier contrat</h2></div>
+                <div>
+                    @if($subscription->contract)
+                        <dl class="detail-grid mb-3">
+                            <div><dt>Numéro</dt><dd class="font-monospace">{{ $subscription->contract->contract_number }}</dd></div>
+                            <div><dt>Statut</dt><dd>{{ ucfirst($subscription->contract->status) }}</dd></div>
+                            <div><dt>Date de signature</dt><dd>{{ $subscription->contract->signed_at?->format('d/m/Y') ?? 'Non signée' }}</dd></div>
+                        </dl>
+                        @if($subscription->contract->document_path)
+                            @can('documents.download')
+                                <a href="{{ route('subscriptions.contract.download', [$subscription, $subscription->contract]) }}" class="resource-reference">Télécharger le contrat</a>
+                            @endcan
+                        @endif
+                    @else
+                        <p class="record-empty-copy">Aucun contrat n’est actuellement attaché à cette souscription.</p>
+                    @endif
+
+                    @can('subscriptions.update')
+                        <form method="POST" enctype="multipart/form-data" action="{{ route('subscriptions.contract.store', $subscription) }}" class="record-upload">
+                            @csrf
+                            <input type="date" name="signed_at" value="{{ $subscription->contract?->signed_at?->format('Y-m-d') }}" class="form-control" aria-label="Date de signature">
+                            <select name="status" class="form-select" aria-label="Statut du contrat">
+                                @foreach(['draft', 'signed', 'cancelled', 'archived'] as $status)
+                                    <option value="{{ $status }}" @selected($subscription->contract?->status === $status)>{{ ucfirst($status) }}</option>
+                                @endforeach
+                            </select>
+                            <input type="file" name="document" accept=".pdf" class="form-control" aria-label="Document PDF">
+                            <button class="btn btn-app-primary resource-button" type="submit">Enregistrer</button>
+                        </form>
+                    @endcan
+                </div>
+            </section>
+        </div>
+
+        <section class="resource-table" aria-labelledby="subscription-payments-title">
+            <div class="resource-table__header">
+                <div><h2 id="subscription-payments-title">Paiements et reçus</h2><p>{{ $subscription->payments->count() }} versement(s) enregistré(s)</p></div>
+            </div>
+            <div class="table-responsive">
+                <table class="table resource-data-table align-middle mb-0">
+                    <thead><tr><th>Référence</th><th>Date</th><th>Mode</th><th class="text-end">Montant</th><th class="text-end">Reçu</th></tr></thead>
+                    <tbody>
+                        @forelse($subscription->payments as $payment)
+                            <tr>
+                                <td><a href="{{ route('payments.show', $payment) }}" class="resource-reference">{{ $payment->payment_reference }}</a></td>
+                                <td class="resource-data-table__secondary">{{ $payment->payment_date->format('d/m/Y H:i') }}</td>
+                                <td class="resource-data-table__secondary">{{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</td>
+                                <td class="record-money text-end">{{ number_format((float) $payment->amount, 2, ',', ' ') }} {{ $payment->currency }}</td>
+                                <td class="text-end">
+                                    @if($payment->receipt)
+                                        @can('receipts.download')
+                                            <a href="{{ route('receipts.download', $payment->receipt) }}" class="btn btn-sm btn-outline-secondary">Télécharger</a>
+                                        @endcan
+                                    @else
+                                        <span class="text-muted small">Non généré</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="5"><div class="resource-empty"><strong>Aucun paiement enregistré</strong><span>Les versements associés à cette souscription apparaîtront ici.</span></div></td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
-</section>
-
-{{-- Compteurs --}}
-<div class="mt-5 grid gap-5 md:grid-cols-3">
-    @foreach([['Échéances', $subscription->installments->count()], ['Paiements', $subscription->payments->count()], ['Reçus', $subscription->receipts->count()]] as [$label, $count])
-    <div class="rounded-xl bg-white p-5 shadow-sm">
-        <p class="text-sm text-slate-500">{{ $label }}</p>
-        <p class="text-3xl font-bold">{{ $count }}</p>
-    </div>
-    @endforeach
-</div>
-
 </x-layouts.app>

@@ -7,7 +7,7 @@
                 <p class="resource-heading__description">Formules de paiement supprimées. Elles peuvent être restaurées ou retirées définitivement.</p>
             </div>
             <div class="resource-heading__actions">
-                <a href="{{ route('payment-plans.index') }}" class="btn btn-outline-secondary resource-button">Retour aux formules</a>
+                <a href="{{ route('payment-plans.index') }}" class="btn btn-outline">Retour aux formules</a>
             </div>
         </header>
 
@@ -52,7 +52,7 @@
                                             </form>
                                         @endcan
                                         @can('payment_plans.force_delete')
-                                            <form method="POST" action="{{ route('payment-plans.force-delete', $plan) }}" class="d-inline" onsubmit="return confirm('SUPPRESSION DÉFINITIVE de la formule {{ $plan->name }}. Action irréversible !');">
+                                            <form method="POST" action="{{ route('payment-plans.force-delete', $plan) }}" class="d-inline" data-confirm="Suppression définitive et irréversible de cette formule ?">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2">

@@ -6,6 +6,7 @@ const sidebarCloseButtons = document.querySelectorAll('[data-sidebar-close]');
 const sidebarCollapseButton = document.querySelector('[data-sidebar-collapse]');
 const themeToggle = document.querySelector('[data-theme-toggle]');
 const themeLabel = document.querySelector('[data-theme-label]');
+const themeIcon = themeToggle?.querySelector('i');
 
 const setSidebarState = (isOpen) => {
     document.body.classList.toggle('is-sidebar-open', isOpen);
@@ -41,11 +42,16 @@ const syncThemeControl = () => {
     if (themeLabel) {
         themeLabel.textContent = isDark ? 'Mode clair' : 'Mode sombre';
     }
+
+    if (themeIcon) {
+        themeIcon.className = isDark ? 'bi bi-sun' : 'bi bi-moon-stars';
+    }
 };
 
 themeToggle?.addEventListener('click', () => {
     const theme = root.dataset.bsTheme === 'dark' ? 'light' : 'dark';
     root.dataset.bsTheme = theme;
+    root.dataset.theme = theme;
     localStorage.setItem('cite-etoile-theme', theme);
     syncThemeControl();
 });
@@ -82,10 +88,52 @@ document.querySelectorAll('[data-plan-select]').forEach((select) => {
     updatePlanSummary();
 });
 
+document.querySelectorAll('[data-suggested-amount]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const amountInput = document.querySelector('#amount-input');
+
+        if (amountInput) {
+            amountInput.value = button.dataset.suggestedAmount;
+            amountInput.focus();
+        }
+    });
+});
+
 document.querySelectorAll('form[data-confirm]').forEach((form) => {
     form.addEventListener('submit', (event) => {
         if (!window.confirm(form.dataset.confirm)) {
             event.preventDefault();
         }
+    });
+});
+
+document.querySelectorAll('[data-credentials-panel]').forEach((panel) => {
+    const content = panel.querySelector('[data-credentials-content]');
+    const copyButton = panel.querySelector('[data-copy-credentials]');
+    const downloadButton = panel.querySelector('[data-download-credentials]');
+    const markdown = content?.textContent.trim() ?? '';
+
+    copyButton?.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(markdown);
+
+        const label = copyButton.querySelector('span');
+        const originalLabel = label?.textContent;
+
+        if (label) {
+            label.textContent = 'Copié';
+            window.setTimeout(() => {
+                label.textContent = originalLabel;
+            }, 2000);
+        }
+    });
+
+    downloadButton?.addEventListener('click', () => {
+        const url = URL.createObjectURL(new Blob([markdown], { type: 'text/markdown;charset=utf-8' }));
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = downloadButton.dataset.filename;
+        link.click();
+        URL.revokeObjectURL(url);
     });
 });

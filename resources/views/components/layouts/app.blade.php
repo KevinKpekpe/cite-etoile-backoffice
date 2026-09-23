@@ -34,8 +34,8 @@
                     <span class="app-brand__caption">du Monde</span>
                 </span>
             </a>
-            <button class="app-icon-button lg:hidden" type="button" data-sidebar-close aria-label="Fermer le menu">
-                <span aria-hidden="true">×</span>
+            <button class="app-icon-button app-sidebar-close-button" type="button" data-sidebar-close aria-label="Fermer le menu">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
             </button>
         </div>
 
@@ -43,90 +43,93 @@
             <p class="app-nav-label">Navigation</p>
 
             @if($isPortalClient)
-                <a href="{{ route('portal.dashboard') }}" class="app-nav-link {{ request()->routeIs('portal.dashboard') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">01</span><span>Vue d’ensemble</span></a>
-                <a href="{{ route('portal.subscriptions.index') }}" class="app-nav-link {{ request()->routeIs('portal.subscriptions.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">02</span><span>Mes souscriptions</span></a>
-                <a href="{{ route('portal.payments.index') }}" class="app-nav-link {{ request()->routeIs('portal.payments.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">03</span><span>Mes paiements</span></a>
-                <a href="{{ route('portal.installments.index') }}" class="app-nav-link {{ request()->routeIs('portal.installments.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">04</span><span>Mon échéancier</span></a>
-                <a href="{{ route('portal.receipts.index') }}" class="app-nav-link {{ request()->routeIs('portal.receipts.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">05</span><span>Mes reçus</span></a>
-                <a href="{{ route('portal.profile.edit') }}" class="app-nav-link {{ request()->routeIs('portal.profile.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">06</span><span>Mon profil</span></a>
+                <a href="{{ route('portal.dashboard') }}" class="app-nav-link {{ request()->routeIs('portal.dashboard') ? 'is-active' : '' }}"><i class="bi bi-grid app-nav-link__marker" aria-hidden="true"></i><span>Vue d’ensemble</span></a>
+                <a href="{{ route('portal.subscriptions.index') }}" class="app-nav-link {{ request()->routeIs('portal.subscriptions.*') ? 'is-active' : '' }}"><i class="bi bi-file-earmark-text app-nav-link__marker" aria-hidden="true"></i><span>Mes souscriptions</span></a>
+                <a href="{{ route('portal.payments.index') }}" class="app-nav-link {{ request()->routeIs('portal.payments.*') ? 'is-active' : '' }}"><i class="bi bi-credit-card app-nav-link__marker" aria-hidden="true"></i><span>Mes paiements</span></a>
+                <a href="{{ route('portal.installments.index') }}" class="app-nav-link {{ request()->routeIs('portal.installments.*') ? 'is-active' : '' }}"><i class="bi bi-calendar3 app-nav-link__marker" aria-hidden="true"></i><span>Mon échéancier</span></a>
+                <a href="{{ route('portal.receipts.index') }}" class="app-nav-link {{ request()->routeIs('portal.receipts.*') ? 'is-active' : '' }}"><i class="bi bi-receipt app-nav-link__marker" aria-hidden="true"></i><span>Mes reçus</span></a>
+                <a href="{{ route('portal.profile.edit') }}" class="app-nav-link {{ request()->routeIs('portal.profile.*') ? 'is-active' : '' }}"><i class="bi bi-person app-nav-link__marker" aria-hidden="true"></i><span>Mon profil</span></a>
             @else
                 @can('dashboard.view')
-                    <a href="{{ route('dashboard') }}" class="app-nav-link {{ request()->routeIs('dashboard') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">01</span><span>Tableau de bord</span></a>
+                    <a href="{{ route('dashboard') }}" class="app-nav-link {{ request()->routeIs('dashboard') ? 'is-active' : '' }}"><i class="bi bi-grid app-nav-link__marker" aria-hidden="true"></i><span>Tableau de bord</span></a>
                 @endcan
                 @can('customers.view')
-                    <a href="{{ route('customers.index') }}" class="app-nav-link {{ request()->routeIs('customers.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">02</span><span>Clients</span></a>
+                    <a href="{{ route('customers.index') }}" class="app-nav-link {{ request()->routeIs('customers.*') ? 'is-active' : '' }}"><i class="bi bi-people app-nav-link__marker" aria-hidden="true"></i><span>Clients</span></a>
                 @endcan
                 @can('plots.view')
-                    <a href="{{ route('plots.index') }}" class="app-nav-link {{ request()->routeIs('plots.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">03</span><span>Parcelles</span></a>
+                    <a href="{{ route('plots.index') }}" class="app-nav-link {{ request()->routeIs('plots.*') ? 'is-active' : '' }}"><i class="bi bi-map app-nav-link__marker" aria-hidden="true"></i><span>Parcelles</span></a>
                 @endcan
                 @can('subscriptions.view')
                     <a href="{{ route('subscriptions.index') }}" class="app-nav-link {{ request()->routeIs('subscriptions.*') ? 'is-active' : '' }}">
-                        <span class="app-nav-link__marker" aria-hidden="true">04</span><span>Souscriptions</span>
+                        <i class="bi bi-file-earmark-check app-nav-link__marker" aria-hidden="true"></i><span>Souscriptions</span>
                         @if($overdueNavCount > 0)
                             <span class="app-nav-badge" title="{{ $overdueNavCount }} souscription(s) en retard">{{ $overdueNavCount }}</span>
                         @endif
                     </a>
                 @endcan
                 @can('payments.view')
-                    <a href="{{ route('payments.index') }}" class="app-nav-link {{ request()->routeIs('payments.*', 'receipts.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">05</span><span>Paiements</span></a>
+                    <a href="{{ route('payments.index') }}" class="app-nav-link {{ request()->routeIs('payments.*', 'receipts.*') ? 'is-active' : '' }}"><i class="bi bi-credit-card app-nav-link__marker" aria-hidden="true"></i><span>Paiements</span></a>
                 @endcan
 
                 <p class="app-nav-label app-nav-label--spaced">Gestion</p>
 
                 @can('payment_plans.view')
-                    <a href="{{ route('payment-plans.index') }}" class="app-nav-link {{ request()->routeIs('payment-plans.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">06</span><span>Formules</span></a>
+                    <a href="{{ route('payment-plans.index') }}" class="app-nav-link {{ request()->routeIs('payment-plans.*') ? 'is-active' : '' }}"><i class="bi bi-wallet2 app-nav-link__marker" aria-hidden="true"></i><span>Formules</span></a>
                 @endcan
                 @can('reports.view')
-                    <a href="{{ route('reports.index') }}" class="app-nav-link {{ request()->routeIs('reports.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">07</span><span>Rapports</span></a>
+                    <a href="{{ route('reports.index') }}" class="app-nav-link {{ request()->routeIs('reports.*') ? 'is-active' : '' }}"><i class="bi bi-bar-chart app-nav-link__marker" aria-hidden="true"></i><span>Rapports</span></a>
                 @endcan
                 @can('plots.manage')
-                    <a href="{{ route('neighborhoods.index') }}" class="app-nav-link {{ request()->routeIs('neighborhoods.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">08</span><span>Quartiers</span></a>
-                    <a href="{{ route('avenues.index') }}" class="app-nav-link {{ request()->routeIs('avenues.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">09</span><span>Avenues</span></a>
+                    <a href="{{ route('neighborhoods.index') }}" class="app-nav-link {{ request()->routeIs('neighborhoods.*') ? 'is-active' : '' }}"><i class="bi bi-buildings app-nav-link__marker" aria-hidden="true"></i><span>Quartiers</span></a>
+                    <a href="{{ route('avenues.index') }}" class="app-nav-link {{ request()->routeIs('avenues.*') ? 'is-active' : '' }}"><i class="bi bi-signpost-2 app-nav-link__marker" aria-hidden="true"></i><span>Avenues</span></a>
                 @endcan
                 @can('audit_logs.view')
-                    <a href="{{ route('audit-logs.index') }}" class="app-nav-link {{ request()->routeIs('audit-logs.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">10</span><span>Journal d’audit</span></a>
+                    <a href="{{ route('audit-logs.index') }}" class="app-nav-link {{ request()->routeIs('audit-logs.*') ? 'is-active' : '' }}"><i class="bi bi-clock-history app-nav-link__marker" aria-hidden="true"></i><span>Journal d’audit</span></a>
                 @endcan
                 @can('users.manage')
-                    <a href="{{ route('users.index') }}" class="app-nav-link {{ request()->routeIs('users.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">11</span><span>Utilisateurs</span></a>
+                    <a href="{{ route('users.index') }}" class="app-nav-link {{ request()->routeIs('users.*') ? 'is-active' : '' }}"><i class="bi bi-person-gear app-nav-link__marker" aria-hidden="true"></i><span>Utilisateurs</span></a>
                 @endcan
                 @can('settings.manage')
-                    <a href="{{ route('settings.index') }}" class="app-nav-link {{ request()->routeIs('settings.*') ? 'is-active' : '' }}"><span class="app-nav-link__marker" aria-hidden="true">12</span><span>Paramètres</span></a>
+                    <a href="{{ route('settings.index') }}" class="app-nav-link {{ request()->routeIs('settings.*') ? 'is-active' : '' }}"><i class="bi bi-gear app-nav-link__marker" aria-hidden="true"></i><span>Paramètres</span></a>
                 @endcan
             @endif
         </nav>
 
         <div class="app-sidebar__footer">
-            <div class="app-sidebar__status"><span class="app-sidebar__status-dot" aria-hidden="true"></span><span>Système opérationnel</span></div>
+            <div class="app-sidebar-user">
+                <span class="app-sidebar-user__avatar" aria-hidden="true">{{ $userInitials }}<span></span></span>
+                <span class="app-sidebar-user__identity">
+                    <strong>{{ $userName }}</strong>
+                    <small>{{ $isPortalClient ? 'Client' : 'Administration' }}</small>
+                </span>
+            </div>
         </div>
     </aside>
 
     <div class="app-workspace">
         <header class="app-topbar">
             <div class="flex min-w-0 items-center gap-3">
-                <button class="app-icon-button lg:hidden" type="button" data-sidebar-open aria-controls="app-sidebar" aria-expanded="false" aria-label="Ouvrir le menu">
-                    <span class="app-menu-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+                <button class="app-icon-button app-sidebar-open-button" type="button" data-sidebar-open aria-controls="app-sidebar" aria-expanded="false" aria-label="Ouvrir le menu">
+                    <i class="bi bi-list" aria-hidden="true"></i>
                 </button>
-                <button class="app-icon-button hidden lg:inline-flex" type="button" data-sidebar-collapse aria-controls="app-sidebar" aria-label="Réduire le menu latéral">
-                    <span class="app-menu-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+                <button class="app-icon-button app-sidebar-collapse-button" type="button" data-sidebar-collapse aria-controls="app-sidebar" aria-label="Réduire le menu latéral">
+                    <i class="bi bi-layout-sidebar-inset" aria-hidden="true"></i>
                 </button>
-                <div class="min-w-0">
-                    <p class="app-topbar__context">{{ $isPortalClient ? 'Espace client' : 'Administration' }}</p>
-                    <p class="app-topbar__title">{{ $title ?? 'Back-office' }}</p>
-                </div>
+                <nav class="app-breadcrumb" aria-label="Fil d’Ariane">
+                    <a href="{{ $homeRoute }}">Accueil</a>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    <span aria-current="page">{{ $title ?? 'Back-office' }}</span>
+                </nav>
             </div>
 
             <div class="flex items-center gap-2 sm:gap-3">
-                <button class="app-theme-toggle" type="button" data-theme-toggle aria-label="Activer le mode sombre">
-                    <span class="app-theme-toggle__indicator" aria-hidden="true"></span><span class="hidden sm:inline" data-theme-label>Mode sombre</span>
+                <button class="app-theme-toggle" type="button" data-theme-toggle aria-label="Activer le mode sombre" title="Changer de thème">
+                    <i class="bi bi-moon-stars" aria-hidden="true"></i><span class="visually-hidden" data-theme-label>Mode sombre</span>
                 </button>
 
                 <div class="dropdown">
                     <button class="app-user-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="app-user-menu__avatar" aria-hidden="true">{{ $userInitials }}</span>
-                        <span class="hidden min-w-0 text-left md:block">
-                            <strong class="app-user-menu__name">{{ $userName }}</strong><span class="app-user-menu__email">{{ $user?->email }}</span>
-                        </span>
-                        <span class="app-user-menu__chevron" aria-hidden="true">⌄</span>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end app-user-dropdown">
                         @if($isPortalClient)
