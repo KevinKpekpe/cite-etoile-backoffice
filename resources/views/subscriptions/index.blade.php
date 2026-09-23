@@ -8,7 +8,7 @@
             </div>
             <div class="resource-heading__actions">
                 @can('subscriptions.create')
-                    <a href="{{ route('subscriptions.create') }}" class="btn btn-app-primary resource-button">
+                    <a href="{{ route('subscriptions.create') }}" class="btn btn-primary">
                         <i class="bi bi-plus-lg me-1"></i> Nouvelle souscription
                     </a>
                 @endcan
@@ -19,24 +19,24 @@
         <div class="resource-filters">
             <div class="d-flex flex-wrap gap-2 align-items-center">
                 <a href="{{ route('subscriptions.index', ['status' => 'all']) }}"
-                   class="btn btn-sm {{ $statusFilter === 'all' ? 'btn-dark font-bold' : 'btn-outline-secondary' }}">
-                    Toutes <span class="badge bg-secondary ms-1">{{ $counts['all'] }}</span>
+                   class="chart-tab {{ $statusFilter === 'all' ? 'active' : '' }}">
+                    Toutes <span class="filter-count">{{ $counts['all'] }}</span>
                 </a>
                 <a href="{{ route('subscriptions.index', ['status' => 'overdue']) }}"
-                   class="btn btn-sm {{ $statusFilter === 'overdue' ? 'btn-danger font-bold' : 'btn-outline-danger' }}">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i> En retard <span class="badge {{ $statusFilter === 'overdue' ? 'bg-white text-danger' : 'bg-danger text-white' }} ms-1">{{ $counts['overdue'] }}</span>
+                   class="chart-tab chart-tab--danger {{ $statusFilter === 'overdue' ? 'active' : '' }}">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> En retard <span class="filter-count">{{ $counts['overdue'] }}</span>
                 </a>
                 <a href="{{ route('subscriptions.index', ['status' => 'active']) }}"
-                   class="btn btn-sm {{ $statusFilter === 'active' ? 'btn-primary font-bold' : 'btn-outline-primary' }}">
-                    En cours <span class="badge bg-secondary ms-1">{{ $counts['active'] }}</span>
+                   class="chart-tab {{ $statusFilter === 'active' ? 'active' : '' }}">
+                    En cours <span class="filter-count">{{ $counts['active'] }}</span>
                 </a>
                 <a href="{{ route('subscriptions.index', ['status' => 'paid']) }}"
-                   class="btn btn-sm {{ $statusFilter === 'paid' ? 'btn-success font-bold' : 'btn-outline-success' }}">
-                    Soldées <span class="badge bg-secondary ms-1">{{ $counts['paid'] }}</span>
+                   class="chart-tab {{ $statusFilter === 'paid' ? 'active' : '' }}">
+                    Soldées <span class="filter-count">{{ $counts['paid'] }}</span>
                 </a>
                 <a href="{{ route('subscriptions.index', ['status' => 'cancelled']) }}"
-                   class="btn btn-sm {{ $statusFilter === 'cancelled' ? 'btn-secondary font-bold' : 'btn-outline-secondary' }}">
-                    Clôturées <span class="badge bg-secondary ms-1">{{ $counts['cancelled'] }}</span>
+                   class="chart-tab {{ $statusFilter === 'cancelled' ? 'active' : '' }}">
+                    Clôturées <span class="filter-count">{{ $counts['cancelled'] }}</span>
                 </a>
             </div>
         </div>

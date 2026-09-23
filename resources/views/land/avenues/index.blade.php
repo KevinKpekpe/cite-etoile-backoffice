@@ -2,7 +2,7 @@
     <div class="resource-page">
         <header class="resource-heading">
             <div><p class="app-kicker">Gestion foncière</p><h1 class="resource-heading__title">Avenues</h1><p class="resource-heading__description">Organisez les axes de circulation et leur rattachement aux quartiers.</p></div>
-            <a href="{{ route('avenues.create') }}" class="btn btn-app-primary resource-button">Nouvelle avenue</a>
+            <a href="{{ route('avenues.create') }}" class="btn btn-primary">Nouvelle avenue</a>
         </header>
         <section class="resource-table">
             <div class="resource-table__header"><div><h2>Répertoire des avenues</h2><p>{{ $avenues->total() }} {{ Str::plural('avenue', $avenues->total()) }}</p></div></div>

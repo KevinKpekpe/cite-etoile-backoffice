@@ -43,7 +43,7 @@
                 @if($hasFilters)
                     <a href="{{ route('audit-logs.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>
                 @endif
-                <button class="btn btn-app-primary resource-button" type="submit">Rechercher</button>
+                <button class="btn btn-primary" type="submit">Rechercher</button>
             </div>
         </form>
 
@@ -76,13 +76,11 @@
                                     <span class="resource-reference">{{ class_basename($log->entity_type) }} #{{ $log->entity_id }}</span>
                                 </td>
                                 <td class="text-end">
-                                    <details class="d-inline-block text-start">
-                                        <summary class="btn btn-sm btn-outline-secondary py-1 px-2">Consulter les détails</summary>
-                                        <div class="mt-2 rounded-3 bg-dark text-light p-3 text-start font-monospace small" style="max-width: 480px; font-size: 0.75rem;">
-                                            <div class="text-warning mb-1 font-bold">Avant:</div>
-                                            <pre class="mb-2 text-wrap" style="color: #cbd5e1;">{{ json_encode($log->old_values, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre>
-                                            <div class="text-info mb-1 font-bold">Après:</div>
-                                            <pre class="mb-0 text-wrap" style="color: #cbd5e1;">{{ json_encode($log->new_values, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre>
+                                    <details class="audit-details">
+                                        <summary class="btn btn-sm btn-outline">Consulter</summary>
+                                        <div class="audit-details__panel">
+                                            <div><strong>Avant</strong><pre>{{ json_encode($log->old_values, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre></div>
+                                            <div><strong>Après</strong><pre>{{ json_encode($log->new_values, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre></div>
                                         </div>
                                     </details>
                                 </td>

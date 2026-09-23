@@ -6,7 +6,7 @@
     <div class="resource-page">
         <header class="resource-heading">
             <div><p class="app-kicker">Gestion foncière</p><h1 class="resource-heading__title">Parcelles</h1><p class="resource-heading__description">Inventaire centralisé du patrimoine foncier et de sa disponibilité commerciale.</p></div>
-            <div class="resource-heading__actions">@can('plots.manage')<a href="{{ route('plots.trashed') }}" class="btn btn-outline-secondary resource-button">Corbeille</a><a href="{{ route('plots.create') }}" class="btn btn-app-primary resource-button">Nouvelle parcelle</a>@endcan</div>
+            <div class="resource-heading__actions">@can('plots.manage')<a href="{{ route('plots.trashed') }}" class="btn btn-outline">Corbeille</a><a href="{{ route('plots.create') }}" class="btn btn-primary">Nouvelle parcelle</a>@endcan</div>
         </header>
 
         <form method="GET" action="{{ route('plots.index') }}" class="resource-filters resource-filters--wide">
@@ -14,7 +14,7 @@
             <div><label for="plot-neighborhood" class="form-label">Quartier</label><select id="plot-neighborhood" name="neighborhood_id" class="form-select"><option value="">Tous les quartiers</option>@foreach($neighborhoods as $item)<option value="{{ $item->id }}" @selected((string) ($filters['neighborhood_id'] ?? '') === (string) $item->id)>{{ $item->name }}</option>@endforeach</select></div>
             <div><label for="plot-avenue" class="form-label">Avenue</label><select id="plot-avenue" name="avenue_id" class="form-select"><option value="">Toutes les avenues</option>@foreach($avenues as $item)<option value="{{ $item->id }}" @selected((string) ($filters['avenue_id'] ?? '') === (string) $item->id)>{{ $item->name }}</option>@endforeach</select></div>
             <div><label for="plot-status" class="form-label">Statut</label><select id="plot-status" name="commercial_status" class="form-select"><option value="">Tous les statuts</option>@foreach($commercialLabels as $value => $label)<option value="{{ $value }}" @selected(($filters['commercial_status'] ?? '') === $value)>{{ $label }}</option>@endforeach</select></div>
-            <div class="resource-filters__actions">@if($hasFilters)<a href="{{ route('plots.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>@endif<button class="btn btn-app-primary resource-button" type="submit">Appliquer</button></div>
+            <div class="resource-filters__actions">@if($hasFilters)<a href="{{ route('plots.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>@endif<button class="btn btn-primary" type="submit">Appliquer</button></div>
         </form>
 
         <section class="resource-table">

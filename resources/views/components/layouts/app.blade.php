@@ -148,6 +148,7 @@
                         @if($isPortalClient)
                             <a class="dropdown-item" href="{{ route('portal.profile.edit') }}">Mon profil</a>
                         @else
+                            <a class="dropdown-item" href="{{ route('profile.edit') }}">Mon profil</a>
                             <a class="dropdown-item" href="{{ route('two-factor.setup') }}">Sécurité du compte</a>
                         @endif
                         <div class="dropdown-divider"></div>

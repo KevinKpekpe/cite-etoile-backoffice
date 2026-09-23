@@ -3,7 +3,7 @@
     <div class="resource-page">
         <header class="resource-heading">
             <div><p class="app-kicker">Gestion foncière</p><h1 class="resource-heading__title">Quartiers</h1><p class="resource-heading__description">Structurez les zones du projet et suivez leur niveau de développement.</p></div>
-            <a href="{{ route('neighborhoods.create') }}" class="btn btn-app-primary resource-button">Nouveau quartier</a>
+            <a href="{{ route('neighborhoods.create') }}" class="btn btn-primary">Nouveau quartier</a>
         </header>
 
         <section class="resource-table">

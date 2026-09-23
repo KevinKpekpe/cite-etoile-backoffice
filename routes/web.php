@@ -25,6 +25,7 @@ use App\Http\Controllers\Portal\PaymentController as PortalPaymentController;
 use App\Http\Controllers\Portal\ProfileController as PortalProfileController;
 use App\Http\Controllers\Portal\ReceiptController as PortalReceiptController;
 use App\Http\Controllers\Portal\SubscriptionController as PortalSubscriptionController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
@@ -58,6 +59,8 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/account/two-factor', [TwoFactorAuthenticationController::class, 'setup'])->name('two-factor.setup');
         Route::post('/account/two-factor', [TwoFactorAuthenticationController::class, 'enable'])->middleware('throttle:6,1')->name('two-factor.enable');
         Route::delete('/account/two-factor', [TwoFactorAuthenticationController::class, 'disable'])->name('two-factor.disable');
+        Route::get('/account/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/account/profile', [ProfileController::class, 'update'])->name('profile.update');
 
         Route::get('/customers', [CustomerController::class, 'index'])->middleware('can:customers.view')->name('customers.index');
         Route::get('/customers/trashed', [CustomerController::class, 'trashed'])->middleware('can:customers.delete')->name('customers.trashed');
@@ -143,6 +146,7 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/receipts/{receipt}/download', [PortalReceiptController::class, 'download'])->middleware('signed')->whereNumber('receipt')->name('receipts.download');
             Route::get('/profile', [PortalProfileController::class, 'edit'])->middleware('can:profile.view')->name('profile.edit');
             Route::put('/profile', [PortalProfileController::class, 'update'])->middleware('can:profile.update')->name('profile.update');
+            Route::put('/profile/password', [PortalProfileController::class, 'updatePassword'])->middleware('can:profile.update')->name('profile.password.update');
         });
     });
 });

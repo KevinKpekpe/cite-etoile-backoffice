@@ -76,6 +76,33 @@ it('updates allowed profile fields and audits the change', function () {
     $this->assertDatabaseHas('audit_logs', ['action' => 'portal.profile.updated', 'entity_id' => $this->customer->id]);
 });
 
+it('lets a client change their password after verifying the current password', function () {
+    $this->user->update(['password' => Hash::make('CurrentPassword123!')]);
+
+    $this->actingAs($this->user)->put(route('portal.profile.password.update'), [
+        'current_password' => 'CurrentPassword123!',
+        'password' => 'UpdatedPassword456!',
+        'password_confirmation' => 'UpdatedPassword456!',
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    expect(Hash::check('UpdatedPassword456!', $this->user->fresh()->password))->toBeTrue();
+    $this->assertDatabaseHas('audit_logs', [
+        'action' => 'portal.profile.password_changed',
+        'user_id' => $this->user->id,
+        'entity_id' => $this->user->id,
+    ]);
+});
+
+it('rejects a client password change when the current password or confirmation is invalid', function () {
+    $this->user->update(['password' => Hash::make('CurrentPassword123!')]);
+
+    $this->actingAs($this->user)->put(route('portal.profile.password.update'), [
+        'current_password' => 'wrong-password',
+        'password' => 'UpdatedPassword456!',
+        'password_confirmation' => 'not-the-same',
+    ])->assertSessionHasErrors(['current_password', 'password']);
+});
+
 it('rejects invalid profile data and users without portal permission', function () {
     $this->actingAs($this->user)->put(route('portal.profile.update'), ['first_name' => '', 'last_name' => '', 'phone' => ''])->assertSessionHasErrors(['first_name', 'last_name', 'phone']);
 
