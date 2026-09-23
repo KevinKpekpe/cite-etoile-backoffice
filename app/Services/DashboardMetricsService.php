@@ -9,7 +9,7 @@ use App\Models\Payment;
 use App\Models\Plot;
 use App\Models\Subscription;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class DashboardMetricsService
@@ -49,18 +49,38 @@ class DashboardMetricsService
         ];
     }
 
-    /** @return Collection<int, Payment> */
+    /** @return Collection<int, object{label: string, total: float}> */
     private function paymentChart(string $period, CarbonImmutable $now): Collection
     {
         $query = Payment::query()->where('status', 'validated');
-
-        [$from, $format] = match ($period) {
-            'day' => [$now->startOfDay(), '%H:00'], 'week' => [$now->subDays(6)->startOfDay(), '%Y-%m-%d'],
-            'year' => [$now->startOfYear(), '%Y-%m'], default => [$now->startOfMonth(), '%Y-%m-%d'],
+        [$from, $to, $format, $slots] = match ($period) {
+            'day' => [$now->startOfDay(), $now->endOfDay(), '%H', 24],
+            'week' => [$now->subDays(6)->startOfDay(), $now->endOfDay(), '%Y-%m-%d', 7],
+            'year' => [$now->startOfYear(), $now->endOfYear(), '%Y-%m', 12],
+            default => [$now->startOfMonth(), $now->endOfMonth(), '%Y-%m-%d', $now->daysInMonth],
         };
-
-        return $query->where('payment_date', '>=', $from)
+        $totals = $query->whereBetween('payment_date', [$from, $to])
             ->selectRaw("DATE_FORMAT(payment_date, '{$format}') AS label, SUM(amount) AS total")
-            ->groupBy('label')->orderBy('label')->get();
+            ->groupBy('label')->orderBy('label')->pluck('total', 'label');
+
+        return collect(range(0, $slots - 1))->map(function (int $offset) use ($period, $from, $totals): object {
+            $date = match ($period) {
+                'day' => $from->addHours($offset),
+                'week', 'month' => $from->addDays($offset),
+                default => $from->startOfMonth()->addMonths($offset),
+            };
+            $key = match ($period) {
+                'day' => $date->format('H'),
+                'year' => $date->format('Y-m'),
+                default => $date->format('Y-m-d'),
+            };
+            $label = match ($period) {
+                'day' => $date->format('H').'h',
+                'year' => $date->translatedFormat('M'),
+                default => $date->format('d/m'),
+            };
+
+            return (object) ['label' => $label, 'total' => (float) ($totals[$key] ?? 0)];
+        });
     }
 }

@@ -513,7 +513,7 @@ body.app-shell {
 }
 
 .app-main {
-    padding: calc(var(--topbar-height) + 1.25rem) 0.75rem 1.5rem;
+    padding: calc(var(--topbar-height) + 1.25rem) 1rem 1.5rem;
     width: 100%;
 }
 
@@ -929,6 +929,7 @@ textarea:focus {
 
 .dashboard-list {
     display: grid;
+    padding-inline: 1rem;
 }
 
 .dashboard-list__item {
@@ -1185,20 +1186,20 @@ textarea:focus {
 }
 
 .dashboard-line-chart {
-    height: 17rem;
-    padding: 0.5rem 1rem 0;
+    height: 16.5rem;
+    padding: 0.25rem 1rem 0;
 }
 
 .dashboard-line-chart svg {
     display: block;
-    height: 14rem;
+    height: 13.75rem;
     overflow: visible;
     width: 100%;
 }
 
-.dashboard-line-chart__grid line {
+.dashboard-line-chart__axis line {
     stroke: var(--app-border-subtle);
-    stroke-dasharray: 4 4;
+    stroke-dasharray: 4 5;
     stroke-width: 1;
 }
 
@@ -1211,12 +1212,21 @@ textarea:focus {
     vector-effect: non-scaling-stroke;
 }
 
+.dashboard-line-chart__point {
+    fill: var(--app-primary);
+    stroke: var(--app-surface);
+    stroke-width: 3;
+    vector-effect: non-scaling-stroke;
+}
+
 .dashboard-line-chart__labels {
     color: var(--app-text-muted);
     display: flex;
     font-size: 0.625rem;
     justify-content: space-between;
+    min-height: 1.4rem;
     overflow: hidden;
+    padding-top: 0.3rem;
 }
 
 .dashboard-line-chart__labels span {
@@ -1385,7 +1395,7 @@ textarea:focus {
     display: grid;
     gap: 1rem;
     grid-template-columns: minmax(0, 1fr);
-    padding: 0.75rem 0;
+    padding: 0.75rem 1rem;
 }
 
 .resource-filters .form-label {
@@ -1435,7 +1445,7 @@ textarea:focus {
     gap: 1rem;
     justify-content: space-between;
     min-height: 2.75rem;
-    padding: 0.625rem 0;
+    padding: 0.625rem 1rem;
 }
 
 .resource-table__header h2 {

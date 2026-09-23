@@ -8,14 +8,17 @@
         $collectionRate = $contractual > 0 ? min(100, ($collected / $contractual) * 100) : 0;
         $chartValues = $payment_chart->pluck('total')->map(fn ($value) => (float) $value)->values();
         $chartMaximum = max(1, (float) $chartValues->max());
+        $chartPeriodTotal = (float) $chartValues->sum();
+        $hasChartData = $chartValues->contains(fn ($value) => $value > 0);
         $chartCount = max(1, $chartValues->count());
         $chartPoints = $chartValues->map(function ($value, $index) use ($chartMaximum, $chartCount) {
             $x = $chartCount === 1 ? 500 : ($index / ($chartCount - 1)) * 1000;
-            $y = 220 - (($value / $chartMaximum) * 180);
+            $y = 210 - (($value / $chartMaximum) * 170);
 
             return round($x, 2).','.round($y, 2);
         })->implode(' ');
-        $chartAreaPoints = $chartPoints !== '' ? '0,220 '.$chartPoints.' 1000,220' : '';
+        $chartAreaPoints = $chartPoints !== '' ? '0,210 '.$chartPoints.' 1000,210' : '';
+        $chartLabelStep = match (true) { $chartCount > 16 => 5, $chartCount > 8 => 3, $chartCount > 5 => 2, default => 1 };
         $maxPlanTotal = max(1, (int) $plan_distribution->max('total'));
     @endphp
 
@@ -68,18 +71,23 @@
         <div class="dashboard-primary-grid">
             <section class="dashboard-card dashboard-card--chart">
                 <div class="dashboard-card__chart-header">
-                    <div><h2>Activité des encaissements</h2><strong>{{ number_format($finances['month'], 0, ',', ' ') }} <small>USD</small></strong><p>Total encaissé ce mois</p></div>
+                    <div><h2>Activité des encaissements</h2><strong>{{ number_format($chartPeriodTotal, 0, ',', ' ') }} <small>USD</small></strong><p>Total encaissé · {{ $periodLabels[$period] }}</p></div>
                     <span class="status-badge status-badge--active">{{ $periodLabels[$period] }}</span>
                 </div>
-                @if($payment_chart->isNotEmpty())
+                @if($hasChartData)
                     <div class="dashboard-line-chart">
                         <svg viewBox="0 0 1000 240" preserveAspectRatio="none" role="img" aria-label="Évolution des encaissements">
                             <defs><linearGradient id="dashboard-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1abb9c" stop-opacity=".18"/><stop offset="100%" stop-color="#1abb9c" stop-opacity="0"/></linearGradient></defs>
-                            <g class="dashboard-line-chart__grid"><line x1="0" y1="40" x2="1000" y2="40"/><line x1="0" y1="100" x2="1000" y2="100"/><line x1="0" y1="160" x2="1000" y2="160"/><line x1="0" y1="220" x2="1000" y2="220"/></g>
+                            <g class="dashboard-line-chart__axis"><line x1="0" y1="40" x2="1000" y2="40"/><line x1="0" y1="95" x2="1000" y2="95"/><line x1="0" y1="150" x2="1000" y2="150"/><line x1="0" y1="205" x2="1000" y2="205"/></g>
                             <polygon points="{{ $chartAreaPoints }}" fill="url(#dashboard-area)"/>
                             <polyline points="{{ $chartPoints }}" class="dashboard-line-chart__line"/>
+                            @foreach($chartValues as $index => $value)
+                                @if($value > 0)
+                                    <circle cx="{{ round(($index / max(1, $chartCount - 1)) * 1000, 2) }}" cy="{{ round(210 - (($value / $chartMaximum) * 170), 2) }}" r="5" class="dashboard-line-chart__point"><title>{{ $payment_chart[$index]->label }} : {{ number_format($value, 0, ',', ' ') }} USD</title></circle>
+                                @endif
+                            @endforeach
                         </svg>
-                        <div class="dashboard-line-chart__labels">@foreach($payment_chart as $point)<span>{{ $point->label }}</span>@endforeach</div>
+                        <div class="dashboard-line-chart__labels">@foreach($payment_chart as $index => $point)<span>{{ $index === 0 || $index === $chartCount - 1 || $index % $chartLabelStep === 0 ? $point->label : '' }}</span>@endforeach</div>
                     </div>
                     <div class="dashboard-card__footer"><span><i></i> Encaissements validés</span></div>
                 @else
