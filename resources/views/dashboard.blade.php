@@ -1,6 +1,6 @@
 <x-layouts.app title="Tableau de bord">
     @php
-        $periodLabels = ['day' => 'Aujourd’hui', 'week' => '7 jours', 'month' => 'Ce mois', 'year' => 'Cette année'];
+        $periodLabels = ['day' => 'Aujourd\'hui', 'week' => '7 jours', 'month' => 'Ce mois', 'year' => 'Cette année'];
         $totalPlots = array_sum($plots);
         $activeSubscriptions = $subscriptions['active'] ?? 0;
         $contractual = (float) $finances['contractual'];
@@ -12,42 +12,75 @@
         $chartPeriodTotal = (float) $chartValues->sum();
         $hasChartData = $chartValues->contains(fn ($value) => $value > 0) || $previousChartValues->contains(fn ($value) => $value > 0);
         $chartCount = max(1, $chartValues->count());
+
+        // SVG coordinate computation (viewBox: 0 0 1000 200, plot Y range: 16 to 184)
         $chartCoordinates = function ($values) use ($chartMaximum, $chartCount) {
             return $values->map(function ($value, $index) use ($chartMaximum, $chartCount) {
-                return [($index / max(1, $chartCount - 1)) * 1000, 210 - (($value / $chartMaximum) * 170)];
+                $x = ($index / max(1, $chartCount - 1)) * 1000;
+                $y = 184 - (($value / $chartMaximum) * 168);
+                return [(float) round($x, 2), (float) round($y, 2)];
             })->all();
         };
+
         $buildSmoothPath = function (array $coordinates): string {
             if ($coordinates === []) {
                 return '';
             }
-
-            $first = $coordinates[0];
-            $path = 'M '.round($first[0], 2).' '.round($first[1], 2);
-
-            for ($index = 0; $index < count($coordinates) - 1; $index++) {
-                $previous = $coordinates[max(0, $index - 1)];
-                $start = $coordinates[$index];
-                $end = $coordinates[$index + 1];
-                $next = $coordinates[min(count($coordinates) - 1, $index + 2)];
-                $controlOne = [$start[0] + (($end[0] - $previous[0]) / 6), $start[1] + (($end[1] - $previous[1]) / 6)];
-                $controlTwo = [$end[0] - (($next[0] - $start[0]) / 6), $end[1] - (($next[1] - $start[1]) / 6)];
-                $path .= ' C '.round($controlOne[0], 2).' '.round($controlOne[1], 2)
-                    .' '.round($controlTwo[0], 2).' '.round($controlTwo[1], 2)
-                    .' '.round($end[0], 2).' '.round($end[1], 2);
+            $count = count($coordinates);
+            if ($count === 1) {
+                return 'M '.round($coordinates[0][0], 2).' '.round($coordinates[0][1], 2);
             }
+            $path = 'M '.round($coordinates[0][0], 2).' '.round($coordinates[0][1], 2);
+            for ($i = 0; $i < $count - 1; $i++) {
+                $p0 = $coordinates[max(0, $i - 1)];
+                $p1 = $coordinates[$i];
+                $p2 = $coordinates[$i + 1];
+                $p3 = $coordinates[min($count - 1, $i + 2)];
 
+                $dx = ($p2[0] - $p1[0]);
+                $dt1 = max(1, $p2[0] - $p0[0]);
+                $dt2 = max(1, $p3[0] - $p1[0]);
+
+                $m1 = ($p2[1] - $p0[1]) / $dt1;
+                $m2 = ($p3[1] - $p1[1]) / $dt2;
+
+                $cp1x = $p1[0] + $dx / 3;
+                $cp1y = $p1[1] + ($m1 * $dx) / 3;
+                $cp2x = $p2[0] - $dx / 3;
+                $cp2y = $p2[1] - ($m2 * $dx) / 3;
+
+                $minY = min($p1[1], $p2[1]);
+                $maxY = max($p1[1], $p2[1]);
+                $cp1y = max($minY, min($maxY, $cp1y));
+                $cp2y = max($minY, min($maxY, $cp2y));
+
+                $path .= ' C '.round($cp1x, 2).' '.round($cp1y, 2)
+                    .' '.round($cp2x, 2).' '.round($cp2y, 2)
+                    .' '.round($p2[0], 2).' '.round($p2[1], 2);
+            }
             return $path;
         };
+
         $currentCoordinates = $chartCoordinates($chartValues);
         $previousCoordinates = $chartCoordinates($previousChartValues);
         $currentChartPath = $buildSmoothPath($currentCoordinates);
         $previousChartPath = $buildSmoothPath($previousCoordinates);
-        $currentChartAreaPath = $currentChartPath !== ''
-            ? $currentChartPath.' L 1000 210 L 0 210 Z'
+        $currentChartAreaPath = count($currentCoordinates) > 1 && $currentChartPath !== ''
+            ? $currentChartPath.' L 1000 184 L 0 184 Z'
             : '';
+
         $chartLabelStep = match (true) { $chartCount > 16 => 5, $chartCount > 8 => 3, $chartCount > 5 => 2, default => 1 };
         $maxPlanTotal = max(1, (int) $plan_distribution->max('total'));
+
+        // Y-axis labels: 4 levels (0%, 33%, 67%, 100% of max)
+        $yLevels = [0, 0.33, 0.67, 1.0];
+        $yAxisLabels = collect($yLevels)->map(function ($ratio) use ($chartMaximum) {
+            $value = $chartMaximum * $ratio;
+            $label = $value >= 1000 ? number_format($value / 1000, 1).'k' : number_format($value, 0);
+            $y = 184 - ($ratio * 168);
+            $bottomPct = round(((200 - $y) / 200) * 100, 2);
+            return ['pct' => $bottomPct, 'label' => $label, 'y' => round($y, 2)];
+        });
     @endphp
 
     <div class="dashboard-page">
@@ -64,36 +97,122 @@
         </header>
 
         <section class="dashboard-kpi-grid" aria-label="Indicateurs principaux">
+
+            {{-- KPI : Clients --}}
             <article class="dashboard-kpi dashboard-kpi--teal">
-                <span class="dashboard-kpi__icon"><i class="bi bi-people"></i></span>
-                <div><span class="dashboard-kpi__label">Clients</span><strong>{{ number_format($clients['total'], 0, ',', ' ') }}</strong><small>{{ number_format($clients['new_month'], 0, ',', ' ') }} nouveau(x) ce mois</small></div>
-                <span class="dashboard-kpi__trend">{{ number_format($clients['active'], 0, ',', ' ') }} actifs</span>
+                <div class="dashboard-kpi__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                </div>
+                <div class="dashboard-kpi__body">
+                    <div class="dashboard-kpi__label">Clients</div>
+                    <div class="dashboard-kpi__value-row">
+                        <span class="dashboard-kpi__value">{{ number_format($clients['total'], 0, ',', ' ') }}</span>
+                        <span class="dashboard-kpi__badge dashboard-kpi__badge--up">{{ number_format($clients['active'], 0, ',', ' ') }} actifs</span>
+                    </div>
+                    <div class="dashboard-kpi__subtext">{{ number_format($clients['new_month'], 0, ',', ' ') }} nouveau(x) ce mois</div>
+                </div>
+                <div class="dashboard-kpi__spark" aria-hidden="true">
+                    @foreach([35, 50, 42, 60, 55, 68, 62, 75, 70, 85] as $h)
+                        <div class="dashboard-kpi__bar" style="height:{{ $h }}%"></div>
+                    @endforeach
+                </div>
             </article>
+
+            {{-- KPI : Souscriptions --}}
             <article class="dashboard-kpi dashboard-kpi--blue">
-                <span class="dashboard-kpi__icon"><i class="bi bi-file-earmark-check"></i></span>
-                <div><span class="dashboard-kpi__label">Souscriptions actives</span><strong>{{ number_format($activeSubscriptions, 0, ',', ' ') }}</strong><small>Dossiers en cours</small></div>
-                <span class="dashboard-kpi__spark" aria-hidden="true">@foreach([40, 55, 48, 70, 60, 76, 68, 86] as $height)<i style="height: {{ $height }}%"></i>@endforeach</span>
+                <div class="dashboard-kpi__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6M9 13h4"/></svg>
+                </div>
+                <div class="dashboard-kpi__body">
+                    <div class="dashboard-kpi__label">Souscriptions actives</div>
+                    <div class="dashboard-kpi__value-row">
+                        <span class="dashboard-kpi__value">{{ number_format($activeSubscriptions, 0, ',', ' ') }}</span>
+                    </div>
+                    <div class="dashboard-kpi__subtext">Dossiers en cours</div>
+                </div>
+                <div class="dashboard-kpi__spark" aria-hidden="true">
+                    @foreach([40, 55, 48, 70, 60, 76, 68, 86, 80, 90] as $h)
+                        <div class="dashboard-kpi__bar" style="height:{{ $h }}%"></div>
+                    @endforeach
+                </div>
             </article>
+
+            {{-- KPI : Parcelles --}}
             <article class="dashboard-kpi dashboard-kpi--yellow">
-                <span class="dashboard-kpi__icon"><i class="bi bi-map"></i></span>
-                <div><span class="dashboard-kpi__label">Parcelles disponibles</span><strong>{{ number_format($plots['available'] ?? 0, 0, ',', ' ') }}</strong><small>sur {{ number_format($totalPlots, 0, ',', ' ') }} parcelles</small></div>
-                <span class="dashboard-kpi__spark" aria-hidden="true">@foreach([86, 78, 70, 64, 58, 50, 45, 38] as $height)<i style="height: {{ $height }}%"></i>@endforeach</span>
+                <div class="dashboard-kpi__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <div class="dashboard-kpi__body">
+                    <div class="dashboard-kpi__label">Parcelles disponibles</div>
+                    <div class="dashboard-kpi__value-row">
+                        <span class="dashboard-kpi__value">{{ number_format($plots['available'] ?? 0, 0, ',', ' ') }}</span>
+                        <span class="dashboard-kpi__badge dashboard-kpi__badge--down">{{ number_format($totalPlots, 0, ',', ' ') }} total</span>
+                    </div>
+                    <div class="dashboard-kpi__subtext">sur {{ number_format($totalPlots, 0, ',', ' ') }} parcelles</div>
+                </div>
+                <div class="dashboard-kpi__spark" aria-hidden="true">
+                    @foreach([86, 78, 72, 64, 60, 52, 48, 40, 36, 30] as $h)
+                        <div class="dashboard-kpi__bar" style="height:{{ $h }}%"></div>
+                    @endforeach
+                </div>
             </article>
+
+            {{-- KPI : Valeur contractuelle --}}
             <article class="dashboard-kpi dashboard-kpi--green">
-                <span class="dashboard-kpi__icon"><i class="bi bi-cash-stack"></i></span>
-                <div><span class="dashboard-kpi__label">Valeur contractuelle</span><strong>{{ number_format($contractual, 0, ',', ' ') }} <em>USD</em></strong><small>Portefeuille souscrit</small></div>
-                <span class="dashboard-kpi__progress"><i style="width: 100%"></i></span>
+                <div class="dashboard-kpi__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                </div>
+                <div class="dashboard-kpi__body">
+                    <div class="dashboard-kpi__label">Valeur contractuelle</div>
+                    <div class="dashboard-kpi__value-row">
+                        <span class="dashboard-kpi__value">{{ number_format($contractual, 0, ',', ' ') }} <em>USD</em></span>
+                        <span class="dashboard-kpi__badge dashboard-kpi__badge--up">{{ number_format(min(100, $collectionRate), 0) }}%</span>
+                    </div>
+                    <div class="dashboard-kpi__subtext">Portefeuille souscrit</div>
+                </div>
+                <div class="dashboard-kpi__progress-wrap">
+                    <div class="dashboard-kpi__progress-bar" style="width:100%"></div>
+                </div>
             </article>
+
+            {{-- KPI : Total encaissé --}}
             <article class="dashboard-kpi dashboard-kpi--red">
-                <span class="dashboard-kpi__icon"><i class="bi bi-graph-up-arrow"></i></span>
-                <div><span class="dashboard-kpi__label">Total encaissé</span><strong>{{ number_format($collected, 0, ',', ' ') }} <em>USD</em></strong><small>{{ number_format($finances['month'], 0, ',', ' ') }} USD ce mois</small></div>
-                <span class="dashboard-kpi__progress"><i style="width: {{ $collectionRate }}%"></i></span>
+                <div class="dashboard-kpi__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <div class="dashboard-kpi__body">
+                    <div class="dashboard-kpi__label">Total encaissé</div>
+                    <div class="dashboard-kpi__value-row">
+                        <span class="dashboard-kpi__value">{{ number_format($collected, 0, ',', ' ') }} <em>USD</em></span>
+                        <span class="dashboard-kpi__badge dashboard-kpi__badge--up">{{ number_format(min(100, $collectionRate), 0) }}%</span>
+                    </div>
+                    <div class="dashboard-kpi__subtext">{{ number_format($finances['month'], 0, ',', ' ') }} USD ce mois</div>
+                </div>
+                <div class="dashboard-kpi__progress-wrap">
+                    <div class="dashboard-kpi__progress-bar" style="width:{{ $collectionRate }}%"></div>
+                </div>
             </article>
+
+            {{-- KPI : Échéances en retard --}}
             <article class="dashboard-kpi dashboard-kpi--purple">
-                <span class="dashboard-kpi__icon"><i class="bi bi-exclamation-circle"></i></span>
-                <div><span class="dashboard-kpi__label">Échéances en retard</span><strong>{{ number_format($installments['overdue'], 0, ',', ' ') }}</strong><small>{{ number_format($clients['overdue'], 0, ',', ' ') }} client(s) concerné(s)</small></div>
-                <span class="dashboard-kpi__progress"><i style="width: {{ min(100, $installments['overdue'] * 10) }}%"></i></span>
+                <div class="dashboard-kpi__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <div class="dashboard-kpi__body">
+                    <div class="dashboard-kpi__label">Échéances en retard</div>
+                    <div class="dashboard-kpi__value-row">
+                        <span class="dashboard-kpi__value">{{ number_format($installments['overdue'], 0, ',', ' ') }}</span>
+                        @if($installments['overdue'] > 0)
+                            <span class="dashboard-kpi__badge dashboard-kpi__badge--down">{{ $clients['overdue'] }} client(s)</span>
+                        @endif
+                    </div>
+                    <div class="dashboard-kpi__subtext">{{ number_format($clients['overdue'], 0, ',', ' ') }} client(s) concerné(s)</div>
+                </div>
+                <div class="dashboard-kpi__progress-wrap">
+                    <div class="dashboard-kpi__progress-bar" style="width:{{ min(100, $installments['overdue'] * 10) }}%"></div>
+                </div>
             </article>
+
         </section>
 
         <div class="dashboard-primary-grid">
@@ -104,14 +223,68 @@
                 </div>
                 @if($hasChartData)
                     <div class="dashboard-line-chart">
-                        <svg viewBox="0 0 1000 240" preserveAspectRatio="none" role="img" aria-label="Évolution des encaissements">
-                            <defs><linearGradient id="dashboard-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1abb9c" stop-opacity=".18"/><stop offset="100%" stop-color="#1abb9c" stop-opacity="0"/></linearGradient></defs>
-                            <g class="dashboard-line-chart__axis"><line x1="0" y1="40" x2="1000" y2="40"/><line x1="0" y1="95" x2="1000" y2="95"/><line x1="0" y1="150" x2="1000" y2="150"/><line x1="0" y1="205" x2="1000" y2="205"/></g>
-                            <path d="{{ $currentChartAreaPath }}" fill="url(#dashboard-area)"/>
-                            <path d="{{ $previousChartPath }}" class="dashboard-line-chart__line dashboard-line-chart__line--previous"/>
-                            <path d="{{ $currentChartPath }}" class="dashboard-line-chart__line dashboard-line-chart__line--current"/>
-                        </svg>
-                        <div class="dashboard-line-chart__labels">@foreach($payment_chart as $index => $point)<span>{{ $index === 0 || $index === $chartCount - 1 || $index % $chartLabelStep === 0 ? $point->label : '' }}</span>@endforeach</div>
+                        <div class="dashboard-line-chart__yaxis">
+                            @foreach($yAxisLabels->reverse() as $axisItem)
+                                <span style="bottom:{{ $axisItem['pct'] }}%">{{ $axisItem['label'] }}</span>
+                            @endforeach
+                        </div>
+                        <div class="dashboard-line-chart__plot">
+                            <svg viewBox="0 0 1000 200" preserveAspectRatio="none" role="img" aria-label="Évolution des encaissements">
+                                <defs>
+                                    <linearGradient id="chart-area-gradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#1abb9c" stop-opacity=".22"/>
+                                        <stop offset="80%" stop-color="#1abb9c" stop-opacity=".03"/>
+                                        <stop offset="100%" stop-color="#1abb9c" stop-opacity="0"/>
+                                    </linearGradient>
+                                </defs>
+
+                                {{-- Horizontal grid lines --}}
+                                @foreach($yAxisLabels as $axisItem)
+                                    <line x1="0" y1="{{ $axisItem['y'] }}" x2="1000" y2="{{ $axisItem['y'] }}" class="dashboard-line-chart__grid"/>
+                                @endforeach
+
+                                {{-- Area fill --}}
+                                @if($currentChartAreaPath)
+                                    <path d="{{ $currentChartAreaPath }}" fill="url(#chart-area-gradient)"/>
+                                @endif
+
+                                {{-- Previous period line --}}
+                                @if($previousChartPath && $previousChartValues->max() > 0)
+                                    <path d="{{ $previousChartPath }}" class="dashboard-line-chart__line dashboard-line-chart__line--previous"/>
+                                @endif
+
+                                {{-- Current period line --}}
+                                @if($currentChartPath)
+                                    <path d="{{ $currentChartPath }}" class="dashboard-line-chart__line dashboard-line-chart__line--current"/>
+                                @endif
+
+                                {{-- Data point dots (non-zero values only) --}}
+                                @foreach($currentCoordinates as $index => $coord)
+                                    @if(($chartValues[$index] ?? 0) > 0)
+                                        <circle cx="{{ $coord[0] }}" cy="{{ $coord[1] }}" r="4"
+                                            fill="#1abb9c" stroke="white" stroke-width="2"
+                                            vector-effect="non-scaling-stroke">
+                                            <title>{{ $payment_chart[$index]->label }} — {{ number_format($chartValues[$index], 0, ',', ' ') }} USD</title>
+                                        </circle>
+                                    @endif
+                                @endforeach
+                            </svg>
+                            <div class="dashboard-line-chart__labels">
+                                @foreach($payment_chart as $index => $point)
+                                    @if($index === 0 || $index === $chartCount - 1 || $index % $chartLabelStep === 0)
+                                        @php
+                                            $pct = round(($index / max(1, $chartCount - 1)) * 100, 2);
+                                            $transform = match(true) {
+                                                $index === 0 => 'translateX(0)',
+                                                $index === $chartCount - 1 => 'translateX(-100%)',
+                                                default => 'translateX(-50%)',
+                                            };
+                                        @endphp
+                                        <span style="left: {{ $pct }}%; transform: {{ $transform }};">{{ $point->label }}</span>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                     <div class="dashboard-card__footer dashboard-chart-legend">
                         <span><i class="dashboard-chart-legend__swatch dashboard-chart-legend__swatch--current"></i>Période sélectionnée</span>
@@ -152,6 +325,21 @@
                         @endforelse
                     </div>
                 </section>
+
+                <section class="dashboard-card">
+                    <div class="dashboard-card__header"><div><h2>Échéances à venir</h2><p>Paiements attendus sous 7 jours</p></div></div>
+                    <div class="dashboard-list">
+                        @forelse($due_soon->take(5) as $item)
+                            <a href="{{ route('subscriptions.installments.index', $item->subscription) }}" class="dashboard-list__item">
+                                <span><strong>{{ $item->subscription->customer->first_name }} {{ $item->subscription->customer->last_name }}</strong><small>{{ $item->subscription->subscription_number }} · {{ $item->due_date->format('d/m/Y') }}</small></span>
+                                <span class="dashboard-list__amount">{{ number_format((float) $item->balance, 2, ',', ' ') }} USD</span>
+                            </a>
+                        @empty
+                            <div class="dashboard-empty"><strong>Aucune échéance proche</strong><span>Aucun paiement prévu dans les 7 prochains jours.</span></div>
+                        @endforelse
+                    </div>
+                </section>
+
                 <section class="dashboard-card">
                     <div class="dashboard-card__header"><div><h2>Formules choisies</h2><p>Répartition des souscriptions</p></div></div>
                     <div class="plan-list">

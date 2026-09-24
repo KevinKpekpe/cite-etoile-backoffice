@@ -1009,18 +1009,25 @@ textarea:focus {
 
 .dashboard-kpi {
     --kpi-color: var(--app-primary);
-    align-items: center;
     background: var(--app-surface);
     border: 1px solid var(--app-border);
+    border-left: 3px solid var(--kpi-color);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     display: grid;
-    gap: 0.875rem;
-    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
-    min-height: 5.875rem;
+    gap: 0.75rem;
+    grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+    align-items: center;
+    min-height: 6rem;
     overflow: hidden;
-    padding: 0.875rem 1rem;
+    padding: 1rem 1.125rem;
     position: relative;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.dashboard-kpi:hover {
+    box-shadow: var(--shadow-md, 0 4px 16px rgba(0,0,0,.10));
+    transform: translateY(-1px);
 }
 
 .dashboard-kpi--teal { --kpi-color: var(--app-primary); }
@@ -1030,48 +1037,132 @@ textarea:focus {
 .dashboard-kpi--red { --kpi-color: var(--app-danger); }
 .dashboard-kpi--purple { --kpi-color: #ae3ec9; }
 
+/* Icon circle */
 .dashboard-kpi__icon {
     align-items: center;
-    background: color-mix(in srgb, var(--kpi-color) 9%, transparent);
-    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--kpi-color) 12%, transparent);
+    border-radius: 50%;
     color: var(--kpi-color);
     display: inline-flex;
-    font-size: 1rem;
-    height: 2.5rem;
+    height: 2.75rem;
     justify-content: center;
-    width: 2.5rem;
+    width: 2.75rem;
+    flex-shrink: 0;
 }
 
-.dashboard-kpi__label,
-.dashboard-kpi small {
-    color: var(--app-text-muted);
-    display: block;
-    font-size: 0.6875rem;
+/* Body: label + value-row + subtext */
+.dashboard-kpi__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
 }
 
 .dashboard-kpi__label {
-    font-weight: 500;
+    color: var(--app-text-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 
-.dashboard-kpi strong {
+.dashboard-kpi__value-row {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.1rem;
+}
+
+.dashboard-kpi__value {
     color: var(--app-text);
-    display: block;
-    font-size: 1.375rem;
+    font-size: 1.5rem;
     font-variant-numeric: tabular-nums;
-    font-weight: 600;
-    line-height: 1.15;
-    margin: 0.1rem 0;
+    font-weight: 700;
+    line-height: 1.1;
     white-space: nowrap;
 }
 
-.dashboard-kpi strong em {
+.dashboard-kpi__value em {
     color: var(--app-text-muted);
-    font-size: 0.625rem;
+    font-size: 0.65rem;
     font-style: normal;
-    font-weight: 400;
+    font-weight: 500;
+    margin-left: 0.15rem;
 }
 
+.dashboard-kpi__badge {
+    align-items: center;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    gap: 0.2rem;
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+}
+
+.dashboard-kpi__badge--up {
+    background: color-mix(in srgb, var(--app-success) 12%, transparent);
+    color: var(--app-success);
+}
+
+.dashboard-kpi__badge--down {
+    background: color-mix(in srgb, var(--app-danger) 12%, transparent);
+    color: var(--app-danger);
+}
+
+.dashboard-kpi__subtext {
+    color: var(--app-text-muted);
+    font-size: 0.6875rem;
+    margin-top: 0.05rem;
+}
+
+/* Sparkline bars */
+.dashboard-kpi__spark {
+    align-items: flex-end;
+    display: flex;
+    gap: 0.2rem;
+    height: 2.5rem;
+    padding-bottom: 0;
+}
+
+.dashboard-kpi__bar {
+    background: var(--kpi-color);
+    border-radius: 2px 2px 0 0;
+    display: block;
+    min-height: 4px;
+    opacity: 0.65;
+    transition: opacity 0.2s;
+    width: 0.25rem;
+}
+
+.dashboard-kpi:hover .dashboard-kpi__bar {
+    opacity: 0.85;
+}
+
+/* Progress bar (absolute at bottom of card) */
+.dashboard-kpi__progress-wrap {
+    background: color-mix(in srgb, var(--kpi-color) 15%, var(--app-bg-subtle));
+    border-radius: 999px;
+    grid-column: 1 / -1;
+    height: 0.3rem;
+    margin-top: -0.25rem;
+    overflow: hidden;
+    width: 100%;
+}
+
+.dashboard-kpi__progress-bar {
+    background: var(--kpi-color);
+    border-radius: inherit;
+    display: block;
+    height: 100%;
+    max-width: 100%;
+    min-width: 4px;
+    transition: width 0.5s ease;
+}
+
+/* Legacy compat — keep old .dashboard-kpi__trend / .dashboard-kpi__progress */
 .dashboard-kpi__trend {
     color: var(--kpi-color);
     font-size: 0.6875rem;
@@ -1079,32 +1170,17 @@ textarea:focus {
     white-space: nowrap;
 }
 
-.dashboard-kpi__spark {
-    align-items: end;
-    display: flex;
-    gap: 0.16rem;
-    height: 2rem;
-}
-
-.dashboard-kpi__spark i {
-    background: var(--kpi-color);
-    border-radius: 2px 2px 0 0;
-    display: block;
-    opacity: 0.7;
-    width: 0.2rem;
-}
-
 .dashboard-kpi__progress {
     background: var(--app-bg-subtle);
-    bottom: 0.75rem;
-    height: 0.25rem;
-    left: 1rem;
-    position: absolute;
-    right: 1rem;
+    border-radius: 999px;
+    grid-column: 1 / -1;
+    height: 0.3rem;
+    overflow: hidden;
 }
 
 .dashboard-kpi__progress i {
     background: var(--kpi-color);
+    border-radius: inherit;
     display: block;
     height: 100%;
 }
@@ -1186,15 +1262,57 @@ textarea:focus {
 }
 
 .dashboard-line-chart {
-    height: 16.5rem;
-    padding: 0.25rem 1rem 0;
+    display: flex;
+    gap: 0;
+    padding: 0.5rem 1rem 0;
 }
 
-.dashboard-line-chart svg {
+/* Y-axis labels column */
+.dashboard-line-chart__yaxis {
+    flex-shrink: 0;
+    font-size: 0.625rem;
+    color: var(--app-text-muted);
+    position: relative;
+    width: 2.5rem;
+    height: 14rem;
+    margin-bottom: 1.4rem; /* align with SVG, leave space for X labels */
+}
+
+.dashboard-line-chart__yaxis span {
+    position: absolute;
+    right: 0.4rem;
+    transform: translateY(50%);
+    white-space: nowrap;
+    text-align: right;
+    line-height: 1;
+}
+
+/* Plot area: SVG + X-axis labels */
+.dashboard-line-chart__plot {
+    flex: 1;
+    min-width: 0;
+}
+
+.dashboard-line-chart__plot svg {
     display: block;
-    height: 13.75rem;
+    height: 14rem;
     overflow: visible;
     width: 100%;
+}
+
+.dashboard-line-chart svg,
+.dashboard-line-chart__svg {
+    display: block;
+    height: 14rem;
+    overflow: visible;
+    width: 100%;
+}
+
+.dashboard-line-chart__grid {
+    stroke: var(--app-border-subtle);
+    stroke-dasharray: 4 5;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
 }
 
 .dashboard-line-chart__axis line {
@@ -1222,18 +1340,14 @@ textarea:focus {
 
 .dashboard-line-chart__labels {
     color: var(--app-text-muted);
-    display: flex;
     font-size: 0.625rem;
-    justify-content: space-between;
-    min-height: 1.4rem;
-    overflow: hidden;
+    height: 1.4rem;
+    position: relative;
     padding-top: 0.3rem;
 }
 
 .dashboard-line-chart__labels span {
-    max-width: 5rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    position: absolute;
     white-space: nowrap;
 }
 
@@ -1310,13 +1424,13 @@ textarea:focus {
     margin-top: 0.15rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 576px) {
     .dashboard-kpi-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 992px) {
     .dashboard-kpi-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -3704,15 +3818,11 @@ a:visited {
 .dashboard-kpi--purple { --kpi-color: #7b2d91; }
 
 .dashboard-kpi__label {
-    color: var(--app-text);
-    font-size: 0.7rem;
-    font-weight: 600;
+    color: var(--app-text-muted);
 }
 
-.dashboard-kpi small {
+.dashboard-kpi__subtext {
     color: var(--app-text-muted);
-    font-size: 0.7rem;
-    font-weight: 500;
 }
 
 .dashboard-kpi__icon {
@@ -3725,8 +3835,12 @@ a:visited {
     font-size: 0.72rem;
 }
 
-.dashboard-kpi__spark i {
-    opacity: 0.9;
+.dashboard-kpi__bar {
+    opacity: 0.85;
+}
+
+.dashboard-kpi__progress-wrap {
+    background: color-mix(in srgb, var(--app-text) 12%, var(--app-surface));
 }
 
 .dashboard-kpi__progress {
@@ -3747,6 +3861,10 @@ a:visited {
 
 [data-bs-theme='dark'] .dashboard-kpi__icon {
     background: color-mix(in srgb, var(--kpi-color) 15%, var(--app-surface));
+}
+
+[data-bs-theme='dark'] .dashboard-kpi__progress-wrap {
+    background: rgba(255, 255, 255, 0.10);
 }
 
 [data-bs-theme='dark'] .dashboard-kpi__progress {
