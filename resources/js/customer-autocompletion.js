@@ -1,6 +1,7 @@
 /**
- * Customer Form Address & Location Autocompletion Module
- * Integrates OpenStreetMap (Nominatim) for address suggestions and REST Countries for Country & Nationality mapping.
+ * Customer Form Location Autocompletion Module
+ * Provides real-time autocompletion for Address, Commune, City, Country and Nationality.
+ * Scopes City by Country, and Commune by City & Country.
  */
 
 const FALLBACK_COUNTRY_NATIONALITY = {
@@ -35,12 +36,43 @@ const FALLBACK_COUNTRY_NATIONALITY = {
     "Madagascar": "Malgache"
 };
 
+const POPULAR_CITIES = {
+    "Côte d'Ivoire": ["Abidjan", "Yamoussoukro", "Bouaké", "San-Pédro", "Korhogo", "Daloa", "Man", "Gagnoa"],
+    "République Démocratique du Congo": ["Kinshasa", "Lubumbashi", "Mbuji-Mayi", "Kananga", "Kisangani", "Goma", "Bukavu", "Likasi", "Kikwit", "Matadi"],
+    "Congo": ["Brazzaville", "Pointe-Noire", "Dolisie", "Nkayi"],
+    "Togo": ["Lomé", "Sokodé", "Kara", "Kpalimé", "Atakpamé"],
+    "Bénin": ["Cotonou", "Porto-Novo", "Parakou", "Abomey-Calavi", "Djougou"],
+    "Sénégal": ["Dakar", "Thiès", "Kaolack", "Ziguinchor", "Saint-Louis", "Touba", "Mbour"],
+    "Mali": ["Bamako", "Sikasso", "Mopti", "Koutiala", "Kayes", "Ségou"],
+    "Burkina Faso": ["Ouagadougou", "Bobo-Dioulasso", "Koudougou", "Banfora"],
+    "Guinée": ["Conakry", "Nzérékoré", "Kankan", "Kindia", "Labé"],
+    "Cameroun": ["Douala", "Yaoundé", "Garoua", "Bamenda", "Maroua", "Bafoussam"],
+    "Gabon": ["Libreville", "Port-Gentil", "Franceville", "Oyem"],
+    "France": ["Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Montpellier", "Strasbourg", "Bordeaux", "Lille"],
+    "Belgique": ["Bruxelles", "Anvers", "Gand", "Charleroi", "Liège"],
+    "Suisse": ["Zurich", "Genève", "Bâle", "Lausanne", "Berne"],
+    "Canada": ["Montréal", "Québec", "Toronto", "Vancouver", "Ottawa"],
+    "États-Unis": ["New York", "Los Angeles", "Chicago", "Houston", "Washington"],
+    "Maroc": ["Casablanca", "Rabat", "Marrakech", "Tanger", "Fès", "Agadir"],
+    "Algérie": ["Alger", "Oran", "Constantine", "Annaba"],
+    "Tunisie": ["Tunis", "Sfax", "Sousse", "Bizerte"]
+};
+
+const POPULAR_COMMUNES = {
+    "Abidjan": ["Abobo", "Adjamé", "Attécoubé", "Anyama", "Bingerville", "Cocody", "Koumassi", "Marcory", "Plateau", "Port-Bouët", "Songon", "Treichville", "Yopougon"],
+    "Kinshasa": ["Bandalungwa", "Barumbu", "Bumbu", "Gombe", "Kalamu", "Kasa-Vubu", "Kimbanseke", "Kinshasa", "Kintambo", "Kisenso", "Lemba", "Limete", "Lingwala", "Makala", "Maluku", "Masina", "Matete", "Mont-Ngafula", "Ndjili", "Ngaba", "Ngaliema", "Ngiri-Ngiri", "Nsele", "Selembao"],
+    "Lomé": ["Golfe 1 (Bè-Afédomé)", "Golfe 2 (Tokoin)", "Golfe 3 (Résidence)", "Golfe 4 (Amoutivé)", "Golfe 5 (Aflao-Gakli)", "Golfe 6 (Bè-Kpota)", "Golfe 7 (Aflao-Sagbado)"],
+    "Dakar": ["Dakar Plateau", "Fann-Point E-Amitié", "Gorée", "Gueule Tapée-Fass-Colobane", "Médina", "Grand Dakar", "Hann Bel-Air", "HLM", "Mermoz-Sacré-Cœur", "Ouakam", "Yoff", "Ngor", "Parcelles Assainies"],
+    "Paris": ["1er Arrondissement", "2e Arrondissement", "3e Arrondissement", "4e Arrondissement", "5e Arrondissement", "6e Arrondissement", "7e Arrondissement", "8e Arrondissement", "9e Arrondissement", "10e Arrondissement", "11e Arrondissement", "12e Arrondissement", "13e Arrondissement", "14e Arrondissement", "15e Arrondissement", "16e Arrondissement", "17e Arrondissement", "18e Arrondissement", "19e Arrondissement", "20e Arrondissement"]
+};
+
 class CustomerFormAutocompletion {
     constructor() {
         this.countryToNationalityMap = { ...FALLBACK_COUNTRY_NATIONALITY };
         this.countries = Object.keys(FALLBACK_COUNTRY_NATIONALITY);
         this.nationalities = Object.values(FALLBACK_COUNTRY_NATIONALITY);
-        this.debounceTimer = null;
+        this.debounceTimers = {};
+        this.activeDropdown = null;
         this.selectedIndex = -1;
     }
 
@@ -60,38 +92,76 @@ class CustomerFormAutocompletion {
     }
 
     setupDatalists() {
-        if (this.countryInput && !document.getElementById('country-list')) {
-            const countryDatalist = document.createElement('datalist');
-            countryDatalist.id = 'country-list';
-            document.body.appendChild(countryDatalist);
-            this.countryInput.setAttribute('list', 'country-list');
-            this.countryDatalist = countryDatalist;
-        }
+        this.createDatalist('country-list', this.countryInput);
+        this.createDatalist('nationality-list', this.nationalityInput);
+        this.createDatalist('city-list', this.cityInput);
+        this.createDatalist('commune-list', this.communeInput);
 
-        if (this.nationalityInput && !document.getElementById('nationality-list')) {
-            const nationalityDatalist = document.createElement('datalist');
-            nationalityDatalist.id = 'nationality-list';
-            document.body.appendChild(nationalityDatalist);
-            this.nationalityInput.setAttribute('list', 'nationality-list');
-            this.nationalityDatalist = nationalityDatalist;
-        }
-
-        this.updateDatalists();
+        this.updateCountryNationalityDatalists();
+        this.updateCityDatalist();
+        this.updateCommuneDatalist();
     }
 
-    updateDatalists() {
-        if (this.countryDatalist) {
-            this.countryDatalist.innerHTML = this.countries
+    createDatalist(id, inputElement) {
+        if (!inputElement) return;
+        let datalist = document.getElementById(id);
+        if (!datalist) {
+            datalist = document.createElement('datalist');
+            datalist.id = id;
+            document.body.appendChild(datalist);
+        }
+        inputElement.setAttribute('list', id);
+        this[id] = datalist;
+    }
+
+    updateCountryNationalityDatalists() {
+        if (this['country-list']) {
+            this['country-list'].innerHTML = this.countries
                 .map(country => `<option value="${this.escapeHtml(country)}"></option>`)
                 .join('');
         }
 
-        if (this.nationalityDatalist) {
+        if (this['nationality-list']) {
             const uniqueNationalities = [...new Set(this.nationalities)];
-            this.nationalityDatalist.innerHTML = uniqueNationalities
+            this['nationality-list'].innerHTML = uniqueNationalities
                 .map(nat => `<option value="${this.escapeHtml(nat)}"></option>`)
                 .join('');
         }
+    }
+
+    updateCityDatalist() {
+        if (!this['city-list']) return;
+
+        const selectedCountry = this.countryInput?.value?.trim();
+        let cities = [];
+
+        if (selectedCountry && POPULAR_CITIES[selectedCountry]) {
+            cities = POPULAR_CITIES[selectedCountry];
+        } else {
+            // Flatten all popular cities
+            cities = [...new Set(Object.values(POPULAR_CITIES).flat())];
+        }
+
+        this['city-list'].innerHTML = cities
+            .map(city => `<option value="${this.escapeHtml(city)}"></option>`)
+            .join('');
+    }
+
+    updateCommuneDatalist() {
+        if (!this['commune-list']) return;
+
+        const selectedCity = this.cityInput?.value?.trim();
+        let communes = [];
+
+        if (selectedCity && POPULAR_COMMUNES[selectedCity]) {
+            communes = POPULAR_COMMUNES[selectedCity];
+        } else {
+            communes = [...new Set(Object.values(POPULAR_COMMUNES).flat())];
+        }
+
+        this['commune-list'].innerHTML = communes
+            .map(commune => `<option value="${this.escapeHtml(commune)}"></option>`)
+            .join('');
     }
 
     async loadCountriesData() {
@@ -119,22 +189,46 @@ class CustomerFormAutocompletion {
 
             this.countries.sort((a, b) => a.localeCompare(b, 'fr'));
             this.nationalities.sort((a, b) => a.localeCompare(b, 'fr'));
-            this.updateDatalists();
+            this.updateCountryNationalityDatalists();
         } catch (e) {
-            // Silently fallback to built-in dictionary if offline or blocked
+            // Silently fallback to built-in list
         }
     }
 
     bindEvents() {
-        // Auto-set nationality when country changes
+        // Country change handler
         if (this.countryInput) {
-            this.countryInput.addEventListener('change', () => this.handleCountryChange());
-            this.countryInput.addEventListener('input', () => this.handleCountryChange());
+            const handleCountry = () => {
+                this.handleCountryChange();
+                this.updateCityDatalist();
+                this.fetchRemoteCitiesForCountry(this.countryInput.value.trim());
+            };
+
+            this.countryInput.addEventListener('change', handleCountry);
+            this.countryInput.addEventListener('input', handleCountry);
         }
 
-        // Setup Address Autocomplete UI
+        // City change handler
+        if (this.cityInput) {
+            const handleCity = () => {
+                this.updateCommuneDatalist();
+            };
+
+            this.cityInput.addEventListener('change', handleCity);
+            this.cityInput.addEventListener('input', handleCity);
+        }
+
+        // Setup Autocomplete Dropdowns on Address, City, and Commune
         if (this.addressInput) {
-            this.setupAddressSuggestionsUI();
+            this.setupInputAutocompletion(this.addressInput, 'address');
+        }
+
+        if (this.cityInput) {
+            this.setupInputAutocompletion(this.cityInput, 'city');
+        }
+
+        if (this.communeInput) {
+            this.setupInputAutocompletion(this.communeInput, 'commune');
         }
     }
 
@@ -142,7 +236,6 @@ class CustomerFormAutocompletion {
         const countryVal = this.countryInput.value.trim();
         if (!countryVal || !this.nationalityInput) return;
 
-        // Exact match or partial case-insensitive match
         const foundKey = Object.keys(this.countryToNationalityMap).find(
             k => k.toLowerCase() === countryVal.toLowerCase()
         );
@@ -155,41 +248,65 @@ class CustomerFormAutocompletion {
         }
     }
 
-    setupAddressSuggestionsUI() {
+    async fetchRemoteCitiesForCountry(countryName) {
+        if (!countryName) return;
+
+        try {
+            const response = await fetch('https://countriesnow.space/api/v0.1/countries/cities', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: countryName })
+            });
+
+            if (!response.ok) return;
+            const resData = await response.json();
+
+            if (resData.data && Array.isArray(resData.data) && resData.data.length > 0) {
+                POPULAR_CITIES[countryName] = resData.data;
+                this.updateCityDatalist();
+            }
+        } catch (e) {
+            // Ignore API failures silently
+        }
+    }
+
+    setupInputAutocompletion(inputElement, fieldType) {
         const wrapper = document.createElement('div');
         wrapper.className = 'address-autocomplete-wrapper';
-        this.addressInput.parentNode.insertBefore(wrapper, this.addressInput);
-        wrapper.appendChild(this.addressInput);
+        inputElement.parentNode.insertBefore(wrapper, inputElement);
+        wrapper.appendChild(inputElement);
 
         const badge = document.createElement('small');
         badge.className = 'address-autocomplete-badge';
-        badge.innerHTML = '<i class="bi bi-geo-alt-fill me-1"></i>Saisie assistée (OpenStreetMap)';
+        const badgeLabel = fieldType === 'city' ? 'Saisie assistée des villes' :
+                           fieldType === 'commune' ? 'Saisie assistée des communes' :
+                           'Saisie assistée d’adresse';
+
+        badge.innerHTML = `<i class="bi bi-geo-alt-fill me-1"></i>${badgeLabel}`;
         wrapper.appendChild(badge);
 
         const dropdown = document.createElement('ul');
         dropdown.className = 'address-suggestions-dropdown hidden';
         dropdown.setAttribute('role', 'listbox');
         wrapper.appendChild(dropdown);
-        this.dropdown = dropdown;
 
-        this.addressInput.addEventListener('input', (e) => {
+        inputElement.addEventListener('input', (e) => {
             const query = e.target.value.trim();
-            clearTimeout(this.debounceTimer);
+            clearTimeout(this.debounceTimers[fieldType]);
 
-            if (query.length < 3) {
-                this.hideDropdown();
+            if (query.length < 2) {
+                this.hideDropdown(dropdown);
                 return;
             }
 
-            this.debounceTimer = setTimeout(() => {
-                this.fetchAddressSuggestions(query);
-            }, 350);
+            this.debounceTimers[fieldType] = setTimeout(() => {
+                this.fetchLocationSuggestions(query, fieldType, dropdown);
+            }, 300);
         });
 
-        this.addressInput.addEventListener('keydown', (e) => {
-            if (!this.dropdown || this.dropdown.classList.contains('hidden')) return;
-
-            const items = this.dropdown.querySelectorAll('.address-suggestion-item');
+        inputElement.addEventListener('keydown', (e) => {
+            if (dropdown.classList.contains('hidden')) return;
+            const items = dropdown.querySelectorAll('.address-suggestion-item');
             if (!items.length) return;
 
             if (e.key === 'ArrowDown') {
@@ -204,13 +321,13 @@ class CustomerFormAutocompletion {
                 e.preventDefault();
                 items[this.selectedIndex].click();
             } else if (e.key === 'Escape') {
-                this.hideDropdown();
+                this.hideDropdown(dropdown);
             }
         });
 
         document.addEventListener('click', (e) => {
             if (!wrapper.contains(e.target)) {
-                this.hideDropdown();
+                this.hideDropdown(dropdown);
             }
         });
     }
@@ -224,43 +341,54 @@ class CustomerFormAutocompletion {
         });
     }
 
-    async fetchAddressSuggestions(query) {
+    async fetchLocationSuggestions(query, fieldType, dropdown) {
         try {
-            // Append country if present for more targeted local search
-            const countryFilter = this.countryInput?.value?.trim();
+            const countryFilter = this.countryInput?.value?.trim() || '';
+            const cityFilter = this.cityInput?.value?.trim() || '';
+
             const searchUrl = new URL('https://nominatim.openstreetmap.org/search');
-            searchUrl.searchParams.set('q', countryFilter ? `${query}, ${countryFilter}` : query);
+            let searchQ = query;
+
+            if (fieldType === 'city') {
+                searchQ = countryFilter ? `${query}, ${countryFilter}` : query;
+                searchUrl.searchParams.set('featuretype', 'settlement');
+            } else if (fieldType === 'commune') {
+                const context = [cityFilter, countryFilter].filter(Boolean).join(', ');
+                searchQ = context ? `${query}, ${context}` : query;
+            } else if (fieldType === 'address') {
+                searchQ = countryFilter ? `${query}, ${countryFilter}` : query;
+            }
+
+            searchUrl.searchParams.set('q', searchQ);
             searchUrl.searchParams.set('format', 'json');
             searchUrl.searchParams.set('addressdetails', '1');
-            searchUrl.searchParams.set('limit', '5');
+            searchUrl.searchParams.set('limit', '6');
             searchUrl.searchParams.set('accept-language', 'fr');
 
             const response = await fetch(searchUrl.toString(), {
-                headers: {
-                    'Accept': 'application/json'
-                }
+                headers: { 'Accept': 'application/json' }
             });
 
             if (!response.ok) {
-                this.hideDropdown();
+                this.hideDropdown(dropdown);
                 return;
             }
 
             const results = await response.json();
-            this.renderSuggestions(results);
+            this.renderSuggestions(results, fieldType, dropdown);
         } catch (e) {
-            this.hideDropdown();
+            this.hideDropdown(dropdown);
         }
     }
 
-    renderSuggestions(results) {
+    renderSuggestions(results, fieldType, dropdown) {
         if (!results || results.length === 0) {
-            this.hideDropdown();
+            this.hideDropdown(dropdown);
             return;
         }
 
         this.selectedIndex = -1;
-        this.dropdown.innerHTML = '';
+        dropdown.innerHTML = '';
 
         results.forEach(item => {
             const addr = item.address || {};
@@ -269,31 +397,49 @@ class CustomerFormAutocompletion {
             const city = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
             const country = addr.country || '';
 
-            const primaryText = road ? (addr.house_number ? `${addr.house_number} ${road}` : road) : item.display_name.split(',')[0];
-            const secondaryText = [suburb, city, country].filter(Boolean).join(', ');
+            let primaryText = '';
+            let secondaryText = '';
+
+            if (fieldType === 'city') {
+                primaryText = city || item.name || item.display_name.split(',')[0];
+                secondaryText = country;
+            } else if (fieldType === 'commune') {
+                primaryText = suburb || item.name || item.display_name.split(',')[0];
+                secondaryText = [city, country].filter(Boolean).join(', ');
+            } else {
+                primaryText = road ? (addr.house_number ? `${addr.house_number} ${road}` : road) : item.display_name.split(',')[0];
+                secondaryText = [suburb, city, country].filter(Boolean).join(', ');
+            }
+
+            if (!primaryText) return;
 
             const li = document.createElement('li');
             li.className = 'address-suggestion-item';
             li.setAttribute('role', 'option');
             li.innerHTML = `
                 <div class="suggestion-main"><i class="bi bi-geo-alt me-2 text-primary"></i><strong>${this.escapeHtml(primaryText)}</strong></div>
-                <div class="suggestion-sub text-muted small ms-4">${this.escapeHtml(secondaryText)}</div>
+                ${secondaryText ? `<div class="suggestion-sub text-muted small ms-4">${this.escapeHtml(secondaryText)}</div>` : ''}
             `;
 
             li.addEventListener('click', () => {
                 this.applySuggestion({
-                    address: primaryText || item.display_name,
-                    commune: suburb,
-                    city: city,
+                    address: fieldType === 'address' ? primaryText : null,
+                    commune: fieldType === 'commune' ? primaryText : suburb,
+                    city: city || (fieldType === 'city' ? primaryText : null),
                     country: country
                 });
-                this.hideDropdown();
+                this.hideDropdown(dropdown);
             });
 
-            this.dropdown.appendChild(li);
+            dropdown.appendChild(li);
         });
 
-        this.dropdown.classList.remove('hidden');
+        if (dropdown.children.length === 0) {
+            this.hideDropdown(dropdown);
+            return;
+        }
+
+        dropdown.classList.remove('hidden');
     }
 
     applySuggestion({ address, commune, city, country }) {
@@ -310,12 +456,14 @@ class CustomerFormAutocompletion {
         if (this.cityInput && city) {
             this.cityInput.value = city;
             this.triggerEvent(this.cityInput);
+            this.updateCommuneDatalist();
         }
 
         if (this.countryInput && country) {
             this.countryInput.value = country;
             this.triggerEvent(this.countryInput);
             this.handleCountryChange();
+            this.updateCityDatalist();
         }
     }
 
@@ -324,10 +472,10 @@ class CustomerFormAutocompletion {
         element.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    hideDropdown() {
-        if (this.dropdown) {
-            this.dropdown.classList.add('hidden');
-            this.dropdown.innerHTML = '';
+    hideDropdown(dropdown) {
+        if (dropdown) {
+            dropdown.classList.add('hidden');
+            dropdown.innerHTML = '';
         }
         this.selectedIndex = -1;
     }
