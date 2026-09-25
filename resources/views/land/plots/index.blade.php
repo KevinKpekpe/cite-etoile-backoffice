@@ -1,1 +1,63 @@
-<x-layouts.app title="Parcelles"><div class="mb-6 flex justify-between items-center"><div><h1 class="text-3xl font-bold">Parcelles</h1><p class="text-slate-600">Inventaire du patrimoine foncier.</p></div><div class="flex gap-2">@can('plots.manage')<a href="{{ route('plots.trashed') }}" class="rounded-lg border bg-white px-4 py-2 text-slate-700 font-semibold hover:bg-slate-50 transition">🗑 Corbeille</a><a href="{{ route('plots.create') }}" class="rounded-lg bg-amber-600 px-4 py-2 text-white font-semibold hover:bg-amber-700 transition">Nouvelle parcelle</a>@endcan</div></div><form class="mb-5 grid gap-3 rounded-xl bg-white p-4 lg:grid-cols-5"><input name="search" value="{{ $filters['search']??'' }}" placeholder="Référence ou numéro" class="rounded-lg border p-2"><select name="neighborhood_id" class="rounded-lg border p-2"><option value="">Tous quartiers</option>@foreach($neighborhoods as $item)<option value="{{ $item->id }}" @selected(($filters['neighborhood_id']??null)==$item->id)>{{ $item->name }}</option>@endforeach</select><select name="avenue_id" class="rounded-lg border p-2"><option value="">Toutes avenues</option>@foreach($avenues as $item)<option value="{{ $item->id }}" @selected(($filters['avenue_id']??null)==$item->id)>{{ $item->name }}</option>@endforeach</select><select name="commercial_status" class="rounded-lg border p-2"><option value="">Tous statuts</option>@foreach(['available','reserved','subscribed','blocked','unavailable'] as $status)<option @selected(($filters['commercial_status']??'')===$status)>{{ $status }}</option>@endforeach</select><button class="rounded-lg bg-slate-950 text-white">Filtrer</button></form><div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">@forelse($plots as $plot)<a href="{{ route('plots.show',$plot) }}" class="rounded-xl bg-white p-5 shadow-sm transition hover:shadow-md"><div class="flex justify-between"><strong>{{ $plot->reference }}</strong><span class="text-xs">{{ $plot->commercial_status }}</span></div><p class="mt-2 text-sm text-slate-600">{{ $plot->avenue->neighborhood->name }} · {{ $plot->avenue->name }}</p><p class="mt-4 text-lg font-bold">{{ $plot->surface_area ?: '—' }} m²</p></a>@empty<p>Aucune parcelle trouvée.</p>@endforelse</div><div class="mt-5">{{ $plots->links() }}</div></x-layouts.app>
+<x-layouts.app title="Parcelles">
+    @php
+        $commercialLabels = ['available' => 'Disponible', 'reserved' => 'Réservée', 'subscribed' => 'Souscrite', 'blocked' => 'Bloquée', 'unavailable' => 'Indisponible'];
+        $hasFilters = collect($filters)->filter(fn ($value) => filled($value))->isNotEmpty();
+    @endphp
+    <div class="resource-page">
+        <header class="resource-heading">
+            <div><p class="app-kicker">Gestion foncière</p><h1 class="resource-heading__title">Parcelles</h1><p class="resource-heading__description">Inventaire centralisé du patrimoine foncier et de sa disponibilité commerciale.</p></div>
+            <div class="resource-heading__actions">@can('plots.manage')<a href="{{ route('plots.trashed') }}" class="btn btn-outline">Corbeille</a><a href="{{ route('plots.create') }}" class="btn btn-primary">Nouvelle parcelle</a>@endcan</div>
+        </header>
+
+        <form method="GET" action="{{ route('plots.index') }}" class="resource-filters resource-filters--wide">
+            <div class="resource-filters__search"><label for="plot-search" class="form-label">Rechercher</label><input id="plot-search" name="search" value="{{ $filters['search'] ?? '' }}" class="form-control" placeholder="Référence ou numéro"></div>
+            <div><label for="plot-neighborhood" class="form-label">Quartier</label><select id="plot-neighborhood" name="neighborhood_id" class="form-select"><option value="">Tous les quartiers</option>@foreach($neighborhoods as $item)<option value="{{ $item->id }}" @selected((string) ($filters['neighborhood_id'] ?? '') === (string) $item->id)>{{ $item->name }}</option>@endforeach</select></div>
+            <div><label for="plot-avenue" class="form-label">Avenue</label><select id="plot-avenue" name="avenue_id" class="form-select"><option value="">Toutes les avenues</option>@foreach($avenues as $item)<option value="{{ $item->id }}" @selected((string) ($filters['avenue_id'] ?? '') === (string) $item->id)>{{ $item->name }}</option>@endforeach</select></div>
+            <div><label for="plot-status" class="form-label">Statut</label><select id="plot-status" name="commercial_status" class="form-select"><option value="">Tous les statuts</option>@foreach($commercialLabels as $value => $label)<option value="{{ $value }}" @selected(($filters['commercial_status'] ?? '') === $value)>{{ $label }}</option>@endforeach</select></div>
+            <div class="resource-filters__actions">@if($hasFilters)<a href="{{ route('plots.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>@endif<button class="btn btn-primary" type="submit">Appliquer</button></div>
+        </form>
+
+        <section class="resource-table">
+            <div class="resource-table__header"><div><h2>Inventaire des parcelles</h2><p>{{ $plots->total() }} {{ Str::plural('parcelle', $plots->total()) }}</p></div>@if($hasFilters)<span class="resource-filter-indicator">Filtres actifs</span>@endif</div>
+            <div class="table-responsive">
+                <table class="table resource-data-table align-middle mb-0">
+                    <thead><tr><th>Référence</th><th>Numéro</th><th>Localisation</th><th>Superficie</th><th class="text-end">Prix de base</th><th>Statut commercial</th><th class="text-end">Action</th></tr></thead>
+                    <tbody>
+                        @forelse($plots as $plot)
+                            <tr>
+                                <td><a href="{{ route('plots.show', $plot) }}" class="resource-reference">{{ $plot->reference }}</a></td>
+                                <td><strong>{{ $plot->plot_number }}</strong></td>
+                                <td><span>{{ $plot->avenue->neighborhood->name }}</span><small class="resource-cell-note">{{ $plot->avenue->name }}</small></td>
+                                <td class="record-money">{{ $plot->surface_area ? number_format((float) $plot->surface_area, 2, ',', ' ').' m²' : 'Non renseignée' }}</td>
+                                <td class="record-money text-end">{{ $plot->base_price ? number_format((float) $plot->base_price, 2, ',', ' ').' USD' : '—' }}</td>
+                                <td><span class="status-badge status-badge--{{ $plot->commercial_status }}">{{ $commercialLabels[$plot->commercial_status] ?? ucfirst($plot->commercial_status) }}</span></td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2 align-items-center justify-content-end">
+                                        <a href="{{ route('plots.show', $plot) }}" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Voir la parcelle">
+                                            Voir
+                                        </a>
+                                        @can('plots.manage')
+                                            <a href="{{ route('plots.edit', $plot) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Modifier la parcelle">
+                                                Modifier
+                                            </a>
+                                            <form method="POST" action="{{ route('plots.destroy', $plot) }}" class="d-inline" data-confirm="Confirmer la suppression de cet élément ?">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer la parcelle">
+                                                    Supprimer
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="7"><div class="resource-empty"><strong>Aucune parcelle trouvée</strong><span>{{ $hasFilters ? 'Modifiez ou réinitialisez les critères de recherche.' : 'Créez la première parcelle du patrimoine foncier.' }}</span>@if($hasFilters)<a href="{{ route('plots.index') }}">Afficher toutes les parcelles</a>@endif</div></td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        @if($plots->hasPages())<div class="resource-pagination">{{ $plots->links() }}</div>@endif
+    </div>
+</x-layouts.app>

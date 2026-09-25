@@ -41,17 +41,26 @@ it('calculates coherent customer plot and financial aggregates', function () {
         ->and($metrics['finances']['remaining'])->toBe(3100.0);
 });
 
-it('aggregates payment charts and plan distribution exactly', function () {
+it('compares validated payment chart totals with the same period before it', function () {
+    $this->travelTo('2025-09-23 12:00:00');
+
     $plan = PaymentPlan::factory()->create(['name' => 'Crédit Test']);
     $subscription = Subscription::factory()->for($plan, 'paymentPlan')->create();
-    Payment::factory()->for($subscription)->create(['customer_id' => $subscription->customer_id, 'amount' => '300.00', 'status' => 'validated', 'payment_date' => now()]);
-    Payment::factory()->for($subscription)->create(['customer_id' => $subscription->customer_id, 'amount' => '200.00', 'status' => 'validated', 'payment_date' => now()]);
+    Payment::factory()->for($subscription)->create(['customer_id' => $subscription->customer_id, 'amount' => '300.00', 'status' => 'validated', 'payment_date' => now()->setTime(10, 0)]);
+    Payment::factory()->for($subscription)->create(['customer_id' => $subscription->customer_id, 'amount' => '200.00', 'status' => 'validated', 'payment_date' => now()->setTime(11, 0)]);
+    Payment::factory()->for($subscription)->create(['customer_id' => $subscription->customer_id, 'amount' => '125.00', 'status' => 'validated', 'payment_date' => now()->subDay()->setTime(10, 0)]);
 
     $metrics = app(DashboardMetricsService::class)->metrics('day', true);
 
-    expect((float) $metrics['payment_chart']->sum('total'))->toBe(500.0)
+    expect((float) $metrics['payment_chart']->sum('current'))->toBe(500.0)
+        ->and((float) $metrics['payment_chart']->sum('previous'))->toBe(125.0)
         ->and($metrics['plan_distribution']->first()->name)->toBe('Crédit Test')
         ->and((int) $metrics['plan_distribution']->first()->total)->toBe(1);
+
+    $this->actingAs($this->admin)->get(route('dashboard', ['period' => 'day']))
+        ->assertOk()
+        ->assertSee('dashboard-line-chart__line--current')
+        ->assertSee('dashboard-line-chart__line--previous');
 });
 
 it('shows actionable overdue and upcoming installments to direction roles', function () {
@@ -60,14 +69,14 @@ it('shows actionable overdue and upcoming installments to direction roles', func
     Installment::factory()->for($subscription)->create(['installment_number' => 2, 'due_date' => now()->addDays(3), 'status' => 'upcoming']);
 
     $this->actingAs($this->admin)->get(route('dashboard'))->assertOk()
-        ->assertSee('Échéances en retard')->assertSee('Échéances dans les 7 jours');
+        ->assertSee('Échéances en retard')->assertSee('Échéances à venir');
 });
 
 it('hides finance alerts from limited commercial dashboards', function () {
     $commercial = User::factory()->create();
     $commercial->roles()->attach(Role::query()->where('name', 'commercial')->firstOrFail());
 
-    $this->actingAs($commercial)->get(route('dashboard'))->assertOk()->assertDontSee('Échéances dans les 7 jours');
+    $this->actingAs($commercial)->get(route('dashboard'))->assertOk()->assertDontSee('Échéances à venir');
 });
 
 it('rejects unsupported chart periods', function () {

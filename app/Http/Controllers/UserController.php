@@ -42,7 +42,7 @@ class UserController extends Controller
             ->when(isset($filters['role']), fn ($q) => $q->whereHas('roles', fn ($q) => $q->where('name', $filters['role'])))
             ->when(isset($filters['status']), fn ($q) => $q->where('status', $filters['status']))
             ->latest()
-            ->paginate(20)
+            ->paginate(10)
             ->withQueryString();
 
         $roles = Role::query()->whereNotIn('name', ['customer'])->orderBy('name')->get();
@@ -240,7 +240,7 @@ class UserController extends Controller
             ->with('roles')
             ->whereDoesntHave('roles', fn ($q) => $q->where('name', 'customer'))
             ->latest('deleted_at')
-            ->paginate(20);
+            ->paginate(10);
 
         return view('users.trashed', compact('users'));
     }

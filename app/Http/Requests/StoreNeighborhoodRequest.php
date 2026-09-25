@@ -24,7 +24,7 @@ class StoreNeighborhoodRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'string', 'max:50', Rule::unique('neighborhoods')->ignore($this->route('neighborhood'))],
+            'code' => ['nullable', 'string', 'max:50', Rule::unique('neighborhoods')->ignore($this->route('neighborhood'))],
             'name' => ['required', 'string', 'max:150', Rule::unique('neighborhoods')->ignore($this->route('neighborhood'))],
             'description' => ['nullable', 'string', 'max:2000'],
             'status' => ['required', 'in:planned,active,commercializable,completed,suspended'],

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePaymentPlanRequest;
 use App\Models\AuditLog;
 use App\Models\PaymentPlan;
+use App\Services\ReferenceGenerator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ class PaymentPlanController extends Controller
 {
     public function index(): View
     {
-        return view('payment-plans.index', ['paymentPlans' => PaymentPlan::query()->withCount('subscriptions')->orderBy('total_price')->get()]);
+        return view('payment-plans.index', ['paymentPlans' => PaymentPlan::query()->withCount('subscriptions')->orderBy('total_price')->paginate(10)]);
     }
 
     public function create(): View
@@ -21,9 +22,14 @@ class PaymentPlanController extends Controller
         return view('payment-plans.form', ['paymentPlan' => new PaymentPlan]);
     }
 
-    public function store(StorePaymentPlanRequest $request): RedirectResponse
+    public function store(StorePaymentPlanRequest $request, ReferenceGenerator $generator): RedirectResponse
     {
-        $paymentPlan = PaymentPlan::query()->create([...$request->validated(), 'active' => $request->boolean('active')]);
+        $data = $request->validated();
+        if (empty($data['code'])) {
+            $data['code'] = $generator->generate(PaymentPlan::class, 'code', 'payment_plans', 'PLN');
+        }
+
+        $paymentPlan = PaymentPlan::query()->create([...$data, 'active' => $request->boolean('active')]);
         $this->audit($request, 'payment_plan.created', $paymentPlan, null, $paymentPlan->getAttributes());
 
         return redirect()->route('payment-plans.index')->with('status', __('Formule créée.'));
@@ -36,7 +42,12 @@ class PaymentPlanController extends Controller
 
     public function update(StorePaymentPlanRequest $request, PaymentPlan $paymentPlan): RedirectResponse
     {
-        $attributes = [...$request->validated(), 'active' => $request->boolean('active')];
+        $data = $request->validated();
+        if (empty($data['code'])) {
+            unset($data['code']);
+        }
+
+        $attributes = [...$data, 'active' => $request->boolean('active')];
         $oldValues = $paymentPlan->only(array_keys($attributes));
         $paymentPlan->update($attributes);
         $this->audit($request, 'payment_plan.updated', $paymentPlan, $oldValues, $paymentPlan->only(array_keys($attributes)));

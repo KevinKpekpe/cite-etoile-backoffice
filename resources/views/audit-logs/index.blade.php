@@ -1,2 +1,107 @@
-<x-layouts.app title="Journal d’audit"><div class="flex flex-col gap-6"><div><h1 class="text-3xl font-bold">Journal d’audit</h1><p class="text-slate-600">Historique immuable des opérations sensibles.</p></div><form class="grid gap-3 rounded-xl bg-white p-5 shadow-sm md:grid-cols-4"><label class="text-sm">Utilisateur<select name="user_id" class="mt-1 w-full rounded-lg border px-3 py-2"><option value="">Tous</option>@foreach($users as $user)<option value="{{ $user->id }}" @selected((string)($filters['user_id'] ?? '')===(string)$user->id)>{{ $user->first_name }} {{ $user->last_name }}</option>@endforeach</select></label><label class="text-sm">Action<input name="action" value="{{ $filters['action'] ?? '' }}" class="mt-1 w-full rounded-lg border px-3 py-2" placeholder="payment.reversed"></label><label class="text-sm">Du<input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="mt-1 w-full rounded-lg border px-3 py-2"></label><label class="text-sm">Au<input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="mt-1 w-full rounded-lg border px-3 py-2"></label><div class="md:col-span-4"><button class="rounded-lg bg-slate-950 px-5 py-2 text-white">Rechercher</button></div></form><div class="overflow-hidden rounded-xl bg-white shadow-sm"><table class="w-full text-left text-sm"><thead class="bg-slate-50"><tr><th class="p-3">Date</th><th class="p-3">Utilisateur</th><th class="p-3">Action</th><th class="p-3">Entité</th><th class="p-3">Avant / Après</th></tr></thead><tbody>@forelse($logs as $log)<tr class="border-t align-top"><td class="p-3">{{ $log->created_at?->format('d/m/Y H:i') }}</td><td class="p-3">{{ $log->user ? $log->user->first_name.' '.$log->user->last_name : 'Système' }}</td><td class="p-3 font-semibold">{{ $log->action }}</td><td class="p-3">{{ class_basename($log->entity_type) }} #{{ $log->entity_id }}</td><td class="p-3"><details><summary class="cursor-pointer text-amber-700">Consulter</summary><pre class="mt-2 max-w-xl overflow-auto rounded bg-slate-950 p-3 text-xs text-white">Avant: {{ json_encode($log->old_values, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}
-Après: {{ json_encode($log->new_values, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre></details></td></tr>@empty<tr><td colspan="5" class="p-6 text-center text-slate-500">Aucune trace.</td></tr>@endforelse</tbody></table></div>{{ $logs->links() }}</div></x-layouts.app>
+<x-layouts.app title="Journal d’audit">
+    @php
+        $hasFilters = filled($filters['user_id'] ?? null)
+            || filled($filters['action'] ?? null)
+            || filled($filters['from'] ?? null)
+            || filled($filters['to'] ?? null);
+    @endphp
+
+    <div class="resource-page">
+        <header class="resource-heading">
+            <div>
+                <p class="app-kicker">Sécurité & Traçabilité</p>
+                <h1 class="resource-heading__title">Journal d’audit</h1>
+                <p class="resource-heading__description">Historique immuable des opérations sensibles et des modifications système.</p>
+            </div>
+        </header>
+
+        <form method="GET" action="{{ route('audit-logs.index') }}" class="resource-filters resource-filters--wide">
+            <div>
+                <label for="audit-user" class="form-label">Utilisateur</label>
+                <select id="audit-user" name="user_id" class="form-select">
+                    <option value="">Tous les utilisateurs</option>
+                    @foreach($users as $user)
+                        <option value="{{ $user->id }}" @selected((string)($filters['user_id'] ?? '') === (string)$user->id)>
+                            {{ $user->first_name }} {{ $user->last_name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="audit-action" class="form-label">Action</label>
+                <input id="audit-action" name="action" value="{{ $filters['action'] ?? '' }}" class="form-control" placeholder="ex: payment.reversed">
+            </div>
+            <div>
+                <label for="audit-from" class="form-label">Du</label>
+                <input type="date" id="audit-from" name="from" value="{{ $filters['from'] ?? '' }}" class="form-control">
+            </div>
+            <div>
+                <label for="audit-to" class="form-label">Au</label>
+                <input type="date" id="audit-to" name="to" value="{{ $filters['to'] ?? '' }}" class="form-control">
+            </div>
+            <div class="resource-filters__actions">
+                @if($hasFilters)
+                    <a href="{{ route('audit-logs.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>
+                @endif
+                <button class="btn btn-primary" type="submit">Rechercher</button>
+            </div>
+        </form>
+
+        <section class="resource-table" aria-labelledby="audit-logs-title">
+            <div class="resource-table__header">
+                <div>
+                    <h2 id="audit-logs-title">Traces d’audit</h2>
+                    <p>{{ $logs->total() }} {{ Str::plural('événement', $logs->total()) }} enregistrés</p>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table resource-data-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date & Heure</th>
+                            <th scope="col">Utilisateur</th>
+                            <th scope="col">Action</th>
+                            <th scope="col">Entité concernée</th>
+                            <th scope="col" class="text-end">Modifications (Avant / Après)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($logs as $log)
+                            <tr class="align-top">
+                                <td><span class="resource-data-table__secondary">{{ $log->created_at?->format('d/m/Y H:i') }}</span></td>
+                                <td><strong>{{ $log->user ? $log->user->first_name.' '.$log->user->last_name : 'Système' }}</strong></td>
+                                <td><span class="status-badge status-badge--neutral font-monospace">{{ $log->action }}</span></td>
+                                <td>
+                                    <span class="resource-reference">{{ class_basename($log->entity_type) }} #{{ $log->entity_id }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <details class="audit-details">
+                                        <summary class="btn btn-sm btn-outline">Consulter</summary>
+                                        <div class="audit-details__panel">
+                                            <div><strong>Avant</strong><pre>{{ json_encode($log->old_values, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre></div>
+                                            <div><strong>Après</strong><pre>{{ json_encode($log->new_values, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre></div>
+                                        </div>
+                                    </details>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5">
+                                    <div class="resource-empty">
+                                        <strong>Aucune trace d’audit trouvée</strong>
+                                        <span>Modifiez ou réinitialisez les filtres de recherche.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        @if($logs->hasPages())
+            <div class="resource-pagination">{{ $logs->links() }}</div>
+        @endif
+    </div>
+</x-layouts.app>

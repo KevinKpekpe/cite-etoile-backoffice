@@ -1,52 +1,146 @@
 <x-layouts.app title="Utilisateurs">
-<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-    <div><h1 class="text-3xl font-bold">Utilisateurs</h1><p class="text-slate-600">Agents et administrateurs de la plateforme.</p></div>
-    <div class="flex gap-2">
-        @can('users.delete')
-            <a href="{{ route('users.trashed') }}" class="rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 transition">🗑 Corbeille</a>
-        @endcan
-        @can('users.manage')<a href="{{ route('users.create') }}" class="rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white">Nouvel utilisateur</a>@endcan
+    @php
+        $hasFilters = filled($filters['search'] ?? null) || filled($filters['role'] ?? null) || filled($filters['status'] ?? null);
+    @endphp
+
+    <div class="resource-page">
+        <header class="resource-heading">
+            <div>
+                <p class="app-kicker">Gestion des accès</p>
+                <h1 class="resource-heading__title">Utilisateurs</h1>
+                <p class="resource-heading__description">Gestion des comptes utilisateurs, agents et administrateurs de la plateforme.</p>
+            </div>
+            <div class="resource-heading__actions">
+                @can('users.delete')
+                    <a href="{{ route('users.trashed') }}" class="btn btn-outline-secondary resource-button">Corbeille</a>
+                @endcan
+                @can('users.manage')
+                    <a href="{{ route('users.create') }}" class="btn btn-app-primary resource-button">Nouvel utilisateur</a>
+                @endcan
+            </div>
+        </header>
+
+        <form method="GET" action="{{ route('users.index') }}" class="resource-filters">
+            <div class="resource-filters__search">
+                <label for="user-search" class="form-label">Rechercher</label>
+                <input id="user-search" name="search" value="{{ $filters['search'] ?? '' }}" class="form-control" placeholder="Nom ou adresse e-mail">
+            </div>
+            <div>
+                <label for="user-role" class="form-label">Rôle</label>
+                <select id="user-role" name="role" class="form-select">
+                    <option value="">Tous les rôles</option>
+                    @foreach($roles as $role)
+                        <option value="{{ $role->name }}" @selected(($filters['role'] ?? '') === $role->name)>{{ ucfirst(str_replace('_', ' ', $role->name)) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="user-status" class="form-label">Statut</label>
+                <select id="user-status" name="status" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="active" @selected(($filters['status'] ?? '') === 'active')>Actif</option>
+                    <option value="suspended" @selected(($filters['status'] ?? '') === 'suspended')>Suspendu</option>
+                </select>
+            </div>
+            <div class="resource-filters__actions">
+                @if($hasFilters)
+                    <a href="{{ route('users.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>
+                @endif
+                <button class="btn btn-app-primary resource-button" type="submit">Appliquer</button>
+            </div>
+        </form>
+
+        <section class="resource-table" aria-labelledby="users-table-title">
+            <div class="resource-table__header">
+                <div>
+                    <h2 id="users-table-title">Liste des utilisateurs</h2>
+                    <p>{{ $users->total() }} {{ Str::plural('utilisateur', $users->total()) }}</p>
+                </div>
+                @if($hasFilters)
+                    <span class="resource-filter-indicator">Filtres actifs</span>
+                @endif
+            </div>
+
+            <div class="table-responsive">
+                <table class="table resource-data-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Utilisateur</th>
+                            <th scope="col">E-mail</th>
+                            <th scope="col">Rôle</th>
+                            <th scope="col">Statut</th>
+                            <th scope="col">Dernière connexion</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($users as $user)
+                            @php
+                                $initials = mb_strtoupper(mb_substr($user->first_name, 0, 1).mb_substr($user->last_name, 0, 1));
+                                $roleName = $user->roles->where('name', '!=', 'customer')->first()?->name ?? '—';
+                            @endphp
+                            <tr>
+                                <td>
+                                    <div class="resource-identity">
+                                        <span class="resource-identity__avatar" aria-hidden="true">{{ $initials }}</span>
+                                        <span><strong><a href="{{ route('users.show', $user) }}" class="text-dark text-decoration-none">{{ $user->first_name }} {{ $user->last_name }}</a></strong></span>
+                                    </div>
+                                </td>
+                                <td class="resource-data-table__secondary">{{ $user->email }}</td>
+                                <td>
+                                    <span class="status-badge status-badge--neutral">
+                                        {{ ucfirst(str_replace('_', ' ', $roleName)) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-badge--{{ $user->status === 'active' ? 'active' : 'suspended' }}">
+                                        {{ $user->status === 'active' ? 'Actif' : 'Suspendu' }}
+                                    </span>
+                                </td>
+                                <td class="resource-data-table__secondary">
+                                    {{ $user->last_login_at?->format('d/m/Y H:i') ?? 'Jamais' }}
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2 align-items-center justify-content-end">
+                                        <a href="{{ route('users.show', $user) }}" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Voir l'utilisateur">
+                                            Voir
+                                        </a>
+                                        @can('users.manage')
+                                            <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Modifier l'utilisateur">
+                                                Modifier
+                                            </a>
+                                        @endcan
+                                        @can('users.delete')
+                                            @if($user->id !== auth()->id())
+                                                <form method="POST" action="{{ route('users.destroy', $user) }}" class="d-inline" data-confirm="Placer cet utilisateur en corbeille ?">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer l'utilisateur">
+                                                        Supprimer
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6">
+                                    <div class="resource-empty">
+                                        <strong>Aucun utilisateur trouvé</strong>
+                                        <span>{{ $hasFilters ? 'Modifiez ou réinitialisez les critères de recherche.' : 'Les comptes utilisateurs apparaîtront ici après leur création.' }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        @if($users->hasPages())
+            <div class="resource-pagination">{{ $users->links() }}</div>
+        @endif
     </div>
-</div>
-<form class="mb-6 grid gap-3 rounded-xl bg-white p-4 shadow-sm md:grid-cols-[1fr_200px_180px_auto]">
-    <input name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nom ou e-mail" class="rounded-lg border px-3 py-2">
-    <select name="role" class="rounded-lg border px-3 py-2">
-        <option value="">Tous les rôles</option>
-        @foreach($roles as $role)
-            <option value="{{ $role->name }}" @selected(($filters['role'] ?? '') === $role->name)>{{ ucfirst(str_replace('_', ' ', $role->name)) }}</option>
-        @endforeach
-    </select>
-    <select name="status" class="rounded-lg border px-3 py-2">
-        <option value="">Tous les statuts</option>
-        <option value="active" @selected(($filters['status'] ?? '') === 'active')>Actif</option>
-        <option value="suspended" @selected(($filters['status'] ?? '') === 'suspended')>Suspendu</option>
-    </select>
-    <button class="rounded-lg bg-slate-950 px-4 py-2 text-white">Rechercher</button>
-</form>
-<div class="overflow-hidden rounded-xl bg-white shadow-sm"><div class="overflow-x-auto"><table class="w-full text-left text-sm">
-<thead class="bg-slate-100"><tr>
-    <th class="p-4">Nom</th>
-    <th class="p-4">E-mail</th>
-    <th class="p-4">Rôle</th>
-    <th class="p-4">Statut</th>
-    <th class="p-4">Dernière connexion</th>
-</tr></thead>
-<tbody class="divide-y">
-@forelse($users as $user)
-<tr>
-    <td class="p-4 font-medium"><a class="text-amber-700" href="{{ route('users.show', $user) }}">{{ $user->first_name }} {{ $user->last_name }}</a></td>
-    <td class="p-4">{{ $user->email }}</td>
-    <td class="p-4">{{ $user->roles->where('name', '!=', 'customer')->first()?->name ?? '—' }}</td>
-    <td class="p-4">
-        <span class="rounded-full px-2 py-0.5 text-xs font-semibold {{ $user->status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' }}">
-            {{ $user->status === 'active' ? 'Actif' : 'Suspendu' }}
-        </span>
-    </td>
-    <td class="p-4 text-slate-500">{{ $user->last_login_at?->format('d/m/Y H:i') ?? 'Jamais' }}</td>
-</tr>
-@empty
-<tr><td colspan="5" class="p-8 text-center text-slate-500">Aucun utilisateur trouvé.</td></tr>
-@endforelse
-</tbody></table></div></div>
-<div class="mt-5">{{ $users->links() }}</div>
 </x-layouts.app>

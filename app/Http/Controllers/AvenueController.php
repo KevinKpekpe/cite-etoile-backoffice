@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreAvenueRequest;
 use App\Models\Avenue;
 use App\Models\Neighborhood;
+use App\Services\ReferenceGenerator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -12,7 +13,7 @@ class AvenueController extends Controller
 {
     public function index(): View
     {
-        return view('land.avenues.index', ['avenues' => Avenue::query()->with('neighborhood')->withCount('plots')->orderBy('name')->paginate(20)]);
+        return view('land.avenues.index', ['avenues' => Avenue::query()->with('neighborhood')->withCount('plots')->orderBy('name')->paginate(10)]);
     }
 
     public function create(): View
@@ -20,9 +21,14 @@ class AvenueController extends Controller
         return $this->form(new Avenue);
     }
 
-    public function store(StoreAvenueRequest $request): RedirectResponse
+    public function store(StoreAvenueRequest $request, ReferenceGenerator $generator): RedirectResponse
     {
-        Avenue::query()->create($request->validated());
+        $data = $request->validated();
+        if (empty($data['code'])) {
+            $data['code'] = $generator->generate(Avenue::class, 'code', 'avenues', 'AVE');
+        }
+
+        Avenue::query()->create($data);
 
         return redirect()->route('avenues.index')->with('status', __('Avenue créée.'));
     }
@@ -34,7 +40,12 @@ class AvenueController extends Controller
 
     public function update(StoreAvenueRequest $request, Avenue $avenue): RedirectResponse
     {
-        $avenue->update($request->validated());
+        $data = $request->validated();
+        if (empty($data['code'])) {
+            unset($data['code']);
+        }
+
+        $avenue->update($data);
 
         return redirect()->route('avenues.index')->with('status', __('Avenue mise à jour.'));
     }

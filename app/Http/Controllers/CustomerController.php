@@ -44,7 +44,7 @@ class CustomerController extends Controller
         $search = trim((string) ($filters['search'] ?? ''));
 
         $query = Customer::query()
-            ->with(['assignedAgent:id,first_name,last_name', 'subscriptions.installments'])
+            ->with(['assignedAgent:id,first_name,last_name', 'subscriptions.plot.avenue.neighborhood', 'subscriptions.paymentPlan', 'subscriptions.installments'])
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search): void {
                 $query->where('customer_number', 'like', "%{$search}%")
                     ->orWhere('first_name', 'like', "%{$search}%")
@@ -58,7 +58,7 @@ class CustomerController extends Controller
             $query->where('status', $filters['status']);
         }
 
-        $customers = $query->latest()->paginate(20)->withQueryString();
+        $customers = $query->latest()->paginate(10)->withQueryString();
 
         return view('customers.index', compact('customers', 'filters'));
     }
@@ -270,7 +270,7 @@ class CustomerController extends Controller
         $customers = Customer::onlyTrashed()
             ->with(['assignedAgent:id,first_name,last_name'])
             ->latest('deleted_at')
-            ->paginate(20);
+            ->paginate(10);
 
         return view('customers.trashed', compact('customers'));
     }

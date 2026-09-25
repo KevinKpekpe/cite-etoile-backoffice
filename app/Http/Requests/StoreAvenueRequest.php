@@ -28,7 +28,7 @@ class StoreAvenueRequest extends FormRequest
 
         return [
             'neighborhood_id' => ['required', 'integer', 'exists:neighborhoods,id'],
-            'code' => ['required', 'string', 'max:50', Rule::unique('avenues')->where('neighborhood_id', $neighborhoodId)->ignore($avenue)],
+            'code' => ['nullable', 'string', 'max:50', Rule::unique('avenues')->where('neighborhood_id', $neighborhoodId)->ignore($avenue)],
             'name' => ['required', 'string', 'max:150', Rule::unique('avenues')->where('neighborhood_id', $neighborhoodId)->ignore($avenue)],
             'description' => ['nullable', 'string', 'max:2000'], 'status' => ['required', 'in:planned,active,suspended'],
         ];

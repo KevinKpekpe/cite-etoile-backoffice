@@ -1,84 +1,81 @@
-<x-layouts.app title="Corbeille — Clients supprimés">
-<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-    <div>
-        <h1 class="text-3xl font-bold">🗑 Corbeille Clients</h1>
-        <p class="text-slate-600">Clients en corbeille (soft delete). Ils peuvent être restaurés ou supprimés définitivement.</p>
+<x-layouts.app title="Corbeille clients">
+    <div class="resource-page">
+        <header class="resource-heading">
+            <div>
+                <p class="app-kicker">Archivage</p>
+                <h1 class="resource-heading__title">Corbeille clients</h1>
+                <p class="resource-heading__description">Restaurez les dossiers supprimés ou retirez-les définitivement selon vos permissions.</p>
+            </div>
+            <div class="resource-heading__actions">
+                <a href="{{ route('customers.index') }}" class="btn btn-outline-secondary resource-button">Retour aux clients</a>
+            </div>
+        </header>
+
+        <section class="resource-table">
+            <div class="resource-table__header">
+                <div>
+                    <h2>Dossiers clients supprimés</h2>
+                    <p>{{ $customers->total() }} {{ Str::plural('dossier', $customers->total()) }}</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table resource-data-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Numéro</th>
+                            <th scope="col">Client</th>
+                            <th scope="col">Coordonnées</th>
+                            <th scope="col">Responsable</th>
+                            <th scope="col">Suppression</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($customers as $customer)
+                            <tr>
+                                <td><a href="{{ route('customers.show', $customer) }}" class="resource-reference">{{ $customer->customer_number }}</a></td>
+                                <td><strong>{{ $customer->first_name }} {{ $customer->last_name }}</strong></td>
+                                <td class="resource-data-table__secondary">{{ $customer->phone }}<br><small>{{ $customer->email ?: 'Sans e-mail' }}</small></td>
+                                <td class="resource-data-table__secondary">{{ $customer->assignedAgent ? $customer->assignedAgent->first_name.' '.$customer->assignedAgent->last_name : 'Non attribué' }}</td>
+                                <td><span class="status-badge status-badge--danger">{{ $customer->deleted_at->format('d/m/Y H:i') }}</span></td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2 align-items-center justify-content-end">
+                                        @can('customers.restore')
+                                            <form method="POST" action="{{ route('customers.restore', $customer) }}" class="d-inline">
+                                                @csrf
+                                                <button class="btn btn-sm btn-outline-success py-1 px-2" type="submit">
+                                                    Restaurer
+                                                </button>
+                                            </form>
+                                        @endcan
+                                        @can('customers.force_delete')
+                                            <form method="POST" action="{{ route('customers.force-delete', $customer) }}" class="d-inline" data-confirm="Confirmer la suppression de cet élément ?">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-sm btn-outline-danger py-1 px-2" type="submit">
+                                                    Supprimer
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6">
+                                    <div class="resource-empty">
+                                        <strong>La corbeille est vide</strong>
+                                        <span>Aucun dossier client supprimé.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        @if($customers->hasPages())
+            <div class="resource-pagination">{{ $customers->links() }}</div>
+        @endif
     </div>
-    <a href="{{ route('customers.index') }}" class="rounded-lg border bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-        ← Retour aux clients
-    </a>
-</div>
-
-@if(session('status'))
-    <div class="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
-        {{ session('status') }}
-    </div>
-@endif
-
-<div class="overflow-hidden rounded-xl bg-white shadow-sm">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
-            <thead class="bg-red-50 text-red-800">
-                <tr>
-                    <th class="p-4">N° Client</th>
-                    <th class="p-4">Nom & Prénom</th>
-                    <th class="p-4">Téléphone / Email</th>
-                    <th class="p-4">Agent</th>
-                    <th class="p-4">Supprimé le</th>
-                    <th class="p-4">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y">
-                @forelse($customers as $customer)
-                <tr class="hover:bg-red-50/50">
-                    <td class="p-4 font-mono font-bold text-slate-800">{{ $customer->customer_number }}</td>
-                    <td class="p-4 font-medium">
-                        <a href="{{ route('customers.show', $customer) }}" class="text-slate-700 hover:underline">
-                            {{ $customer->first_name }} {{ $customer->last_name }}
-                        </a>
-                    </td>
-                    <td class="p-4 text-slate-600">
-                        <div>{{ $customer->phone }}</div>
-                        <div class="text-xs text-slate-500">{{ $customer->email ?? '—' }}</div>
-                    </td>
-                    <td class="p-4 text-slate-600">{{ $customer->assignedAgent?->first_name ?? '—' }}</td>
-                    <td class="p-4 text-red-700">{{ $customer->deleted_at->format('d/m/Y H:i') }}</td>
-                    <td class="p-4">
-                        <div class="flex gap-2">
-                            {{-- Restaurer --}}
-                            @can('customers.restore')
-                            <form method="POST" action="{{ route('customers.restore', $customer) }}">
-                                @csrf
-                                <button class="rounded-lg bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-200 transition">
-                                    ♻ Restaurer
-                                </button>
-                            </form>
-                            @endcan
-
-                            {{-- Supprimer définitivement (super_admin uniquement) --}}
-                            @can('customers.force_delete')
-                            <form method="POST" action="{{ route('customers.force-delete', $customer) }}"
-                                  onsubmit="return confirm('SUPPRESSION DÉFINITIVE du client {{ $customer->first_name }} {{ $customer->last_name }}. Irréversible !')">
-                                @csrf @method('DELETE')
-                                <button class="rounded-lg bg-red-100 px-3 py-1 text-xs font-semibold text-red-800 hover:bg-red-200 transition">
-                                    ☠ Définitif
-                                </button>
-                            </form>
-                            @endcan
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="6" class="p-8 text-center text-slate-500">
-                        ✅ La corbeille clients est vide.
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="mt-5">{{ $customers->links() }}</div>
 </x-layouts.app>

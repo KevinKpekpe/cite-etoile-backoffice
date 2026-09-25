@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Avenue;
 use App\Models\Neighborhood;
 use App\Models\Plot;
+use App\Services\ReferenceGenerator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class PlotController extends Controller
             ->when($filters['neighborhood_id'] ?? null, fn ($query, $id) => $query->whereHas('avenue', fn ($query) => $query->where('neighborhood_id', $id)))
             ->when($filters['avenue_id'] ?? null, fn ($query, $id) => $query->where('avenue_id', $id))
             ->when($filters['commercial_status'] ?? null, fn ($query, $status) => $query->where('commercial_status', $status))
-            ->latest()->paginate(24)->withQueryString();
+            ->latest()->paginate(10)->withQueryString();
 
         return view('land.plots.index', ['plots' => $plots, 'filters' => $filters, 'neighborhoods' => Neighborhood::query()->orderBy('name')->get(), 'avenues' => Avenue::query()->orderBy('name')->get()]);
     }
@@ -34,9 +35,14 @@ class PlotController extends Controller
         return $this->form(new Plot);
     }
 
-    public function store(StorePlotRequest $request): RedirectResponse
+    public function store(StorePlotRequest $request, ReferenceGenerator $referenceGenerator): RedirectResponse
     {
-        $plot = Plot::query()->create($request->validated());
+        $data = $request->validated();
+        if (empty($data['reference'])) {
+            $data['reference'] = $referenceGenerator->generate(Plot::class, 'reference', 'plots', 'PLT');
+        }
+
+        $plot = Plot::query()->create($data);
         $this->audit($request, 'plot.created', $plot, null, $plot->getAttributes());
 
         return redirect()->route('plots.show', $plot)->with('status', __('Parcelle créée.'));
@@ -57,9 +63,14 @@ class PlotController extends Controller
 
     public function update(StorePlotRequest $request, Plot $plot): RedirectResponse
     {
-        $oldValues = $plot->only(array_keys($request->validated()));
-        $plot->update($request->validated());
-        $this->audit($request, 'plot.updated', $plot, $oldValues, $plot->only(array_keys($request->validated())));
+        $data = $request->validated();
+        if (empty($data['reference'])) {
+            unset($data['reference']);
+        }
+
+        $oldValues = $plot->only(array_keys($data));
+        $plot->update($data);
+        $this->audit($request, 'plot.updated', $plot, $oldValues, $plot->only(array_keys($data)));
 
         return redirect()->route('plots.show', $plot)->with('status', __('Parcelle mise à jour.'));
     }
@@ -81,7 +92,7 @@ class PlotController extends Controller
         $plots = Plot::onlyTrashed()
             ->with('avenue.neighborhood')
             ->latest('deleted_at')
-            ->paginate(24);
+            ->paginate(10);
 
         return view('land.plots.trashed', compact('plots'));
     }

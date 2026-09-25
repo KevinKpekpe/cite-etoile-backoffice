@@ -1,93 +1,76 @@
 <x-layouts.app :title="$user->first_name.' '.$user->last_name">
-    <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-            <h1 class="text-3xl font-bold">{{ $user->first_name }} {{ $user->last_name }}</h1>
-            <p class="text-slate-600">{{ $user->email }} · {{ $user->phone }}</p>
-            @if($user->trashed())
-                <span class="mt-1 inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                    🗑 Compte supprimé le {{ $user->deleted_at->format('d/m/Y H:i') }}
-                </span>
-            @endif
-        </div>
-        <div class="flex flex-wrap gap-2">
-            @if(! $user->trashed())
-                <a href="{{ route('users.edit', $user) }}" class="rounded-lg border bg-white px-4 py-2">Modifier</a>
-                @if(!$user->hasRole('super_admin') || auth()->user()?->hasRole('super_admin'))
-                <form method="POST" action="{{ route('users.toggle-status', $user) }}">
-                    @csrf @method('PATCH')
-                    <button class="rounded-lg px-4 py-2 font-semibold text-white {{ $user->status === 'active' ? 'bg-amber-600' : 'bg-emerald-700' }}">
-                        {{ $user->status === 'active' ? 'Suspendre' : 'Réactiver' }}
-                    </button>
-                </form>
-                @endif
-                @can('users.delete')
-                    @if((! $user->hasRole('super_admin') || auth()->user()?->hasRole('super_admin')) && $user->id !== auth()->id())
-                    <form method="POST" action="{{ route('users.destroy', $user) }}"
-                          onsubmit="return confirm('Supprimer {{ $user->first_name }} {{ $user->last_name }} ? Le compte sera placé en corbeille.')">
-                        @csrf @method('DELETE')
-                        <button class="rounded-lg bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800 transition">
-                            🗑 Supprimer
-                        </button>
-                    </form>
-                    @endif
-                @endcan
-            @else
-                {{-- Compte en corbeille --}}
-                @can('users.delete')
-                    @if(! $user->hasRole('super_admin') || auth()->user()?->hasRole('super_admin'))
-                    <form method="POST" action="{{ route('users.restore', $user) }}">
-                        @csrf
-                        <button class="rounded-lg bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800 transition">
-                            ♻ Restaurer
-                        </button>
-                    </form>
-                    @endif
-                @endcan
-                @can('users.force_delete')
-                <form method="POST" action="{{ route('users.force-delete', $user) }}"
-                      onsubmit="return confirm('SUPPRESSION DÉFINITIVE — irréversible. Continuer ?')">
-                    @csrf @method('DELETE')
-                    <button class="rounded-lg bg-red-900 px-4 py-2 font-semibold text-white hover:bg-red-950 transition">
-                        ☠ Supprimer définitivement
-                    </button>
-                </form>
-                @endcan
-            @endif
-        </div>
-    </div>
-
-    <x-user-credentials-markdown />
-
-    <div class="grid gap-5 lg:grid-cols-3">
-        <section class="rounded-xl bg-white p-5 shadow-sm">
-            <h2 class="mb-4 font-bold">Profil</h2>
-            <dl class="grid gap-3 text-sm">
-                <div><dt class="text-slate-500">Statut</dt>
-                    <dd><span class="rounded-full px-2 py-0.5 text-xs font-semibold {{ $user->trashed() ? 'bg-red-100 text-red-800' : ($user->status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800') }}">
-                        {{ $user->trashed() ? 'Supprimé' : ($user->status === 'active' ? 'Actif' : 'Suspendu') }}
-                    </span></dd>
+    @php
+        $roleName = $user->roles->where('name', '!=', 'customer')->first()?->name ?? '—';
+        $initials = mb_strtoupper(mb_substr($user->first_name, 0, 1).mb_substr($user->last_name, 0, 1));
+    @endphp
+    <div class="customer-record">
+        <header class="record-heading">
+            <div class="record-heading__identity">
+                <span class="record-heading__avatar" aria-hidden="true">{{ $initials }}</span>
+                <div>
+                    <p class="app-kicker">Fiche utilisateur</p>
+                    <h1>{{ $user->first_name }} {{ $user->last_name }}</h1>
+                    <p>{{ $user->email }} · {{ $user->phone ?: 'Sans téléphone' }}</p>
                 </div>
-                <div><dt class="text-slate-500">Rôle</dt><dd>{{ $user->roles->where('name', '!=', 'customer')->first()?->name ?? '—' }}</dd></div>
-                <div><dt class="text-slate-500">Téléphone</dt><dd>{{ $user->phone ?? '—' }}</dd></div>
-                <div><dt class="text-slate-500">2FA</dt><dd>{{ $user->hasTwoFactorAuthenticationEnabled() ? 'Activé' : 'Non activé' }}</dd></div>
-                <div><dt class="text-slate-500">Dernière connexion</dt><dd>{{ $user->last_login_at?->format('d/m/Y H:i') ?? 'Jamais' }}</dd></div>
-                <div><dt class="text-slate-500">Compte créé le</dt><dd>{{ $user->created_at->format('d/m/Y') }}</dd></div>
-                @if($user->trashed())
-                <div><dt class="text-slate-500">Supprimé le</dt><dd class="text-red-700 font-semibold">{{ $user->deleted_at->format('d/m/Y H:i') }}</dd></div>
-                @endif
-            </dl>
-        </section>
-
-        <section class="rounded-xl bg-white p-5 shadow-sm lg:col-span-2">
-            <h2 class="mb-4 font-bold">Historique des modifications</h2>
-            @forelse($auditEntries as $entry)
-            <div class="border-b py-3 text-sm last:border-b-0">
-                <p class="font-medium text-slate-800">{{ $entry->action }}</p>
-                <p class="text-slate-500">{{ $entry->created_at->format('d/m/Y H:i') }}</p>
             </div>
-            @empty
-            <p class="text-sm text-slate-500">Aucune modification enregistrée.</p>
-            @endforelse
-        </section>
+            <div class="resource-heading__actions">
+                @if(! $user->trashed())
+                    <a href="{{ route('users.edit', $user) }}" class="btn btn-outline-secondary resource-button">Modifier</a>
+                    @if(!$user->hasRole('super_admin') || auth()->user()?->hasRole('super_admin'))
+                        <form method="POST" action="{{ route('users.toggle-status', $user) }}">@csrf @method('PATCH')
+                            <button class="btn {{ $user->status === 'active' ? 'btn-outline-warning' : 'btn-outline-success' }} resource-button" type="submit">{{ $user->status === 'active' ? 'Suspendre' : 'Réactiver' }}</button>
+                        </form>
+                    @endif
+                    @can('users.delete')
+                        @if((! $user->hasRole('super_admin') || auth()->user()?->hasRole('super_admin')) && $user->id !== auth()->id())
+                            <form method="POST" action="{{ route('users.destroy', $user) }}" data-confirm="Placer ce compte utilisateur en corbeille ?">@csrf @method('DELETE')
+                                <button class="btn btn-outline-danger resource-button" type="submit">Supprimer</button>
+                            </form>
+                        @endif
+                    @endcan
+                @else
+                    @can('users.delete')
+                        @if(! $user->hasRole('super_admin') || auth()->user()?->hasRole('super_admin'))
+                            <form method="POST" action="{{ route('users.restore', $user) }}">@csrf<button class="btn btn-outline-success resource-button" type="submit">Restaurer</button></form>
+                        @endif
+                    @endcan
+                    @can('users.force_delete')
+                        <form method="POST" action="{{ route('users.force-delete', $user) }}" data-confirm="Suppression définitive et irréversible de ce compte ?">@csrf @method('DELETE')
+                            <button class="btn btn-danger resource-button" type="submit">Supprimer définitivement</button>
+                        </form>
+                    @endcan
+                @endif
+            </div>
+        </header>
+
+        @if($user->trashed())
+            <div class="record-alert record-alert--danger"><div><strong>Compte placé en corbeille</strong><p>Supprimé le {{ $user->deleted_at->format('d/m/Y à H:i') }}.</p></div></div>
+        @endif
+
+        <x-user-credentials-markdown />
+
+        <div class="detail-sheet">
+            <section class="detail-section">
+                <div class="detail-section__heading"><p class="app-kicker">Profil</p><h2>Informations du compte</h2></div>
+                <dl class="detail-grid">
+                    <div><dt>Statut</dt><dd><span class="status-badge status-badge--{{ $user->trashed() ? 'danger' : ($user->status === 'active' ? 'active' : 'suspended') }}">{{ $user->trashed() ? 'Supprimé' : ($user->status === 'active' ? 'Actif' : 'Suspendu') }}</span></dd></div>
+                    <div><dt>Rôle principal</dt><dd>{{ ucfirst(str_replace('_', ' ', $roleName)) }}</dd></div>
+                    <div><dt>Téléphone</dt><dd>{{ $user->phone ?? 'Non renseigné' }}</dd></div>
+                    <div><dt>Authentification à deux facteurs</dt><dd>{{ $user->hasTwoFactorAuthenticationEnabled() ? 'Activée' : 'Désactivée' }}</dd></div>
+                    <div><dt>Dernière connexion</dt><dd>{{ $user->last_login_at?->format('d/m/Y H:i') ?? 'Jamais' }}</dd></div>
+                    <div><dt>Compte créé le</dt><dd>{{ $user->created_at->format('d/m/Y') }}</dd></div>
+                </dl>
+            </section>
+            <section class="detail-section">
+                <div class="detail-section__heading"><p class="app-kicker">Traçabilité</p><h2>Historique d’activité</h2></div>
+                <div class="timeline-list">
+                    @forelse($auditEntries as $entry)
+                        <div class="timeline-list__item"><span class="timeline-list__marker"></span><span><strong>{{ ucfirst(str_replace(['.', '_'], ' ', $entry->action)) }}</strong><small>{{ $entry->created_at->format('d/m/Y H:i') }}</small></span></div>
+                    @empty
+                        <p class="record-empty-copy">Aucune modification enregistrée dans le journal.</p>
+                    @endforelse
+                </div>
+            </section>
+        </div>
     </div>
 </x-layouts.app>

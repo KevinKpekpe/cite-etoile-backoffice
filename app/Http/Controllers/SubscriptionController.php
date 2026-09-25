@@ -43,7 +43,7 @@ class SubscriptionController extends Controller
             $query->whereIn('commercial_status', ['cancelled', 'terminated']);
         }
 
-        $subscriptions = $query->latest()->paginate(20)->withQueryString();
+        $subscriptions = $query->latest()->paginate(10)->withQueryString();
 
         $counts = [
             'all' => Subscription::query()->count(),

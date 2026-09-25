@@ -1,1 +1,46 @@
-<x-layouts.app title="Avenues"><div class="mb-6 flex justify-between"><h1 class="text-3xl font-bold">Avenues</h1><a href="{{ route('avenues.create') }}" class="rounded-lg bg-amber-600 px-4 py-2 text-white">Nouvelle avenue</a></div><div class="rounded-xl bg-white p-5 shadow-sm"><table class="w-full text-left text-sm"><thead><tr><th class="py-3">Code</th><th>Nom</th><th>Quartier</th><th>Parcelles</th><th></th></tr></thead><tbody class="divide-y">@foreach($avenues as $item)<tr><td class="py-3 font-mono">{{ $item->code }}</td><td>{{ $item->name }}</td><td>{{ $item->neighborhood->name }}</td><td>{{ $item->plots_count }}</td><td><a class="text-amber-700" href="{{ route('avenues.edit',$item) }}">Modifier</a></td></tr>@endforeach</tbody></table></div></x-layouts.app>
+<x-layouts.app title="Avenues">
+    <div class="resource-page">
+        <header class="resource-heading">
+            <div><p class="app-kicker">Gestion foncière</p><h1 class="resource-heading__title">Avenues</h1><p class="resource-heading__description">Organisez les axes de circulation et leur rattachement aux quartiers.</p></div>
+            <a href="{{ route('avenues.create') }}" class="btn btn-primary">Nouvelle avenue</a>
+        </header>
+        <section class="resource-table">
+            <div class="resource-table__header"><div><h2>Répertoire des avenues</h2><p>{{ $avenues->total() }} {{ Str::plural('avenue', $avenues->total()) }}</p></div></div>
+            <div class="table-responsive">
+                <table class="table resource-data-table align-middle mb-0">
+                    <thead><tr><th>Code</th><th>Avenue</th><th>Quartier</th><th>Statut</th><th class="text-end">Parcelles</th><th class="text-end">Action</th></tr></thead>
+                    <tbody>
+                        @forelse($avenues as $item)
+                            <tr>
+                                <td><span class="resource-reference">{{ $item->code }}</span></td>
+                                <td><strong>{{ $item->name }}</strong></td>
+                                <td class="resource-data-table__secondary">{{ $item->neighborhood->name }}</td>
+                                <td><span class="status-badge status-badge--{{ $item->status }}">{{ ['planned' => 'Planifiée', 'active' => 'Active', 'suspended' => 'Suspendue'][$item->status] ?? ucfirst($item->status) }}</span></td>
+                                <td class="record-money text-end">{{ number_format($item->plots_count, 0, ',', ' ') }}</td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2 align-items-center justify-content-end">
+                                        @can('plots.manage')
+                                            <a href="{{ route('avenues.edit', $item) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Modifier l'avenue">
+                                                Modifier
+                                            </a>
+                                            <form method="POST" action="{{ route('avenues.destroy', $item) }}" class="d-inline" data-confirm="Confirmer la suppression de cet élément ?">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer l'avenue">
+                                                    Supprimer
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6"><div class="resource-empty"><strong>Aucune avenue</strong><span>Créez une avenue après avoir enregistré un quartier.</span></div></td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        @if($avenues->hasPages())<div class="resource-pagination">{{ $avenues->links() }}</div>@endif
+    </div>
+</x-layouts.app>
