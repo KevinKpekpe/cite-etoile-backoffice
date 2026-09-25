@@ -1,4 +1,6 @@
 import 'bootstrap';
+import './customer-autocompletion.js';
+
 
 const root = document.documentElement;
 const sidebarOpenButton = document.querySelector('[data-sidebar-open]');

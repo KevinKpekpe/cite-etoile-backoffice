@@ -11,3 +11,75 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* Address Autocompletion Styles */
+.address-autocomplete-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.address-autocomplete-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color, #6c757d);
+    margin-top: 0.35rem;
+    font-weight: 500;
+}
+
+.address-suggestions-dropdown {
+    position: absolute;
+    top: calc(100% - 1.5rem);
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    background-color: var(--bs-body-bg, #ffffff);
+    color: var(--bs-body-color, #212529);
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    margin: 0.25rem 0 0 0;
+    padding: 0.35rem 0;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+[data-bs-theme="dark"] .address-suggestions-dropdown {
+    background-color: var(--bs-dark-bg-subtle, #1e293b);
+    border-color: var(--bs-border-color-translucent, rgba(255, 255, 255, 0.15));
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.address-suggestion-item {
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+    border-bottom: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.05));
+}
+
+.address-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.address-suggestion-item:hover,
+.address-suggestion-item.active {
+    background-color: var(--bs-tertiary-bg, #f8f9fa);
+}
+
+[data-bs-theme="dark"] .address-suggestion-item:hover,
+[data-bs-theme="dark"] .address-suggestion-item.active {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.address-suggestion-item .suggestion-main {
+    font-size: 0.9rem;
+    line-height: 1.3;
+}
+
+.address-suggestion-item .suggestion-sub {
+    font-size: 0.8rem;
+    margin-top: 0.15rem;
+    color: var(--bs-secondary-color, #6c757d);
+}
+
