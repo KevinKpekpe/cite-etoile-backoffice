@@ -27,7 +27,7 @@ class StorePlotRequest extends FormRequest
 
         return [
             'plot_number' => ['required', 'string', 'max:50', Rule::unique('plots')->where('avenue_id', $this->integer('avenue_id'))->ignore($plot)],
-            'reference' => ['required', 'string', 'max:100', Rule::unique('plots')->ignore($plot)],
+            'reference' => ['nullable', 'string', 'max:100', Rule::unique('plots')->ignore($plot)],
             'avenue_id' => ['required', 'integer', 'exists:avenues,id'],
             'surface_area' => ['nullable', 'numeric', 'gt:0'], 'width' => ['nullable', 'numeric', 'gt:0'],
             'length' => ['nullable', 'numeric', 'gt:0'], 'cadastral_reference' => ['nullable', 'string', 'max:150'],

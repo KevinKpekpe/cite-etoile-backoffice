@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
 use App\Models\Receipt;
+use App\Services\SettingService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -11,11 +12,20 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReceiptController extends Controller
 {
+    public function __construct(private SettingService $settings) {}
+
     public function show(Receipt $receipt): View
     {
-        $receipt->load(['payment', 'customer', 'subscription.plot.avenue.neighborhood', 'subscription.paymentPlan', 'issuedBy']);
+        $receipt->load(['payment', 'customer', 'subscription.plot.avenue.neighborhood', 'subscription.paymentPlan', 'issuedBy', 'subscription.installments']);
 
-        return view('receipts.show', compact('receipt'));
+        $branding = [
+            'company' => $this->settings->value('company', 'name', 'MJIC IMMOBILIER SARL'),
+            'project' => $this->settings->value('project', 'name', 'Cité Étoile du Monde'),
+            'currency' => $this->settings->value('finance', 'currency', 'USD'),
+            'phone' => $this->settings->value('company', 'phone', ''),
+        ];
+
+        return view('receipts.show', compact('receipt', 'branding'));
     }
 
     public function download(Request $request, Receipt $receipt): StreamedResponse

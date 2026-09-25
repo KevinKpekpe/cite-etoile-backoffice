@@ -9,7 +9,7 @@ use App\Models\Payment;
 use App\Models\Plot;
 use App\Models\Subscription;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class DashboardMetricsService
@@ -49,18 +49,44 @@ class DashboardMetricsService
         ];
     }
 
-    /** @return Collection<int, Payment> */
+    /** @return Collection<int, object{label: string, current: float, previous: float}> */
     private function paymentChart(string $period, CarbonImmutable $now): Collection
     {
-        $query = Payment::query()->where('status', 'validated');
-
-        [$from, $format] = match ($period) {
-            'day' => [$now->startOfDay(), '%H:00'], 'week' => [$now->subDays(6)->startOfDay(), '%Y-%m-%d'],
-            'year' => [$now->startOfYear(), '%Y-%m'], default => [$now->startOfMonth(), '%Y-%m-%d'],
+        [$from, $to, $previousFrom, $format, $slots] = match ($period) {
+            'day' => [$now->startOfDay(), $now->endOfDay(), $now->subDay()->startOfDay(), '%Y-%m-%d %H', 24],
+            'week' => [$now->subDays(6)->startOfDay(), $now->endOfDay(), $now->subDays(13)->startOfDay(), '%Y-%m-%d', 7],
+            'year' => [$now->startOfYear(), $now->endOfYear(), $now->subYear()->startOfYear(), '%Y-%m', 12],
+            default => [$now->startOfMonth(), $now->endOfMonth(), $now->startOfMonth()->subMonth(), '%Y-%m-%d', $now->daysInMonth],
         };
-
-        return $query->where('payment_date', '>=', $from)
+        $totals = Payment::query()->where('status', 'validated')
+            ->whereBetween('payment_date', [$previousFrom, $to])
             ->selectRaw("DATE_FORMAT(payment_date, '{$format}') AS label, SUM(amount) AS total")
-            ->groupBy('label')->orderBy('label')->get();
+            ->groupBy('label')->orderBy('label')->pluck('total', 'label');
+
+        return collect(range(0, $slots - 1))->map(function (int $offset) use ($period, $from, $previousFrom, $totals): object {
+            $currentDate = match ($period) {
+                'day' => $from->addHours($offset),
+                'week', 'month' => $from->addDays($offset),
+                default => $from->startOfMonth()->addMonths($offset),
+            };
+            $previousDate = match ($period) {
+                'day' => $previousFrom->addHours($offset),
+                'week', 'month' => $previousFrom->addDays($offset),
+                default => $previousFrom->startOfMonth()->addMonths($offset),
+            };
+            $currentKey = $currentDate->format($period === 'day' ? 'Y-m-d H' : ($period === 'year' ? 'Y-m' : 'Y-m-d'));
+            $previousKey = $previousDate->format($period === 'day' ? 'Y-m-d H' : ($period === 'year' ? 'Y-m' : 'Y-m-d'));
+            $label = match ($period) {
+                'day' => $currentDate->format('H').'h',
+                'year' => $currentDate->translatedFormat('M'),
+                default => $currentDate->format('d/m'),
+            };
+
+            return (object) [
+                'label' => $label,
+                'current' => (float) ($totals[$currentKey] ?? 0),
+                'previous' => (float) ($totals[$previousKey] ?? 0),
+            ];
+        });
     }
 }

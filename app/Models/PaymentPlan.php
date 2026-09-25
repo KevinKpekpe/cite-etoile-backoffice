@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['code', 'name', 'total_price', 'monthly_amount', 'duration_months', 'frequency', 'active', 'valid_from', 'valid_until', 'description'])]
 class PaymentPlan extends Model
 {
     /** @use HasFactory<PaymentPlanFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /** @return HasMany<Subscription, $this> */
     public function subscriptions(): HasMany

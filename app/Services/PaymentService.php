@@ -70,6 +70,14 @@ class PaymentService
 
             $this->recalculate($subscription);
             $this->scheduleService->refreshStatuses($subscription);
+
+            // Premier paiement sur une souscription en attente : activation automatique.
+            if ($subscription->commercial_status === 'pending') {
+                $subscription->update(['commercial_status' => 'active']);
+                $subscription->plot()->update(['commercial_status' => 'subscribed']);
+                $this->auditService->record($user, 'subscription.activated', $subscription, ['commercial_status' => 'pending'], ['commercial_status' => 'active']);
+            }
+
             $this->receiptService->createForPayment($payment, $user);
             $this->auditService->record($user, 'payment.created', $payment, null, ['status' => $payment->status, 'amount' => $payment->amount, 'subscription_id' => $subscription->id]);
 

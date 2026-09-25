@@ -42,6 +42,10 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('two-factor.challenge');
         }
 
+        if ($user->must_change_password) {
+            return redirect()->route('password.change');
+        }
+
         return redirect()->intended($user->hasRole('customer') ? route('portal.dashboard') : route('dashboard'));
     }
 

@@ -1,1 +1,69 @@
-<x-layouts.app title="Formules"><div class="mb-6 flex justify-between"><div><h1 class="text-3xl font-bold">Formules d’acquisition</h1><p class="text-slate-600">Les contrats existants conservent toujours leurs conditions initiales.</p></div>@can('payment_plans.manage')<a href="{{ route('payment-plans.create') }}" class="rounded-lg bg-amber-600 px-4 py-2 text-white">Nouvelle formule</a>@endcan</div><div class="grid gap-4 lg:grid-cols-2">@foreach($paymentPlans as $plan)<article class="rounded-xl bg-white p-5 shadow-sm"><div class="flex justify-between"><div><p class="font-mono text-xs text-amber-700">{{ $plan->code }}</p><h2 class="text-xl font-bold">{{ $plan->name }}</h2></div><span>{{ $plan->active ? 'Active' : 'Inactive' }}</span></div><p class="mt-4 text-2xl font-bold">{{ $plan->total_price }} USD</p><p class="text-sm text-slate-600">{{ $plan->frequency === 'monthly' ? $plan->monthly_amount.' USD × '.$plan->duration_months.' mois' : 'Paiement immédiat' }}</p><p class="mt-2 text-sm">Validité : {{ $plan->valid_from?->format('d/m/Y') ?? 'sans début' }} — {{ $plan->valid_until?->format('d/m/Y') ?? 'sans fin' }}</p>@can('payment_plans.manage')<a href="{{ route('payment-plans.edit',$plan) }}" class="mt-4 inline-block text-amber-700">Modifier</a>@endcan</article>@endforeach</div></x-layouts.app>
+<x-layouts.app title="Formules">
+    <div class="resource-page pricing-page">
+        <header class="resource-heading">
+            <div>
+                <p class="app-kicker">Tarification & Financement</p>
+                <h1 class="resource-heading__title">Formules d’acquisition</h1>
+                <p class="resource-heading__description">Catalogue des conditions de paiement proposées aux souscripteurs.</p>
+            </div>
+            <div class="resource-heading__actions">
+                @can('payment_plans.manage')
+                    <a href="{{ route('payment-plans.trashed') }}" class="btn btn-outline">Corbeille</a>
+                    <a href="{{ route('payment-plans.create') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                        Nouvelle formule
+                    </a>
+                @endcan
+            </div>
+        </header>
+
+        <div class="pricing-grid">
+            @forelse($paymentPlans as $plan)
+                <article class="pricing-tier {{ $plan->active ? 'popular' : '' }}">
+                    <div class="pricing-tier__topline">
+                        <div class="name">{{ $plan->name }}</div>
+                        <span class="status status-{{ $plan->active ? 'green' : 'red' }}">{{ $plan->active ? 'Active' : 'Inactive' }}</span>
+                    </div>
+
+                    <div class="pricing-tier__price">
+                        <span class="price">{{ number_format((float) $plan->total_price, 0, ',', ' ') }}</span>
+                        <small>USD au total</small>
+                    </div>
+
+                    <div class="desc">{{ $plan->description ?: 'Formule de financement pour l’acquisition d’une parcelle.' }}</div>
+
+                    <ul>
+                        <li><i class="bi bi-check-lg" aria-hidden="true"></i> Référence {{ $plan->code }}</li>
+                        @if($plan->frequency === 'monthly')
+                            <li><i class="bi bi-check-lg" aria-hidden="true"></i> {{ number_format((float) $plan->monthly_amount, 2, ',', ' ') }} USD par mois</li>
+                            <li><i class="bi bi-check-lg" aria-hidden="true"></i> Durée de {{ $plan->duration_months }} mois</li>
+                        @else
+                            <li><i class="bi bi-check-lg" aria-hidden="true"></i> Paiement unique au comptant</li>
+                        @endif
+                        <li><i class="bi bi-check-lg" aria-hidden="true"></i> Du {{ $plan->valid_from?->format('d/m/Y') ?? 'sans date de début' }}</li>
+                        <li><i class="bi bi-check-lg" aria-hidden="true"></i> Au {{ $plan->valid_until?->format('d/m/Y') ?? 'sans date de fin' }}</li>
+                    </ul>
+
+                    @can('payment_plans.manage')
+                        <div class="pricing-tier__actions">
+                            <a href="{{ route('payment-plans.edit', $plan) }}" class="btn {{ $plan->active ? 'btn-primary' : 'btn-outline' }}">Modifier</a>
+                            <form method="POST" action="{{ route('payment-plans.destroy', $plan) }}" data-confirm="Placer cette formule en corbeille ?">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-outline-danger" title="Supprimer la formule">
+                                    <i class="bi bi-trash" aria-hidden="true"></i>
+                                    <span class="visually-hidden">Supprimer</span>
+                                </button>
+                            </form>
+                        </div>
+                    @endcan
+                </article>
+            @empty
+                <div class="resource-empty resource-empty--standalone pricing-grid__empty">
+                    <strong>Aucune formule enregistrée</strong>
+                    <span>Créez la première formule tarifaire pour permettre les souscriptions.</span>
+                </div>
+            @endforelse
+        </div>
+    </div>
+</x-layouts.app>

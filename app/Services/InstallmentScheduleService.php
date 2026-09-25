@@ -67,6 +67,17 @@ class InstallmentScheduleService
         }
     }
 
+    public function syncOverdueStatuses(?CarbonImmutable $today = null): int
+    {
+        $todayStr = ($today ?? CarbonImmutable::today())->toDateString();
+
+        return Installment::query()
+            ->whereDate('due_date', '<', $todayStr)
+            ->whereColumn('amount_paid', '<', 'amount_due')
+            ->whereNot('status', 'overdue')
+            ->update(['status' => 'overdue']);
+    }
+
     private function toCents(string|float|int $amount): int
     {
         $amount = number_format((float) $amount, 2, '.', '');

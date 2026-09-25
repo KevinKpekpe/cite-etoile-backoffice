@@ -42,12 +42,13 @@ it('preserves subscription snapshots when a plan changes', function () {
     expect($subscription->refresh()->contract_total)->toBe('3600.00')->and($subscription->monthly_amount)->toBe('300.00');
 });
 
-it('deactivates a plan without deleting historical subscriptions', function () {
+it('soft deletes a plan without deleting historical subscriptions', function () {
     $plan = PaymentPlan::factory()->create();
     $subscription = Subscription::factory()->for($plan, 'paymentPlan')->create();
 
     $this->actingAs($this->admin)->delete(route('payment-plans.destroy', $plan))->assertRedirect();
 
-    expect($plan->refresh()->active)->toBeFalse();
+    expect(PaymentPlan::find($plan->id))->toBeNull()
+        ->and(PaymentPlan::withTrashed()->find($plan->id))->not->toBeNull();
     $this->assertModelExists($subscription);
 });

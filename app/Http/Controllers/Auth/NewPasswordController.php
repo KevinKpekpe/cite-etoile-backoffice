@@ -21,21 +21,29 @@ class NewPasswordController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $email = Str::lower(trim((string) $request->input('email')));
+        $request->merge(['email' => $email]);
+
         $request->validate([
-            'token' => ['required'], 'email' => ['required', 'email'],
+            'token' => ['required'],
+            'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', PasswordRule::defaults()],
         ]);
 
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password): void {
-                $user->forceFill(['password' => $password, 'remember_token' => Str::random(60)])->save();
+                $user->forceFill([
+                    'password' => $password,
+                    'remember_token' => Str::random(60),
+                    'must_change_password' => false,
+                ])->save();
                 event(new PasswordReset($user));
             },
         );
 
-        return $status === Password::PasswordReset
+        return $status === Password::PASSWORD_RESET
             ? redirect()->route('login')->with('status', __($status))
-            : back()->withErrors(['email' => [__($status)]]);
+            : back()->withInput($request->only('email'))->withErrors(['email' => __($status)]);
     }
 }

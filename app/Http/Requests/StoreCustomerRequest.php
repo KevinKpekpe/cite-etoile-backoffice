@@ -32,6 +32,13 @@ class StoreCustomerRequest extends FormRequest
             'country' => ['nullable', 'string', 'max:100'], 'nationality' => ['nullable', 'string', 'max:100'],
             'internal_notes' => ['nullable', 'string', 'max:5000'], 'status' => ['required', 'in:prospect,active,settled,suspended'],
             'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
+            // Souscription initiale optionnelle
+            'plot_id' => ['nullable', 'integer', 'exists:plots,id'],
+            'payment_plan_id' => ['nullable', 'integer', 'exists:payment_plans,id', 'required_with:plot_id'],
+            'subscription_date' => ['nullable', 'date'],
+            'start_date' => ['nullable', 'date'],
+            'deposit' => ['nullable', 'numeric', 'min:1'],
+            'deposit_method' => ['nullable', 'in:cash,bank_transfer,mobile_money,card,other'],
         ];
     }
 }

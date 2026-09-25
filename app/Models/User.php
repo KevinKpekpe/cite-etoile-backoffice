@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -16,12 +17,12 @@ use Illuminate\Notifications\Notifiable;
  * @property string|null $two_factor_secret
  * @property array<int, string>|null $two_factor_recovery_codes
  */
-#[Fillable(['first_name', 'last_name', 'email', 'phone', 'password'])]
+#[Fillable(['first_name', 'last_name', 'email', 'phone', 'password', 'status', 'must_change_password'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /** @return HasOne<Customer, $this> */
     public function customer(): HasOne
@@ -60,6 +61,7 @@ class User extends Authenticatable
         return [
             'last_login_at' => 'datetime',
             'password' => 'hashed',
+            'must_change_password' => 'boolean',
             'two_factor_secret' => 'encrypted',
             'two_factor_recovery_codes' => 'encrypted:array',
             'two_factor_confirmed_at' => 'datetime',

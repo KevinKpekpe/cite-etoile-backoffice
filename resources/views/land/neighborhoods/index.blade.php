@@ -1,1 +1,48 @@
-<x-layouts.app title="Quartiers"><div class="mb-6 flex justify-between"><h1 class="text-3xl font-bold">Quartiers</h1><a href="{{ route('neighborhoods.create') }}" class="rounded-lg bg-amber-600 px-4 py-2 text-white">Nouveau quartier</a></div><div class="rounded-xl bg-white p-5 shadow-sm"><table class="w-full text-left text-sm"><thead><tr><th class="py-3">Code</th><th>Nom</th><th>Statut</th><th>Avenues</th><th></th></tr></thead><tbody class="divide-y">@foreach($neighborhoods as $item)<tr><td class="py-3 font-mono">{{ $item->code }}</td><td>{{ $item->name }}</td><td>{{ $item->status }}</td><td>{{ $item->avenues_count }}</td><td class="text-right"><a class="text-amber-700" href="{{ route('neighborhoods.edit',$item) }}">Modifier</a></td></tr>@endforeach</tbody></table></div><div class="mt-5">{{ $neighborhoods->links() }}</div></x-layouts.app>
+<x-layouts.app title="Quartiers">
+    @php($statusLabels = ['planned' => 'Planifié', 'active' => 'Actif', 'commercializable' => 'Commercialisable', 'completed' => 'Achevé', 'suspended' => 'Suspendu'])
+    <div class="resource-page">
+        <header class="resource-heading">
+            <div><p class="app-kicker">Gestion foncière</p><h1 class="resource-heading__title">Quartiers</h1><p class="resource-heading__description">Structurez les zones du projet et suivez leur niveau de développement.</p></div>
+            <a href="{{ route('neighborhoods.create') }}" class="btn btn-primary">Nouveau quartier</a>
+        </header>
+
+        <section class="resource-table">
+            <div class="resource-table__header"><div><h2>Répertoire des quartiers</h2><p>{{ $neighborhoods->total() }} {{ Str::plural('quartier', $neighborhoods->total()) }}</p></div></div>
+            <div class="table-responsive">
+                <table class="table resource-data-table align-middle mb-0">
+                    <thead><tr><th>Code</th><th>Quartier</th><th>Statut</th><th class="text-end">Avenues</th><th class="text-end">Parcelles</th><th class="text-end">Action</th></tr></thead>
+                    <tbody>
+                        @forelse($neighborhoods as $item)
+                            <tr>
+                                <td><span class="resource-reference">{{ $item->code }}</span></td>
+                                <td><strong>{{ $item->name }}</strong></td>
+                                <td><span class="status-badge status-badge--{{ $item->status }}">{{ $statusLabels[$item->status] ?? ucfirst($item->status) }}</span></td>
+                                <td class="record-money text-end">{{ number_format($item->avenues_count, 0, ',', ' ') }}</td>
+                                <td class="record-money text-end">{{ number_format($item->plots_count, 0, ',', ' ') }}</td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-2 align-items-center justify-content-end">
+                                        @can('plots.manage')
+                                            <a href="{{ route('neighborhoods.edit', $item) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Modifier le quartier">
+                                                Modifier
+                                            </a>
+                                            <form method="POST" action="{{ route('neighborhoods.destroy', $item) }}" class="d-inline" data-confirm="Confirmer la suppression de cet élément ?">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer le quartier">
+                                                    Supprimer
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6"><div class="resource-empty"><strong>Aucun quartier</strong><span>Créez le premier quartier pour structurer le lotissement.</span></div></td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        @if($neighborhoods->hasPages())<div class="resource-pagination">{{ $neighborhoods->links() }}</div>@endif
+    </div>
+</x-layouts.app>

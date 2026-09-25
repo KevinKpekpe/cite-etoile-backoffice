@@ -1,13 +1,82 @@
 <x-layouts.app :title="$payment->payment_reference">
-    <div class="mb-6">
-        <p class="font-mono text-amber-700">{{ $payment->payment_reference }}</p>
-        <h1 class="text-3xl font-bold">{{ $payment->amount }} {{ $payment->currency }}</h1>
-        <p>{{ $payment->customer->first_name }} {{ $payment->customer->last_name }} · {{ $payment->subscription->plot->reference }}</p>
-        @if($payment->receipt)<a href="{{ route('receipts.show',$payment->receipt) }}" class="mt-2 inline-block text-amber-700">Voir et télécharger le reçu</a>@endif
+    <div class="customer-record">
+        @if($nextInstallment && $payment->subscription->commercial_status === 'active')
+            <div class="record-alert record-alert--info">
+                <div>
+                    <strong>Prochaine échéance le {{ $nextInstallment->due_date->translatedFormat('d F Y') }}</strong>
+                    <p>{{ number_format((float) $nextInstallment->amount_due, 2, ',', ' ') }} USD attendus · solde restant {{ number_format((float) $payment->subscription->balance, 2, ',', ' ') }} USD</p>
+                </div>
+                @can('payments.create')
+                    <a href="{{ route('payments.create', $payment->subscription) }}" class="btn btn-app-primary resource-button">Nouvel encaissement</a>
+                @endcan
+            </div>
+        @elseif($payment->subscription->financial_status === 'paid' || $payment->subscription->commercial_status === 'completed')
+            <div class="record-alert record-alert--success"><div><strong>Souscription soldée</strong><p>Tous les paiements attendus ont été reçus.</p></div></div>
+        @endif
+
+        <header class="record-heading">
+            <div class="record-heading__identity">
+                <span class="record-heading__avatar" aria-hidden="true"><i class="bi bi-credit-card"></i></span>
+                <div>
+                    <p class="app-kicker">{{ $payment->payment_reference }}</p>
+                    <h1>{{ number_format((float) $payment->amount, 2, ',', ' ') }} {{ $payment->currency }}</h1>
+                    <p>{{ $payment->customer->first_name }} {{ $payment->customer->last_name }} · {{ $payment->subscription->plot->reference }}</p>
+                </div>
+            </div>
+            <div class="resource-heading__actions">
+                <a href="{{ route('subscriptions.show', $payment->subscription) }}" class="btn btn-outline-secondary resource-button">Fiche souscription</a>
+                @if($payment->receipt)
+                    <a href="{{ route('receipts.show', $payment->receipt) }}" class="btn btn-app-primary resource-button">Voir le reçu</a>
+                @endif
+            </div>
+        </header>
+
+        <div class="detail-sheet">
+            <section class="detail-section">
+                <div class="detail-section__heading"><p class="app-kicker">Transaction</p><h2>Détail du paiement</h2></div>
+                <dl class="detail-grid">
+                    <div><dt>Statut</dt><dd><span class="status-badge status-badge--{{ $payment->status }}">{{ ucfirst($payment->status) }}</span></dd></div>
+                    <div><dt>Date et heure</dt><dd>{{ $payment->payment_date->format('d/m/Y H:i:s') }}</dd></div>
+                    <div><dt>Mode de règlement</dt><dd>{{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</dd></div>
+                    <div><dt>Référence externe</dt><dd>{{ $payment->transaction_reference ?: 'Non renseignée' }}</dd></div>
+                    <div><dt>Formule</dt><dd>{{ $payment->subscription->paymentPlan->name }}</dd></div>
+                    <div><dt>Parcelle</dt><dd>{{ $payment->subscription->plot->reference }} · {{ $payment->subscription->plot->avenue->neighborhood->name }}</dd></div>
+                    <div><dt>Cumul encaissé</dt><dd class="record-money">{{ number_format((float) $payment->subscription->amount_paid, 2, ',', ' ') }} USD</dd></div>
+                    <div><dt>Solde restant</dt><dd class="record-money">{{ number_format((float) $payment->subscription->balance, 2, ',', ' ') }} USD</dd></div>
+                    <div><dt>Observations</dt><dd>{{ $payment->notes ?: 'Aucune observation' }}</dd></div>
+                </dl>
+            </section>
+
+            <section class="detail-section">
+                <div class="detail-section__heading"><p class="app-kicker">Ventilation</p><h2>Affectation aux échéances</h2></div>
+                <div class="record-list">
+                    @forelse($payment->allocations as $allocation)
+                        <div class="record-list__item">
+                            <span><strong>Échéance {{ $allocation->installment->installment_number }}</strong><small>{{ $allocation->installment->due_date->format('d/m/Y') }}</small></span>
+                            <span class="record-money">{{ number_format((float) $allocation->amount, 2, ',', ' ') }} USD</span>
+                        </div>
+                    @empty
+                        <p class="record-empty-copy">Paiement comptant sans échéance mensuelle.</p>
+                    @endforelse
+                </div>
+            </section>
+
+            @can('payments.cancel')
+                @if($payment->status === 'validated')
+                    <section class="detail-section">
+                        <div class="detail-section__heading"><p class="app-kicker">Correction</p><h2>Extourner le paiement</h2></div>
+                        <form method="POST" action="{{ route('payments.reverse', $payment) }}" class="reversal-form" data-confirm="Confirmer l’extourne de ce paiement ?">
+                            @csrf
+                            @method('PATCH')
+                            <label class="form-field">
+                                <span class="form-field__label">Motif de l’extourne<span class="text-danger ms-1 fw-bold">*</span></span>
+                                <textarea name="reason" required minlength="10" rows="3" class="form-control" placeholder="Décrivez précisément la raison de l’extourne"></textarea>
+                            </label>
+                            <button class="btn btn-outline-danger resource-button" type="submit">Extourner le paiement</button>
+                        </form>
+                    </section>
+                @endif
+            @endcan
+        </div>
     </div>
-    <div class="grid gap-5 lg:grid-cols-2">
-        <section class="rounded-xl bg-white p-5 shadow-sm"><h2 class="font-bold">Paiement</h2><p class="mt-3">Statut : {{ $payment->status }}</p><p>Date : {{ $payment->payment_date->format('d/m/Y H:i') }}</p><p>Mode : {{ $payment->payment_method }}</p><p>Référence : {{ $payment->transaction_reference ?: '—' }}</p></section>
-        <section class="rounded-xl bg-white p-5 shadow-sm"><h2 class="font-bold">Affectations</h2>@forelse($payment->allocations as $allocation)<div class="flex justify-between border-b py-3"><span>Échéance {{ $allocation->installment->installment_number }}</span><strong>{{ $allocation->amount }} USD</strong></div>@empty<p class="mt-3 text-slate-500">Paiement Cash sans échéance mensuelle.</p>@endforelse</section>
-    </div>
-    @can('payments.cancel') @if($payment->status==='validated')<form method="POST" action="{{ route('payments.reverse',$payment) }}" class="mt-5 max-w-xl rounded-xl border border-red-200 bg-red-50 p-5">@csrf @method('PATCH')<label class="block">Motif d’extourne<textarea name="reason" required minlength="10" class="mt-2 w-full rounded-lg border p-3"></textarea></label><button class="mt-3 rounded-lg bg-red-700 px-4 py-2 text-white">Extourner le paiement</button></form>@endif @endcan
 </x-layouts.app>
