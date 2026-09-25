@@ -32,7 +32,7 @@
         @elseif($subscription->commercial_status === 'active' && $subscription->duration_months > 0 && $nextInstallment)
             <div class="record-alert record-alert--info">
                 <div>
-                    <strong>Prochaine échéance : {{ CarbonCarbon::parse($nextInstallment->due_date)->translatedFormat('d F Y') }}</strong>
+                    <strong>Prochaine échéance : {{ $nextInstallment->due_date->translatedFormat('d F Y') }}</strong>
                     <p>{{ number_format((float) $nextInstallment->amount_due, 2, ',', ' ') }} USD attendus · solde total {{ number_format((float) $subscription->balance, 2, ',', ' ') }} USD</p>
                 </div>
                 @can('payments.create')
