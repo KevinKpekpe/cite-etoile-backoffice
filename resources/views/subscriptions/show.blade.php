@@ -46,14 +46,16 @@
                 <span class="record-heading__avatar" aria-hidden="true"><i class="bi bi-file-earmark-check"></i></span>
                 <div>
                     <p class="app-kicker">{{ $subscription->subscription_number }}</p>
-                    <h1>{{ $subscription->customer->first_name }} {{ $subscription->customer->last_name }}</h1>
-                    <p>{{ $subscription->plot->reference }} · {{ $subscription->plot->avenue->neighborhood->name }}</p>
+                    <h1>{{ $subscription->customer ? ($subscription->customer->first_name . ' ' . $subscription->customer->last_name) : 'Client non renseigné' }}</h1>
+                    <p>{{ $subscription->plot?->reference }} · {{ $subscription->plot?->avenue?->neighborhood?->name }}</p>
                 </div>
             </div>
             <div class="resource-heading__actions">
-                @can('customers.view')
-                    <a href="{{ route('customers.show', $subscription->customer) }}" class="btn btn-outline-secondary resource-button">Fiche client</a>
-                @endcan
+                @if($subscription->customer)
+                    @can('customers.view')
+                        <a href="{{ route('customers.show', $subscription->customer) }}" class="btn btn-outline-secondary resource-button">Fiche client</a>
+                    @endcan
+                @endif
                 @can('installments.view')
                     <a href="{{ route('subscriptions.installments.index', $subscription) }}" class="btn btn-outline-secondary resource-button">Échéancier</a>
                 @endcan

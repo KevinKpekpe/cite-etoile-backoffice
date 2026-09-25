@@ -83,9 +83,13 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <a href="{{ route('customers.show', $item->customer) }}" class="text-decoration-none font-bold text-dark">
-                                        {{ $item->customer->first_name }} {{ $item->customer->last_name }}
-                                    </a>
+                                    @if($item->customer)
+                                        <a href="{{ route('customers.show', $item->customer) }}" class="text-decoration-none font-bold text-dark">
+                                            {{ $item->customer->first_name }} {{ $item->customer->last_name }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted small">—</span>
+                                    @endif
                                 </td>
                                 <td>
                                     @if($item->plot)
