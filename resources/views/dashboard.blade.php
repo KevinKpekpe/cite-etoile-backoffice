@@ -229,12 +229,15 @@
                             @endforeach
                         </div>
                         <div class="dashboard-line-chart__plot">
-                            <svg viewBox="0 0 1000 200" preserveAspectRatio="none" role="img" aria-label="Évolution des encaissements">
+                            <svg viewBox="0 0 1000 200" preserveAspectRatio="none" role="img" aria-label="Histogramme des encaissements">
                                 <defs>
-                                    <linearGradient id="chart-area-gradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#1abb9c" stop-opacity=".22"/>
-                                        <stop offset="80%" stop-color="#1abb9c" stop-opacity=".03"/>
-                                        <stop offset="100%" stop-color="#1abb9c" stop-opacity="0"/>
+                                    <linearGradient id="bar-gradient-current" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#1abb9c"/>
+                                        <stop offset="100%" stop-color="#11836c"/>
+                                    </linearGradient>
+                                    <linearGradient id="bar-gradient-previous" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#4299e1" stop-opacity="0.85"/>
+                                        <stop offset="100%" stop-color="#2b6cb0" stop-opacity="0.85"/>
                                     </linearGradient>
                                 </defs>
 
@@ -243,29 +246,55 @@
                                     <line x1="0" y1="{{ $axisItem['y'] }}" x2="1000" y2="{{ $axisItem['y'] }}" class="dashboard-line-chart__grid"/>
                                 @endforeach
 
-                                {{-- Area fill --}}
-                                @if($currentChartAreaPath)
-                                    <path d="{{ $currentChartAreaPath }}" fill="url(#chart-area-gradient)"/>
-                                @endif
+                                {{-- Histogram Bars --}}
+                                @php
+                                    $hasPrevious = $previousChartValues->max() > 0;
+                                    $barWidth = max(6, min(24, (int) (600 / max(1, $chartCount))));
+                                @endphp
 
-                                {{-- Previous period line --}}
-                                @if($previousChartPath && $previousChartValues->max() > 0)
-                                    <path d="{{ $previousChartPath }}" class="dashboard-line-chart__line dashboard-line-chart__line--previous"/>
-                                @endif
+                                @foreach($payment_chart as $index => $point)
+                                    @php
+                                        $val = (float) ($chartValues[$index] ?? 0);
+                                        $prevVal = (float) ($previousChartValues[$index] ?? 0);
+                                        $xCenter = ($index / max(1, $chartCount - 1)) * 1000;
+                                    @endphp
 
-                                {{-- Current period line --}}
-                                @if($currentChartPath)
-                                    <path d="{{ $currentChartPath }}" class="dashboard-line-chart__line dashboard-line-chart__line--current"/>
-                                @endif
+                                    {{-- Previous period bar --}}
+                                    @if($hasPrevious && $prevVal > 0)
+                                        @php
+                                            $prevHeight = max(4, ($prevVal / $chartMaximum) * 168);
+                                            $prevY = 184 - $prevHeight;
+                                            $xPrev = $xCenter - $barWidth - 1;
+                                        @endphp
+                                        <rect x="{{ round($xPrev, 2) }}" y="{{ round($prevY, 2) }}"
+                                              width="{{ $barWidth }}" height="{{ round($prevHeight, 2) }}"
+                                              rx="3" ry="3" fill="url(#bar-gradient-previous)" class="dashboard-bar-chart__bar">
+                                            <title>Période précédente ({{ $point->label }}) : {{ number_format($prevVal, 0, ',', ' ') }} USD</title>
+                                        </rect>
+                                    @endif
 
-                                {{-- Data point dots (non-zero values only) --}}
-                                @foreach($currentCoordinates as $index => $coord)
-                                    @if(($chartValues[$index] ?? 0) > 0)
-                                        <circle cx="{{ $coord[0] }}" cy="{{ $coord[1] }}" r="4"
-                                            fill="#1abb9c" stroke="white" stroke-width="2"
-                                            vector-effect="non-scaling-stroke">
-                                            <title>{{ $payment_chart[$index]->label }} — {{ number_format($chartValues[$index], 0, ',', ' ') }} USD</title>
-                                        </circle>
+                                    {{-- Current period bar --}}
+                                    @if($val > 0)
+                                        @php
+                                            $currentHeight = max(4, ($val / $chartMaximum) * 168);
+                                            $currentY = 184 - $currentHeight;
+                                            $xCurr = $hasPrevious ? $xCenter + 1 : $xCenter - ($barWidth / 2);
+                                        @endphp
+                                        <rect x="{{ round($xCurr, 2) }}" y="{{ round($currentY, 2) }}"
+                                              width="{{ $barWidth }}" height="{{ round($currentHeight, 2) }}"
+                                              rx="3" ry="3" fill="url(#bar-gradient-current)" class="dashboard-bar-chart__bar">
+                                            <title>{{ $point->label }} — {{ number_format($val, 0, ',', ' ') }} USD</title>
+                                        </rect>
+                                    @else
+                                        {{-- Subtle zero baseline bar --}}
+                                        @php
+                                            $xCurr = $hasPrevious ? $xCenter + 1 : $xCenter - ($barWidth / 2);
+                                        @endphp
+                                        <rect x="{{ round($xCurr, 2) }}" y="182"
+                                              width="{{ $barWidth }}" height="2"
+                                              rx="1" fill="#1abb9c" opacity="0.2">
+                                            <title>{{ $point->label }} — 0 USD</title>
+                                        </rect>
                                     @endif
                                 @endforeach
                             </svg>
