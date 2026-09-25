@@ -28,6 +28,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
+use Illuminate\Support\Facades\Storage;
+
 class CustomerController extends Controller
 {
     /**
@@ -99,6 +101,10 @@ class CustomerController extends Controller
             'status', 'assigned_to',
         ]);
 
+        if ($request->hasFile('avatar')) {
+            $customerFields['avatar_path'] = $request->file('avatar')->store('avatars', 'public');
+        }
+
         [$customer, $subscription] = DB::transaction(function () use (
             $request, $references, $customerFields, $scheduleService, $auditService, $markdownService
         ): array {
@@ -124,6 +130,7 @@ class CustomerController extends Controller
                 'email' => $email,
                 'phone' => $customer->phone,
                 'password' => Hash::make($temporaryPassword),
+                'avatar_path' => $customer->avatar_path,
                 'status' => 'active',
                 'must_change_password' => true,
             ]);
@@ -236,10 +243,33 @@ class CustomerController extends Controller
      */
     public function update(UpdateCustomerRequest $request, Customer $customer): RedirectResponse
     {
-        DB::transaction(function () use ($request, $customer): void {
-            $oldValues = $customer->only(array_keys($request->validated()));
-            $customer->update($request->validated());
-            $this->audit($request, 'customer.updated', $customer, $oldValues, $customer->only(array_keys($request->validated())));
+        $data = $request->safe()->except(['avatar', 'remove_avatar']);
+
+        if ($request->boolean('remove_avatar')) {
+            if ($customer->avatar_path) {
+                Storage::disk('public')->delete($customer->avatar_path);
+            }
+            $data['avatar_path'] = null;
+        } elseif ($request->hasFile('avatar')) {
+            if ($customer->avatar_path) {
+                Storage::disk('public')->delete($customer->avatar_path);
+            }
+            $data['avatar_path'] = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        DB::transaction(function () use ($request, $customer, $data): void {
+            $oldValues = $customer->only(array_keys($data));
+            $customer->update($data);
+            if ($customer->user) {
+                $customer->user->update([
+                    'first_name' => $customer->first_name,
+                    'last_name' => $customer->last_name,
+                    'phone' => $customer->phone,
+                    'email' => $customer->email ?: $customer->user->email,
+                    'avatar_path' => $customer->avatar_path,
+                ]);
+            }
+            $this->audit($request, 'customer.updated', $customer, $oldValues, $customer->only(array_keys($data)));
         });
 
         return redirect()->route('customers.show', $customer)->with('status', __('Client mis à jour.'));

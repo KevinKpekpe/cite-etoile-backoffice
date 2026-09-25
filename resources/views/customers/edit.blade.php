@@ -9,7 +9,7 @@
             <a href="{{ route('customers.show', $customer) }}" class="btn btn-outline-secondary resource-button">Retour au dossier</a>
         </header>
 
-        <form method="POST" action="{{ route('customers.update', $customer) }}" class="form-page__content">
+        <form method="POST" action="{{ route('customers.update', $customer) }}" enctype="multipart/form-data" class="form-page__content">
             @csrf
             @method('PUT')
             <section class="form-section">

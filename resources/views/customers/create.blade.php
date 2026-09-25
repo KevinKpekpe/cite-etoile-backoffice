@@ -9,7 +9,7 @@
             <a href="{{ route('customers.index') }}" class="btn btn-outline-secondary resource-button">Retour aux clients</a>
         </header>
 
-        <form method="POST" action="{{ route('customers.store') }}" class="form-page__content">
+        <form method="POST" action="{{ route('customers.store') }}" enctype="multipart/form-data" class="form-page__content">
             @csrf
 
             <section class="form-section">

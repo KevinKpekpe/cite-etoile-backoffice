@@ -35,6 +35,9 @@ class UpdateProfileRequest extends FormRequest
             'commune' => ['nullable', 'string', 'max:100'],
             'city' => ['nullable', 'string', 'max:100'],
             'country' => ['nullable', 'string', 'max:100'],
+            'nationality' => ['nullable', 'string', 'max:100'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+            'remove_avatar' => ['nullable', 'boolean'],
         ];
     }
 }

@@ -40,7 +40,13 @@
 
         <header class="record-heading">
             <div class="record-heading__identity">
-                <span class="record-heading__avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($customer->first_name, 0, 1).mb_substr($customer->last_name, 0, 1)) }}</span>
+                <span class="record-heading__avatar" aria-hidden="true">
+                    @if($customer->avatar_path)
+                        <img src="{{ Storage::url($customer->avatar_path) }}" alt="{{ $customer->first_name }}" class="w-full h-full object-cover rounded-full">
+                    @else
+                        {{ mb_strtoupper(mb_substr($customer->first_name, 0, 1).mb_substr($customer->last_name, 0, 1)) }}
+                    @endif
+                </span>
                 <div><p class="app-kicker">{{ $customer->customer_number }}</p><h1>{{ $customer->first_name }} {{ $customer->middle_name }} {{ $customer->last_name }}</h1><p>{{ $customer->phone }} · {{ $customer->email ?: 'Sans e-mail' }}</p></div>
             </div>
             <div class="resource-heading__actions">
@@ -62,7 +68,13 @@
                 <section class="record-panel h-100">
                     <div class="record-panel__header"><h2>Profil</h2><span class="status-badge status-badge--{{ $customer->status }}">{{ $statusLabels[$customer->status] ?? ucfirst($customer->status) }}</span></div>
                     <dl class="record-definition-list">
-                        <div><dt>Adresse</dt><dd>{{ $customer->address ?: 'Non renseignée' }}{{ $customer->commune ? ', '.$customer->commune : '' }}{{ $customer->city ? ', '.$customer->city : '' }}</dd></div>
+                        <div><dt>Adresse</dt><dd>{{ $customer->address ?: 'Non renseignée' }}</dd></div>
+                        <div><dt>Commune</dt><dd>{{ $customer->commune ?: 'Non renseignée' }}</dd></div>
+                        <div><dt>Ville</dt><dd>{{ $customer->city ?: 'Non renseignée' }}</dd></div>
+                        <div><dt>Pays</dt><dd>{{ $customer->country ?: 'Non renseigné' }}</dd></div>
+                        <div><dt>Nationalité</dt><dd>{{ $customer->nationality ?: 'Non renseignée' }}</dd></div>
+                        @if($customer->birth_date)<div><dt>Date de naissance</dt><dd>{{ $customer->birth_date->format('d/m/Y') }}</dd></div>@endif
+                        @if($customer->gender)<div><dt>Genre</dt><dd>{{ ucfirst($customer->gender) }}</dd></div>@endif
                         <div><dt>Responsable</dt><dd>{{ $customer->assignedAgent ? $customer->assignedAgent->first_name.' '.$customer->assignedAgent->last_name : 'Non attribué' }}</dd></div>
                         <div><dt>Observations</dt><dd class="whitespace-pre-line">{{ $customer->internal_notes ?: 'Aucune observation' }}</dd></div>
                     </dl>

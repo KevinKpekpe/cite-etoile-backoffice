@@ -110,7 +110,14 @@
 
         <div class="app-sidebar__footer">
             <div class="app-sidebar-user">
-                <span class="app-sidebar-user__avatar" aria-hidden="true">{{ $userInitials }}<span></span></span>
+                <span class="app-sidebar-user__avatar" aria-hidden="true">
+                    @if($user?->avatar_path)
+                        <img src="{{ Storage::url($user->avatar_path) }}" alt="{{ $userName }}" class="w-full h-full object-cover rounded-full">
+                    @else
+                        {{ $userInitials }}
+                    @endif
+                    <span></span>
+                </span>
                 <span class="app-sidebar-user__identity">
                     <strong>{{ $userName }}</strong>
                     <small>{{ $isPortalClient ? 'Client' : 'Administration' }}</small>
@@ -142,7 +149,13 @@
 
                 <div class="dropdown">
                     <button class="app-user-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="app-user-menu__avatar" aria-hidden="true">{{ $userInitials }}</span>
+                        <span class="app-user-menu__avatar" aria-hidden="true">
+                            @if($user?->avatar_path)
+                                <img src="{{ Storage::url($user->avatar_path) }}" alt="{{ $userName }}" class="w-full h-full object-cover rounded-full">
+                            @else
+                                {{ $userInitials }}
+                            @endif
+                        </span>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end app-user-dropdown">
                         @if($isPortalClient)

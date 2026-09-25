@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -22,8 +22,18 @@ class ProfileController extends Controller
     public function update(UpdateProfileRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $values = $request->validated();
+        $values = $request->safe()->except(['avatar', 'remove_avatar']);
         $oldValues = $user->only(array_keys($values));
+
+        if ($request->boolean('remove_avatar') && $user->avatar_path) {
+            Storage::disk('public')->delete($user->avatar_path);
+            $values['avatar_path'] = null;
+        } elseif ($request->hasFile('avatar')) {
+            if ($user->avatar_path) {
+                Storage::disk('public')->delete($user->avatar_path);
+            }
+            $values['avatar_path'] = $request->file('avatar')->store('avatars', 'public');
+        }
 
         DB::transaction(function () use ($request, $user, $values, $oldValues): void {
             $user->update($values);

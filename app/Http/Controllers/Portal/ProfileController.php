@@ -10,8 +10,7 @@ use App\Models\Customer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -40,19 +39,51 @@ class ProfileController extends Controller
     public function update(UpdateProfileRequest $request): RedirectResponse
     {
         $customer = $request->user()->customer()->firstOrFail();
-        $values = $request->validated();
+        $user = $request->user();
+        $values = $request->safe()->except(['avatar', 'remove_avatar']);
         $oldValues = $customer->only(array_keys($values));
 
-        DB::transaction(function () use ($request, $customer, $values, $oldValues): void {
+        if ($request->boolean('remove_avatar')) {
+            if ($customer->avatar_path) {
+                Storage::disk('public')->delete($customer->avatar_path);
+            }
+            if ($user->avatar_path && $user->avatar_path !== $customer->avatar_path) {
+                Storage::disk('public')->delete($user->avatar_path);
+            }
+            $values['avatar_path'] = null;
+        } elseif ($request->hasFile('avatar')) {
+            if ($customer->avatar_path) {
+                Storage::disk('public')->delete($customer->avatar_path);
+            }
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            $values['avatar_path'] = $avatarPath;
+        }
+
+        DB::transaction(function () use ($request, $customer, $user, $values, $oldValues): void {
             $customer->update($values);
-            $request->user()->update([
-                'first_name' => $values['first_name'], 'last_name' => $values['last_name'],
-                'phone' => $values['phone'], 'email' => $values['email'] ?? $request->user()->email,
-            ]);
+
+            $userUpdateData = [
+                'first_name' => $values['first_name'],
+                'last_name' => $values['last_name'],
+                'phone' => $values['phone'],
+                'email' => $values['email'] ?? $user->email,
+            ];
+
+            if (array_key_exists('avatar_path', $values)) {
+                $userUpdateData['avatar_path'] = $values['avatar_path'];
+            }
+
+            $user->update($userUpdateData);
+
             AuditLog::query()->create([
-                'user_id' => $request->user()->id, 'action' => 'portal.profile.updated', 'entity_type' => Customer::class,
-                'entity_id' => $customer->id, 'old_values' => $oldValues, 'new_values' => $customer->fresh()->only(array_keys($values)),
-                'ip_address' => $request->ip(), 'user_agent' => $request->userAgent(),
+                'user_id' => $user->id,
+                'action' => 'portal.profile.updated',
+                'entity_type' => Customer::class,
+                'entity_id' => $customer->id,
+                'old_values' => $oldValues,
+                'new_values' => $customer->fresh()->only(array_keys($values)),
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
             ]);
         });
 
