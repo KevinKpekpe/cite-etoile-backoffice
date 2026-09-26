@@ -1034,8 +1034,8 @@ textarea:focus {
     color: var(--app-text-muted);
     position: relative;
     width: 2.5rem;
-    height: 14rem;
-    margin-bottom: 1.4rem; /* align with SVG, leave space for X labels */
+    height: 18.5rem;
+    margin-bottom: 1.5rem; /* align with SVG, leave space for X labels */
 }
 
 .dashboard-line-chart__yaxis span {
@@ -1055,7 +1055,7 @@ textarea:focus {
 
 .dashboard-line-chart__plot svg {
     display: block;
-    height: 14rem;
+    height: 18.5rem;
     overflow: visible;
     width: 100%;
 }
@@ -1063,7 +1063,7 @@ textarea:focus {
 .dashboard-line-chart svg,
 .dashboard-line-chart__svg {
     display: block;
-    height: 14rem;
+    height: 18.5rem;
     overflow: visible;
     width: 100%;
 }

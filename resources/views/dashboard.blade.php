@@ -77,8 +77,8 @@
         $yAxisLabels = collect($yLevels)->map(function ($ratio) use ($chartMaximum) {
             $value = $chartMaximum * $ratio;
             $label = $value >= 1000 ? number_format($value / 1000, 1).'k' : number_format($value, 0);
-            $y = 184 - ($ratio * 168);
-            $bottomPct = round(((200 - $y) / 200) * 100, 2);
+            $y = 220 - ($ratio * 200);
+            $bottomPct = round(((240 - $y) / 240) * 100, 2);
             return ['pct' => $bottomPct, 'label' => $label, 'y' => round($y, 2)];
         });
     @endphp
@@ -229,15 +229,15 @@
                             @endforeach
                         </div>
                         <div class="dashboard-line-chart__plot">
-                            <svg viewBox="0 0 1000 200" preserveAspectRatio="none" role="img" aria-label="Histogramme des encaissements">
+                            <svg viewBox="0 0 1000 240" preserveAspectRatio="none" role="img" aria-label="Histogramme des encaissements">
                                 <defs>
                                     <linearGradient id="bar-gradient-current" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="0%" stop-color="#1abb9c"/>
                                         <stop offset="100%" stop-color="#11836c"/>
                                     </linearGradient>
                                     <linearGradient id="bar-gradient-previous" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#4299e1" stop-opacity="0.85"/>
-                                        <stop offset="100%" stop-color="#2b6cb0" stop-opacity="0.85"/>
+                                        <stop offset="0%" stop-color="#4299e1" stop-opacity="0.9"/>
+                                        <stop offset="100%" stop-color="#2b6cb0" stop-opacity="0.9"/>
                                     </linearGradient>
                                 </defs>
 
@@ -249,7 +249,7 @@
                                 {{-- Histogram Bars --}}
                                 @php
                                     $hasPrevious = $previousChartValues->max() > 0;
-                                    $barWidth = max(6, min(24, (int) (600 / max(1, $chartCount))));
+                                    $barWidth = max(14, min(42, (int) (800 / max(1, $chartCount))));
                                 @endphp
 
                                 @foreach($payment_chart as $index => $point)
@@ -262,13 +262,13 @@
                                     {{-- Previous period bar --}}
                                     @if($hasPrevious && $prevVal > 0)
                                         @php
-                                            $prevHeight = max(4, ($prevVal / $chartMaximum) * 168);
-                                            $prevY = 184 - $prevHeight;
-                                            $xPrev = $xCenter - $barWidth - 1;
+                                            $prevHeight = max(6, ($prevVal / $chartMaximum) * 200);
+                                            $prevY = 220 - $prevHeight;
+                                            $xPrev = $xCenter - $barWidth - 2;
                                         @endphp
                                         <rect x="{{ round($xPrev, 2) }}" y="{{ round($prevY, 2) }}"
                                               width="{{ $barWidth }}" height="{{ round($prevHeight, 2) }}"
-                                              rx="3" ry="3" fill="url(#bar-gradient-previous)" class="dashboard-bar-chart__bar">
+                                              rx="4" ry="4" fill="url(#bar-gradient-previous)" class="dashboard-bar-chart__bar">
                                             <title>Période précédente ({{ $point->label }}) : {{ number_format($prevVal, 0, ',', ' ') }} USD</title>
                                         </rect>
                                     @endif
@@ -276,23 +276,23 @@
                                     {{-- Current period bar --}}
                                     @if($val > 0)
                                         @php
-                                            $currentHeight = max(4, ($val / $chartMaximum) * 168);
-                                            $currentY = 184 - $currentHeight;
-                                            $xCurr = $hasPrevious ? $xCenter + 1 : $xCenter - ($barWidth / 2);
+                                            $currentHeight = max(6, ($val / $chartMaximum) * 200);
+                                            $currentY = 220 - $currentHeight;
+                                            $xCurr = $hasPrevious ? $xCenter + 2 : $xCenter - ($barWidth / 2);
                                         @endphp
                                         <rect x="{{ round($xCurr, 2) }}" y="{{ round($currentY, 2) }}"
                                               width="{{ $barWidth }}" height="{{ round($currentHeight, 2) }}"
-                                              rx="3" ry="3" fill="url(#bar-gradient-current)" class="dashboard-bar-chart__bar">
+                                              rx="4" ry="4" fill="url(#bar-gradient-current)" class="dashboard-bar-chart__bar">
                                             <title>{{ $point->label }} — {{ number_format($val, 0, ',', ' ') }} USD</title>
                                         </rect>
                                     @else
                                         {{-- Subtle zero baseline bar --}}
                                         @php
-                                            $xCurr = $hasPrevious ? $xCenter + 1 : $xCenter - ($barWidth / 2);
+                                            $xCurr = $hasPrevious ? $xCenter + 2 : $xCenter - ($barWidth / 2);
                                         @endphp
-                                        <rect x="{{ round($xCurr, 2) }}" y="182"
-                                              width="{{ $barWidth }}" height="2"
-                                              rx="1" fill="#1abb9c" opacity="0.2">
+                                        <rect x="{{ round($xCurr, 2) }}" y="217"
+                                              width="{{ $barWidth }}" height="3"
+                                              rx="2" fill="#1abb9c" opacity="0.35">
                                             <title>{{ $point->label }} — 0 USD</title>
                                         </rect>
                                     @endif
