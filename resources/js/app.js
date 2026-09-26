@@ -1,5 +1,6 @@
 import 'bootstrap';
 import './customer-autocompletion.js';
+import './dashboard-chart.js';
 
 
 const root = document.documentElement;

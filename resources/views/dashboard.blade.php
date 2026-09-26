@@ -222,102 +222,12 @@
                     <span class="status-badge status-badge--active">{{ $periodLabels[$period] }}</span>
                 </div>
                 @if($hasChartData)
-                    <div class="dashboard-line-chart">
-                        <div class="dashboard-line-chart__yaxis">
-                            @foreach($yAxisLabels->reverse() as $axisItem)
-                                <span style="bottom:{{ $axisItem['pct'] }}%">{{ $axisItem['label'] }}</span>
-                            @endforeach
-                        </div>
-                        <div class="dashboard-line-chart__plot">
-                            <svg viewBox="0 0 1000 240" preserveAspectRatio="none" role="img" aria-label="Histogramme des encaissements">
-                                <defs>
-                                    <linearGradient id="bar-gradient-current" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#1abb9c"/>
-                                        <stop offset="100%" stop-color="#11836c"/>
-                                    </linearGradient>
-                                    <linearGradient id="bar-gradient-previous" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#4299e1" stop-opacity="0.9"/>
-                                        <stop offset="100%" stop-color="#2b6cb0" stop-opacity="0.9"/>
-                                    </linearGradient>
-                                </defs>
-
-                                {{-- Horizontal grid lines --}}
-                                @foreach($yAxisLabels as $axisItem)
-                                    <line x1="0" y1="{{ $axisItem['y'] }}" x2="1000" y2="{{ $axisItem['y'] }}" class="dashboard-line-chart__grid"/>
-                                @endforeach
-
-                                {{-- Histogram Bars --}}
-                                @php
-                                    $hasPrevious = $previousChartValues->max() > 0;
-                                    $barWidth = max(14, min(42, (int) (800 / max(1, $chartCount))));
-                                @endphp
-
-                                @foreach($payment_chart as $index => $point)
-                                    @php
-                                        $val = (float) ($chartValues[$index] ?? 0);
-                                        $prevVal = (float) ($previousChartValues[$index] ?? 0);
-                                        $xCenter = ($index / max(1, $chartCount - 1)) * 1000;
-                                    @endphp
-
-                                    {{-- Previous period bar --}}
-                                    @if($hasPrevious && $prevVal > 0)
-                                        @php
-                                            $prevHeight = max(6, ($prevVal / $chartMaximum) * 200);
-                                            $prevY = 220 - $prevHeight;
-                                            $xPrev = $xCenter - $barWidth - 2;
-                                        @endphp
-                                        <rect x="{{ round($xPrev, 2) }}" y="{{ round($prevY, 2) }}"
-                                              width="{{ $barWidth }}" height="{{ round($prevHeight, 2) }}"
-                                              rx="4" ry="4" fill="url(#bar-gradient-previous)" class="dashboard-bar-chart__bar">
-                                            <title>Période précédente ({{ $point->label }}) : {{ number_format($prevVal, 0, ',', ' ') }} USD</title>
-                                        </rect>
-                                    @endif
-
-                                    {{-- Current period bar --}}
-                                    @if($val > 0)
-                                        @php
-                                            $currentHeight = max(6, ($val / $chartMaximum) * 200);
-                                            $currentY = 220 - $currentHeight;
-                                            $xCurr = $hasPrevious ? $xCenter + 2 : $xCenter - ($barWidth / 2);
-                                        @endphp
-                                        <rect x="{{ round($xCurr, 2) }}" y="{{ round($currentY, 2) }}"
-                                              width="{{ $barWidth }}" height="{{ round($currentHeight, 2) }}"
-                                              rx="4" ry="4" fill="url(#bar-gradient-current)" class="dashboard-bar-chart__bar">
-                                            <title>{{ $point->label }} — {{ number_format($val, 0, ',', ' ') }} USD</title>
-                                        </rect>
-                                    @else
-                                        {{-- Subtle zero baseline bar --}}
-                                        @php
-                                            $xCurr = $hasPrevious ? $xCenter + 2 : $xCenter - ($barWidth / 2);
-                                        @endphp
-                                        <rect x="{{ round($xCurr, 2) }}" y="217"
-                                              width="{{ $barWidth }}" height="3"
-                                              rx="2" fill="#1abb9c" opacity="0.35">
-                                            <title>{{ $point->label }} — 0 USD</title>
-                                        </rect>
-                                    @endif
-                                @endforeach
-                            </svg>
-                            <div class="dashboard-line-chart__labels">
-                                @foreach($payment_chart as $index => $point)
-                                    @if($index === 0 || $index === $chartCount - 1 || $index % $chartLabelStep === 0)
-                                        @php
-                                            $pct = round(($index / max(1, $chartCount - 1)) * 100, 2);
-                                            $transform = match(true) {
-                                                $index === 0 => 'translateX(0)',
-                                                $index === $chartCount - 1 => 'translateX(-100%)',
-                                                default => 'translateX(-50%)',
-                                            };
-                                        @endphp
-                                        <span style="left: {{ $pct }}%; transform: {{ $transform }};">{{ $point->label }}</span>
-                                    @endif
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                    <div class="dashboard-card__footer dashboard-chart-legend">
-                        <span><i class="dashboard-chart-legend__swatch dashboard-chart-legend__swatch--current"></i>Période sélectionnée</span>
-                        <span><i class="dashboard-chart-legend__swatch dashboard-chart-legend__swatch--previous"></i>Période précédente</span>
+                    <div class="dashboard-chart-container" style="position: relative; height: 320px; width: 100%; padding: 1rem 1.25rem;">
+                        <canvas id="dashboard-chart-canvas"
+                                data-labels='@json($payment_chart->pluck("label"))'
+                                data-current='@json($payment_chart->pluck("current"))'
+                                data-previous='@json($payment_chart->pluck("previous"))'>
+                        </canvas>
                     </div>
                 @else
                     <div class="dashboard-empty"><strong>Aucun encaissement</strong><span>Aucun paiement validé sur cette période.</span></div>

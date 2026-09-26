@@ -59,8 +59,7 @@ it('compares validated payment chart totals with the same period before it', fun
 
     $this->actingAs($this->admin)->get(route('dashboard', ['period' => 'day']))
         ->assertOk()
-        ->assertSee('dashboard-line-chart__plot')
-        ->assertSee('bar-gradient-current');
+        ->assertSee('dashboard-chart-canvas');
 });
 
 it('shows actionable overdue and upcoming installments to direction roles', function () {
