@@ -21,7 +21,7 @@ it('lists the five official acquisition plans', function () {
     $this->seed(PaymentPlanSeeder::class);
 
     $this->actingAs($this->admin)->get(route('payment-plans.index'))->assertOk()
-        ->assertSee('2500.00')->assertSee('3600.00')->assertSee('6200.00')->assertSee('7500.00')->assertSee('9000.00');
+        ->assertSee('2 500')->assertSee('3 600')->assertSee('6 200')->assertSee('7 500')->assertSee('9 000');
 });
 
 it('validates validity periods and restricts management permission', function () {

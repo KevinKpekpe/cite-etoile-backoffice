@@ -110,7 +110,7 @@ it('shows the user profile with role and audit history', function () {
         ->get(route('users.show', $cashier))
         ->assertOk()
         ->assertSee('Luc Mvuemba')
-        ->assertSee('cashier');
+        ->assertSee('Cashier');
 });
 
 // ---------------------------------------------------------------------------
