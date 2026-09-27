@@ -1839,6 +1839,39 @@ textarea:focus {
     justify-content: center;
 }
 
+.customer-avatar-box {
+    align-items: center;
+    background: var(--app-surface-muted);
+    border: 2px solid var(--app-border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex: 0 0 4.5rem;
+    height: 4.5rem;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    width: 4.5rem;
+}
+
+.customer-avatar-img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+.customer-avatar-initials {
+    align-items: center;
+    background: linear-gradient(135deg, var(--app-primary) 0%, #169f85 100%);
+    color: var(--app-primary-contrast);
+    display: flex;
+    font-size: 1.4rem;
+    font-weight: 800;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
+}
+
 .record-heading h1 {
     color: var(--app-text);
     font-size: 1.125rem;
