@@ -19,6 +19,28 @@ const setSidebarState = (isOpen) => {
 sidebarOpenButton?.addEventListener('click', () => setSidebarState(true));
 sidebarCloseButtons.forEach((button) => button.addEventListener('click', () => setSidebarState(false)));
 
+document.querySelectorAll('.app-sidebar .app-nav-link').forEach((link) => {
+    link.addEventListener('click', () => {
+        if (window.innerWidth < 1024) {
+            setSidebarState(false);
+        }
+    });
+});
+
+const sidebarElement = document.getElementById('app-sidebar');
+let touchStartX = 0;
+
+sidebarElement?.addEventListener('touchstart', (event) => {
+    touchStartX = event.changedTouches[0].clientX;
+}, { passive: true });
+
+sidebarElement?.addEventListener('touchend', (event) => {
+    const touchEndX = event.changedTouches[0].clientX;
+    if (touchStartX - touchEndX > 50) {
+        setSidebarState(false);
+    }
+}, { passive: true });
+
 const syncSidebarControl = () => {
     const isCollapsed = root.dataset.sidebar === 'collapsed';
     sidebarCollapseButton?.setAttribute('aria-label', isCollapsed ? 'Déployer le menu latéral' : 'Réduire le menu latéral');
@@ -69,12 +91,24 @@ document.querySelectorAll('[data-auto-submit]').forEach((control) => {
 document.querySelectorAll('[data-plan-select]').forEach((select) => {
     const summary = document.querySelector('[data-plan-summary]');
     const summaryText = summary?.querySelector('[data-plan-summary-text]');
+    const developmentMode = document.querySelector('[name=development_payment_mode]');
+    const monthlyDevelopmentOption = developmentMode?.querySelector('option[value=monthly]');
+    const totalDevelopmentOption = developmentMode?.querySelector('option[value=total]');
 
     const updatePlanSummary = () => {
         const option = select.options[select.selectedIndex];
         const duration = Number.parseInt(option.dataset.duration || '0', 10);
         const price = option.dataset.price;
         const monthly = option.dataset.monthly;
+        const developmentTotal = option.dataset.developmentTotal;
+        const developmentMonthly = option.dataset.developmentMonthly;
+
+        if (monthlyDevelopmentOption && developmentMonthly) {
+            monthlyDevelopmentOption.textContent = `Mensualités — ${developmentMonthly} USD pendant 36 mois`;
+        }
+        if (totalDevelopmentOption && developmentTotal) {
+            totalDevelopmentOption.textContent = `Montant total — ${developmentTotal} USD`;
+        }
 
         if (!summary || !summaryText || !price) {
             summary?.classList.add('hidden');

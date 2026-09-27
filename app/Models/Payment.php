@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['payment_reference', 'idempotency_key', 'customer_id', 'subscription_id', 'payment_date', 'amount', 'currency', 'payment_method', 'transaction_reference', 'status', 'received_by', 'notes', 'proof_path', 'reversal_reason', 'reversed_by', 'reversed_at'])]
+#[Fillable(['payment_reference', 'idempotency_key', 'customer_id', 'subscription_id', 'ancillary_fee_id', 'payment_date', 'amount', 'currency', 'payment_method', 'transaction_reference', 'status', 'received_by', 'notes', 'proof_path', 'reversal_reason', 'reversed_by', 'reversed_at'])]
 class Payment extends Model
 {
     /** @use HasFactory<PaymentFactory> */
@@ -26,6 +26,12 @@ class Payment extends Model
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(Subscription::class);
+    }
+
+    /** @return BelongsTo<AncillaryFee, $this> */
+    public function ancillaryFee(): BelongsTo
+    {
+        return $this->belongsTo(AncillaryFee::class);
     }
 
     /** @return BelongsTo<User, $this> */

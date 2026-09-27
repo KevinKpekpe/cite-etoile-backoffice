@@ -17,7 +17,7 @@ class CustomerStatementController extends Controller
     {
         $customer->load([
             'subscriptions' => fn ($query) => $query->with(['plot.avenue.neighborhood', 'paymentPlan', 'installments'])->latest(),
-            'payments' => fn ($query) => $query->where('status', 'validated')->latest('payment_date'),
+            'payments' => fn ($query) => $query->with('ancillaryFee')->where('status', 'validated')->latest('payment_date'),
         ]);
         $options = new Options;
         $options->set('isRemoteEnabled', false);

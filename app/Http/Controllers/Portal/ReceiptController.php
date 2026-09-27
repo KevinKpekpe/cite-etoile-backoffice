@@ -14,7 +14,7 @@ class ReceiptController extends Controller
     public function index(Request $request): View
     {
         $receipts = $request->user()->customer()->firstOrFail()->receipts()
-            ->with(['payment', 'subscription.plot'])->latest('issued_at')->paginate(20);
+            ->with(['payment.ancillaryFee', 'subscription.plot'])->latest('issued_at')->paginate(20);
 
         return view('portal.receipts.index', compact('receipts'));
     }

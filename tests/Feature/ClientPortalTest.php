@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AncillaryFee;
 use App\Models\Customer;
 use App\Models\Installment;
 use App\Models\Payment;
@@ -45,6 +46,10 @@ it('lists only owned subscriptions payments installments and receipts', function
     $this->actingAs($this->user)->get(route('portal.subscriptions.index'))->assertSee('SUB-OWNED')->assertDontSee('SUB-FOREIGN');
     $this->get(route('portal.payments.index'))->assertSee('PAY-OWNED')->assertDontSee('PAY-FOREIGN');
     $this->get(route('portal.installments.index'))->assertOk();
+    $ownedFee = AncillaryFee::factory()->for($owned)->create(['fee_type' => 'survey']);
+    $foreignFee = AncillaryFee::factory()->for($foreign)->create(['fee_type' => 'registration_certificate']);
+    $this->get(route('portal.ancillary-fees.index'))->assertOk()->assertSee('Bornage')->assertDontSee('Certificat d’enregistrement');
+    expect($ownedFee->subscription_id)->not->toBe($foreignFee->subscription_id);
     $this->get(route('portal.receipts.index'))->assertSee('REC-OWNED');
 });
 
@@ -64,6 +69,41 @@ it('requires a valid signed link and ownership to download receipts', function (
     $this->actingAs($this->user)->get(route('portal.receipts.download', $ownedReceipt))->assertForbidden();
     $this->get(URL::temporarySignedRoute('portal.receipts.download', now()->addMinute(), $ownedReceipt))->assertDownload($ownedReceipt->receipt_number.'.pdf');
     $this->get(URL::temporarySignedRoute('portal.receipts.download', now()->addMinute(), $foreignReceipt))->assertNotFound();
+});
+
+it('lists only the connected customer’s ancillary fees and scopes their receipt downloads', function () {
+    $owned = Subscription::factory()->for($this->customer)->create();
+    $foreignCustomer = Customer::factory()->create();
+    $foreign = Subscription::factory()->for($foreignCustomer)->create();
+    $ownedFee = AncillaryFee::factory()->for($owned)->create([
+        'fee_type' => 'cadastral_number', 'amount_due' => '30.00', 'amount_paid' => '30.00', 'status' => 'paid',
+    ]);
+    $foreignFee = AncillaryFee::factory()->for($foreign)->create(['fee_type' => 'registration_certificate']);
+    $ownedPayment = Payment::factory()->create([
+        'customer_id' => $this->customer->id, 'subscription_id' => $owned->id,
+        'ancillary_fee_id' => $ownedFee->id, 'amount' => '30.00',
+    ]);
+    $ownedReceipt = Receipt::factory()->for($ownedPayment)->create([
+        'customer_id' => $this->customer->id, 'subscription_id' => $owned->id,
+        'receipt_number' => 'REC-FEE-OWNED', 'pdf_path' => 'receipts/fee-owned.pdf',
+    ]);
+    $foreignPayment = Payment::factory()->create([
+        'customer_id' => $foreignCustomer->id, 'subscription_id' => $foreign->id,
+        'ancillary_fee_id' => $foreignFee->id, 'amount' => '800.00',
+    ]);
+    $foreignReceipt = Receipt::factory()->for($foreignPayment)->create([
+        'customer_id' => $foreignCustomer->id, 'subscription_id' => $foreign->id,
+        'receipt_number' => 'REC-FEE-FOREIGN', 'pdf_path' => 'receipts/fee-foreign.pdf',
+    ]);
+    Storage::disk('local')->put('receipts/fee-owned.pdf', '%PDF owned fee');
+    Storage::disk('local')->put('receipts/fee-foreign.pdf', '%PDF foreign fee');
+
+    $this->actingAs($this->user)->get(route('portal.ancillary-fees.index'))
+        ->assertOk()->assertSee('Numéro cadastral')->assertDontSee('Certificat d’enregistrement');
+    $this->get(URL::temporarySignedRoute('portal.receipts.download', now()->addMinute(), $ownedReceipt))
+        ->assertDownload('REC-FEE-OWNED.pdf');
+    $this->get(URL::temporarySignedRoute('portal.receipts.download', now()->addMinute(), $foreignReceipt))
+        ->assertNotFound();
 });
 
 it('updates allowed profile fields and audits the change', function () {

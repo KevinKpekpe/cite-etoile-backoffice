@@ -85,7 +85,7 @@ it('allows commercial to create a customer and subscribe them to a plot', functi
     $this->actingAs($this->commercial)
         ->post(route('subscriptions.store'), [
             'customer_id' => $customer->id, 'plot_id' => $plot->id, 'payment_plan_id' => $plan->id,
-            'subscription_date' => '2026-09-01', 'start_date' => '2026-10-01',
+            'subscription_date' => '2026-09-01', 'start_date' => '2026-10-01', 'development_payment_mode' => 'monthly',
         ])
         ->assertRedirect()
         ->assertSessionHasNoErrors();
@@ -335,6 +335,7 @@ it('creates a pending subscription with deposit and activates it immediately', f
         ->post(route('subscriptions.store'), [
             'customer_id' => $customer->id, 'plot_id' => $plot->id, 'payment_plan_id' => $plan->id,
             'subscription_date' => now()->toDateString(), 'start_date' => now()->toDateString(),
+            'development_payment_mode' => 'monthly',
             'deposit' => '250.00', 'deposit_method' => 'cash',
         ])
         ->assertRedirect()

@@ -31,6 +31,7 @@ class SubscriptionFactory extends Factory
             'contract_total' => '3600.00',
             'monthly_amount' => '300.00',
             'duration_months' => 12,
+            'development_payment_mode' => 'monthly',
         ];
     }
 }

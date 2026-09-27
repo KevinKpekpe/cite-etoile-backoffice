@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['subscription_number', 'customer_id', 'plot_id', 'payment_plan_id', 'subscription_date', 'start_date', 'expected_end_date', 'contract_total', 'monthly_amount', 'duration_months', 'commercial_status', 'financial_status', 'administrative_status', 'created_by'])]
+#[Fillable(['subscription_number', 'customer_id', 'plot_id', 'payment_plan_id', 'subscription_date', 'start_date', 'expected_end_date', 'contract_total', 'monthly_amount', 'duration_months', 'development_payment_mode', 'commercial_status', 'financial_status', 'administrative_status', 'created_by'])]
 class Subscription extends Model
 {
     /** @use HasFactory<SubscriptionFactory> */
@@ -44,6 +44,12 @@ class Subscription extends Model
     public function installments(): HasMany
     {
         return $this->hasMany(Installment::class);
+    }
+
+    /** @return HasMany<AncillaryFee, $this> */
+    public function ancillaryFees(): HasMany
+    {
+        return $this->hasMany(AncillaryFee::class);
     }
 
     /** @return HasMany<Payment, $this> */

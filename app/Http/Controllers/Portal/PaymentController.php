@@ -11,7 +11,7 @@ class PaymentController extends Controller
     public function index(Request $request): View
     {
         $payments = $request->user()->customer()->firstOrFail()->payments()
-            ->with(['subscription.plot', 'receipt'])->latest('payment_date')->paginate(20);
+            ->with(['subscription.plot', 'ancillaryFee', 'receipt'])->latest('payment_date')->paginate(20);
 
         return view('portal.payments.index', compact('payments'));
     }

@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAncillaryFeePaymentRequest;
 use App\Http\Requests\StorePaymentRequest;
+use App\Models\AncillaryFee;
 use App\Models\Installment;
 use App\Models\Payment;
 use App\Models\Subscription;
+use App\Services\AncillaryFeeService;
 use App\Services\InstallmentScheduleService;
 use App\Services\PaymentService;
 use App\Services\SettingService;
@@ -18,9 +21,10 @@ use Throwable;
 
 class PaymentController extends Controller
 {
-    public function index(Request $request, InstallmentScheduleService $scheduleService): View
+    public function index(Request $request, InstallmentScheduleService $scheduleService, AncillaryFeeService $fees): View
     {
         $scheduleService->syncOverdueStatuses();
+        $fees->syncOverdueStatuses();
 
         $search = trim($request->validate(['search' => ['nullable', 'string', 'max:100']])['search'] ?? '');
         $subscriptions = Subscription::query()->with(['customer', 'plot', 'contract', 'installments'])
@@ -32,7 +36,7 @@ class PaymentController extends Controller
             }))->latest()->paginate(10)->withQueryString();
 
         $recentPayments = Payment::query()
-            ->with(['customer', 'subscription.plot', 'receipt'])
+            ->with(['customer', 'subscription.plot', 'ancillaryFee', 'receipt'])
             ->latest('payment_date')
             ->take(30)
             ->get();
@@ -71,6 +75,40 @@ class PaymentController extends Controller
         ]);
     }
 
+    public function createAncillaryFee(AncillaryFee $ancillaryFee, SettingService $settings): View|RedirectResponse
+    {
+        $ancillaryFee->load(['subscription.customer', 'subscription.plot.avenue.neighborhood']);
+
+        if ((float) $ancillaryFee->balance <= 0) {
+            return redirect()->route('subscriptions.show', $ancillaryFee->subscription)
+                ->with('warning', __('Ce frais est déjà intégralement réglé.'));
+        }
+
+        return view('payments.create-ancillary-fee', [
+            'ancillaryFee' => $ancillaryFee,
+            'idempotencyKey' => (string) Str::uuid(),
+            'currency' => $settings->value('finance', 'currency', 'USD'),
+            'paymentMethods' => $settings->stringList('finance', 'payment_methods', ['cash', 'bank_transfer', 'mobile_money', 'card', 'other']),
+        ]);
+    }
+
+    public function storeAncillaryFee(StoreAncillaryFeePaymentRequest $request, AncillaryFee $ancillaryFee, PaymentService $paymentService): RedirectResponse
+    {
+        $data = $request->safe()->except('proof');
+        $proofPath = $request->file('proof')?->store("subscriptions/{$ancillaryFee->subscription_id}/payment-proofs", 'local');
+
+        try {
+            $payment = $paymentService->recordAncillaryFee($ancillaryFee, $request->user(), [...$data, 'proof_path' => $proofPath]);
+        } catch (Throwable $exception) {
+            if ($proofPath !== null) {
+                Storage::disk('local')->delete($proofPath);
+            }
+            throw $exception;
+        }
+
+        return redirect()->route('payments.show', $payment)->with('status', __('Paiement du frais enregistré et reçu généré.'));
+    }
+
     public function store(StorePaymentRequest $request, PaymentService $paymentService): RedirectResponse
     {
         $subscription = Subscription::query()->findOrFail($request->integer('subscription_id'));
@@ -91,12 +129,14 @@ class PaymentController extends Controller
 
     public function show(Payment $payment): View
     {
-        $payment->load(['customer', 'subscription.plot.avenue.neighborhood', 'subscription.paymentPlan', 'subscription.installments', 'allocations.installment', 'receipt']);
+        $payment->load(['customer', 'subscription.plot.avenue.neighborhood', 'subscription.paymentPlan', 'subscription.installments', 'allocations.installment', 'ancillaryFee', 'receipt']);
 
-        $nextInstallment = $payment->subscription?->installments
-            ->whereIn('status', ['overdue', 'due', 'upcoming'])
-            ->sortBy('due_date')
-            ->first();
+        $nextInstallment = $payment->ancillary_fee_id === null
+            ? $payment->subscription?->installments
+                ->whereIn('status', ['overdue', 'due', 'upcoming'])
+                ->sortBy('due_date')
+                ->first()
+            : null;
 
         return view('payments.show', compact('payment', 'nextInstallment'));
     }

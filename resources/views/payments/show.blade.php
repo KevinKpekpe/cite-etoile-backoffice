@@ -10,7 +10,7 @@
                     <a href="{{ route('payments.create', $payment->subscription) }}" class="btn btn-app-primary resource-button">Nouvel encaissement</a>
                 @endcan
             </div>
-        @elseif($payment->subscription->financial_status === 'paid' || $payment->subscription->commercial_status === 'completed')
+        @elseif(!$payment->ancillaryFee && ($payment->subscription->financial_status === 'paid' || $payment->subscription->commercial_status === 'completed'))
             <div class="record-alert record-alert--success"><div><strong>Souscription soldée</strong><p>Tous les paiements attendus ont été reçus.</p></div></div>
         @endif
 
@@ -20,7 +20,7 @@
                 <div>
                     <p class="app-kicker">{{ $payment->payment_reference }}</p>
                     <h1>{{ number_format((float) $payment->amount, 2, ',', ' ') }} {{ $payment->currency }}</h1>
-                    <p>{{ $payment->customer->first_name }} {{ $payment->customer->last_name }} · {{ $payment->subscription->plot->reference }}</p>
+                    <p>{{ $payment->customer->first_name }} {{ $payment->customer->last_name }} · {{ $payment->subscription->plot->reference }}@if($payment->ancillaryFee) · {{ $payment->ancillaryFee->label() }}@endif</p>
                 </div>
             </div>
             <div class="resource-heading__actions">
@@ -39,17 +39,20 @@
                     <div><dt>Date et heure</dt><dd>{{ $payment->payment_date->format('d/m/Y H:i:s') }}</dd></div>
                     <div><dt>Mode de règlement</dt><dd>{{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</dd></div>
                     <div><dt>Référence externe</dt><dd>{{ $payment->transaction_reference ?: 'Non renseignée' }}</dd></div>
-                    <div><dt>Formule</dt><dd>{{ $payment->subscription->paymentPlan->name }}</dd></div>
+                    <div><dt>{{ $payment->ancillaryFee ? 'Frais connexe' : 'Formule' }}</dt><dd>{{ $payment->ancillaryFee?->label() ?? $payment->subscription->paymentPlan->name }}</dd></div>
                     <div><dt>Parcelle</dt><dd>{{ $payment->subscription->plot->reference }} · {{ $payment->subscription->plot->avenue->neighborhood->name }}</dd></div>
-                    <div><dt>Cumul encaissé</dt><dd class="record-money">{{ number_format((float) $payment->subscription->amount_paid, 2, ',', ' ') }} USD</dd></div>
-                    <div><dt>Solde restant</dt><dd class="record-money">{{ number_format((float) $payment->subscription->balance, 2, ',', ' ') }} USD</dd></div>
+                    <div><dt>Cumul encaissé</dt><dd class="record-money">{{ number_format((float) ($payment->ancillaryFee?->amount_paid ?? $payment->subscription->amount_paid), 2, ',', ' ') }} USD</dd></div>
+                    <div><dt>Solde restant</dt><dd class="record-money">{{ number_format((float) ($payment->ancillaryFee?->balance ?? $payment->subscription->balance), 2, ',', ' ') }} USD</dd></div>
                     <div><dt>Observations</dt><dd>{{ $payment->notes ?: 'Aucune observation' }}</dd></div>
                 </dl>
             </section>
 
             <section class="detail-section">
-                <div class="detail-section__heading"><p class="app-kicker">Ventilation</p><h2>Affectation aux échéances</h2></div>
+                <div class="detail-section__heading"><p class="app-kicker">Ventilation</p><h2>{{ $payment->ancillaryFee ? 'Frais réglé' : 'Affectation aux échéances' }}</h2></div>
                 <div class="record-list">
+                    @if($payment->ancillaryFee)
+                        <div class="record-list__item"><span><strong>{{ $payment->ancillaryFee->label() }} · échéance {{ $payment->ancillaryFee->installment_number }}</strong><small>{{ $payment->ancillaryFee->due_date->format('d/m/Y') }}</small></span><span class="record-money">{{ number_format((float) $payment->amount, 2, ',', ' ') }} USD</span></div>
+                    @else
                     @forelse($payment->allocations as $allocation)
                         <div class="record-list__item">
                             <span><strong>Échéance {{ $allocation->installment->installment_number }}</strong><small>{{ $allocation->installment->due_date->format('d/m/Y') }}</small></span>
@@ -58,6 +61,7 @@
                     @empty
                         <p class="record-empty-copy">Paiement comptant sans échéance mensuelle.</p>
                     @endforelse
+                    @endif
                 </div>
             </section>
 

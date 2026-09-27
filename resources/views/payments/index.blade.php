@@ -162,6 +162,7 @@
                                     <a href="{{ route('payments.show', $payment) }}" class="resource-reference">
                                         {{ $payment->payment_reference }}
                                     </a>
+                                    @if($payment->ancillaryFee)<small class="d-block text-muted">{{ $payment->ancillaryFee->label() }}</small>@endif
                                 </td>
                                 <td>
                                     @if($payment->customer)
