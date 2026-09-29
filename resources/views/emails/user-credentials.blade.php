@@ -3,54 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vos identifiants d'accès</title>
+    <title>Vos identifiants d'accès — Cité Étoile du Monde</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .header { background: #0f172a; color: #ffffff; padding: 24px; text-align: center; }
-        .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fbbf24; }
-        .content { padding: 24px; }
-        .box { background: #f1f5f9; border-left: 4px solid #d97706; padding: 16px; margin: 20px 0; border-radius: 4px; }
-        .btn { display: inline-block; background: #d97706; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; margin-top: 15px; }
-        .markdown-block { background: #0f172a; color: #fde68a; padding: 16px; border-radius: 8px; font-family: monospace; font-size: 13px; white-space: pre-wrap; word-break: break-all; margin-top: 15px; }
-        .footer { padding: 16px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #f4f6f8; color: #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 32px 16px; }
+        .wrapper { max-width: 560px; margin: 0 auto; }
+        .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+        .header { background: #0f172a; padding: 28px 32px; }
+        .header-logo { color: #f8fafc; font-size: 17px; font-weight: 700; letter-spacing: 0.01em; }
+        .header-sub { color: #94a3b8; font-size: 12px; margin-top: 4px; }
+        .body { padding: 32px; }
+        .salutation { font-size: 15px; margin-bottom: 16px; }
+        .intro { color: #475569; font-size: 13.5px; line-height: 1.6; margin-bottom: 24px; }
+        .credentials-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 20px 24px; margin-bottom: 24px; }
+        .credentials-box table { width: 100%; border-collapse: collapse; }
+        .credentials-box td { padding: 7px 0; vertical-align: top; }
+        .credentials-box td:first-child { color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; width: 40%; }
+        .credentials-box td:last-child { color: #0f172a; font-size: 13.5px; font-weight: 500; }
+        .credentials-box .password-value { background: #0f172a; border-radius: 4px; color: #f1f5f9; font-family: 'Courier New', Courier, monospace; font-size: 15px; font-weight: 700; letter-spacing: 0.08em; padding: 2px 8px; }
+        .divider { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
+        .notice { background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; color: #78350f; font-size: 12.5px; line-height: 1.6; padding: 14px 18px; margin-bottom: 24px; }
+        .notice strong { display: block; margin-bottom: 4px; }
+        .cta { text-align: center; margin-bottom: 28px; }
+        .btn { background: #0f172a; border-radius: 6px; color: #f8fafc; display: inline-block; font-size: 13.5px; font-weight: 600; padding: 12px 28px; text-decoration: none; }
+        .footer { border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 11.5px; line-height: 1.6; padding: 20px 32px; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Cité Étoile du Monde</h1>
-            <p style="margin: 5px 0 0 0; font-size: 14px; color: #cbd5e1;">Vos accès utilisateur ont été créés</p>
-        </div>
-
-        <div class="content">
-            <p>Bonjour <strong>{{ $user->first_name }} {{ $user->last_name }}</strong>,</p>
-
-            <p>Votre compte d'accès a été créé avec succès. Voici vos informations de connexion temporaires :</p>
-
-            <div class="box">
-                <p style="margin: 0 0 8px 0;"><strong>Identifiant (Email) :</strong> <code>{{ $user->email }}</code></p>
-                <p style="margin: 0 0 8px 0;"><strong>Mot de passe temporaire :</strong> <code style="font-size: 16px; font-weight: bold; color: #0f172a;">{{ $temporaryPassword }}</code></p>
-                <p style="margin: 0;"><strong>Rôle :</strong> {{ $roleName ?? ($user->roles->first()?->name ?? 'Client') }}</p>
+    <div class="wrapper">
+        <div class="card">
+            <div class="header">
+                <div class="header-logo">Cité Étoile du Monde</div>
+                <div class="header-sub">Notification d'accès utilisateur</div>
             </div>
 
-            <p style="color: #b45309; font-weight: 600;">
-                ⚠️ <strong>Important :</strong> Lors de votre toute première connexion, le système vous demandera obligatoirement de personnaliser et remplacer ce mot de passe temporaire.
-            </p>
+            <div class="body">
+                <p class="salutation">Bonjour <strong>{{ $user->first_name }} {{ $user->last_name }}</strong>,</p>
 
-            <div style="text-align: center; margin: 25px 0;">
-                <a href="{{ $loginUrl }}" class="btn">Se connecter à la plateforme</a>
+                <p class="intro">
+                    Votre compte d'accès a été créé. Veuillez conserver les informations ci-dessous avec précaution.
+                    Elles vous seront nécessaires pour vous connecter à la plateforme.
+                </p>
+
+                <div class="credentials-box">
+                    <table>
+                        <tr>
+                            <td>Identifiant</td>
+                            <td>{{ $user->email }}</td>
+                        </tr>
+                        <tr>
+                            <td>Mot de passe</td>
+                            <td><span class="password-value">{{ $temporaryPassword }}</span></td>
+                        </tr>
+                        <tr>
+                            <td>Rôle</td>
+                            <td>{{ $roleName ?? ($user->roles->first()?->name ?? 'Client') }}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="notice">
+                    <strong>Mot de passe temporaire</strong>
+                    Lors de votre première connexion, le système vous demandera de définir un nouveau mot de passe personnel.
+                    Ce mot de passe temporaire ne sera valable qu'une seule fois.
+                </div>
+
+                <div class="cta">
+                    <a href="{{ $loginUrl }}" class="btn">Accéder à la plateforme</a>
+                </div>
+
+                <hr class="divider">
+
+                <p style="color: #94a3b8; font-size: 11.5px; line-height: 1.6;">
+                    Un document récapitulatif contenant vos identifiants est joint à cet e-mail.
+                    Si vous rencontrez des difficultés pour vous connecter, veuillez contacter votre responsable de compte.
+                </p>
             </div>
 
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;" />
-
-            <p style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 5px;">Fiche récapitulative au format Markdown :</p>
-            <div class="markdown-block">{{ $markdownContent }}</div>
-        </div>
-
-        <div class="footer">
-            &copy; {{ date('Y') }} Cité Étoile du Monde. Tous droits réservés.<br>
-            Ceci est un message automatique, merci de ne pas y répondre directement.
+            <div class="footer">
+                &copy; {{ date('Y') }} Cité Étoile du Monde &mdash; Tous droits réservés.<br>
+                Ce message est généré automatiquement. Merci de ne pas y répondre directement.
+            </div>
         </div>
     </div>
 </body>

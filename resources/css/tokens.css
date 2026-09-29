@@ -2862,15 +2862,45 @@ button.resource-row-action {
 }
 
 .credentials-panel pre {
-    background: var(--app-sidebar-bg, #172231);
-    color: #f4c95d;
-    font-size: 0.75rem;
-    line-height: 1.6;
+    display: none;
+}
+
+.credentials-panel__grid {
+    display: grid;
+    gap: 0.75rem 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
     margin: 0;
-    max-height: 15rem;
-    overflow: auto;
-    padding: 0.875rem;
-    white-space: pre-wrap;
+}
+
+.credentials-panel__grid dt {
+    color: var(--app-text-muted);
+    font-size: 0.66rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.credentials-panel__grid dd {
+    color: var(--app-text);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    margin: 0.25rem 0 0;
+    word-break: break-all;
+}
+
+.credentials-panel__grid code {
+    background: var(--app-bg);
+    border: 1px solid var(--app-border);
+    border-radius: 4px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.78rem;
+    padding: 2px 6px;
+}
+
+.credentials-panel__password {
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em;
 }
 
 @media (max-width: 575.98px) {
@@ -2878,6 +2908,7 @@ button.resource-row-action {
         width: 100%;
     }
 }
+
 
 /* Gentelella dist component compatibility */
 [data-bs-theme='dark'] {
