@@ -361,5 +361,87 @@
             @endcan
         </section>
 
+        {{-- Accès portail client --}}
+        @can('customers.update')
+            <section class="detail-sheet" aria-labelledby="customer-portal-title">
+                <div class="detail-section">
+                    <div class="detail-section__heading">
+                        <p class="app-kicker">Sécurité</p>
+                        <h2 id="customer-portal-title">Accès au portail client</h2>
+                    </div>
+
+                    @if($customer->user)
+                        @php $portalUser = $customer->user; $isActive = $portalUser->status === 'active'; @endphp
+                        <dl class="detail-grid">
+                            <div>
+                                <dt>Statut du compte</dt>
+                                <dd>
+                                    <span class="status-badge status-badge--{{ $isActive ? 'active' : 'suspended' }}">
+                                        {{ $isActive ? 'Actif' : 'Suspendu' }}
+                                    </span>
+                                </dd>
+                            </div>
+                            <div>
+                                <dt>E-mail de connexion</dt>
+                                <dd>{{ $portalUser->email }}</dd>
+                            </div>
+                            <div>
+                                <dt>Dernière connexion</dt>
+                                <dd>{{ $portalUser->last_login_at?->translatedFormat('d F Y à H:i') ?? 'Jamais connecté' }}</dd>
+                            </div>
+                            <div>
+                                <dt>Mot de passe</dt>
+                                <dd>
+                                    @if($portalUser->must_change_password)
+                                        <span class="status-badge status-badge--warning">Changement requis</span>
+                                    @else
+                                        <span class="status-badge status-badge--neutral">Défini</span>
+                                    @endif
+                                </dd>
+                            </div>
+                        </dl>
+
+                        <div class="record-disclosure" style="border-top: 1px solid var(--app-border-subtle); margin-top: 1.25rem; padding-top: 1rem;">
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+                                <form method="POST" action="{{ route('customers.portal.reset-password', $customer) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary resource-button"
+                                            data-confirm="Réinitialiser le mot de passe de ce client et lui envoyer de nouveaux identifiants ?">
+                                        <i class="bi bi-key me-1" aria-hidden="true"></i>Réinitialiser le mot de passe
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('customers.portal.resend-credentials', $customer) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary resource-button">
+                                        <i class="bi bi-envelope me-1" aria-hidden="true"></i>Renvoyer les identifiants
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('customers.portal.toggle-status', $customer) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                            class="btn btn-sm {{ $isActive ? 'btn-outline-danger' : 'btn-outline-success' }} resource-button"
+                                            data-confirm="{{ $isActive ? 'Suspendre l\'accès au portail de ce client ?' : 'Réactiver l\'accès au portail de ce client ?' }}">
+                                        <i class="bi bi-{{ $isActive ? 'slash-circle' : 'check-circle' }} me-1" aria-hidden="true"></i>
+                                        {{ $isActive ? 'Suspendre l\'accès' : 'Réactiver l\'accès' }}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        <p class="record-empty-copy">Ce client n'a pas encore d'accès au portail client.</p>
+                        <div style="margin-top: 1rem;">
+                            <form method="POST" action="{{ route('customers.portal.create-access', $customer) }}">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-app-primary resource-button">
+                                    <i class="bi bi-person-plus me-1" aria-hidden="true"></i>Créer un accès portail
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+                </div>
+            </section>
+        @endcan
+
     </div>
 </x-layouts.app>
