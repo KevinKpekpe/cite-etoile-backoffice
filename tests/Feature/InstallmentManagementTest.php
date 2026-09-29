@@ -19,5 +19,5 @@ it('shows a protected and readable administrative schedule', function () {
 
     $this->get(route('subscriptions.installments.index', $subscription))->assertRedirect(route('login'));
     $this->actingAs($admin)->get(route('subscriptions.installments.index', $subscription))->assertOk()
-        ->assertSee('Échéancier')->assertSee('300.00 USD');
+        ->assertSee('Échéancier')->assertSee('300,00 USD');
 });

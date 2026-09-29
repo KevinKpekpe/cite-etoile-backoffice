@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AncillaryFeeController;
+use App\Http\Controllers\AncillaryFeeTypeController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ForcePasswordChangeController;
@@ -10,6 +12,7 @@ use App\Http\Controllers\AvenueController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDocumentController;
+use App\Http\Controllers\CustomerPortalController;
 use App\Http\Controllers\CustomerStatementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstallmentController;
@@ -19,6 +22,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentPlanController;
 use App\Http\Controllers\PaymentReversalController;
 use App\Http\Controllers\PlotController;
+use App\Http\Controllers\Portal\AncillaryFeeController as PortalAncillaryFeeController;
 use App\Http\Controllers\Portal\DashboardController as PortalDashboardController;
 use App\Http\Controllers\Portal\InstallmentController as PortalInstallmentController;
 use App\Http\Controllers\Portal\PaymentController as PortalPaymentController;
@@ -75,6 +79,10 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/customers/{customer}/archive', [CustomerController::class, 'archive'])->middleware('can:customers.delete')->name('customers.archive');
         Route::post('/customers/{customer}/documents', [CustomerDocumentController::class, 'store'])->middleware('can:customers.update')->name('customers.documents.store');
         Route::get('/customers/{customer}/documents/{document}', [CustomerDocumentController::class, 'download'])->middleware('can:documents.download')->scopeBindings()->name('customers.documents.download');
+        Route::post('/customers/{customer}/portal/create-access', [CustomerPortalController::class, 'createAccess'])->middleware('can:customers.update')->name('customers.portal.create-access');
+        Route::post('/customers/{customer}/portal/reset-password', [CustomerPortalController::class, 'resetPassword'])->middleware('can:customers.update')->name('customers.portal.reset-password');
+        Route::post('/customers/{customer}/portal/resend-credentials', [CustomerPortalController::class, 'resendCredentials'])->middleware('can:customers.update')->name('customers.portal.resend-credentials');
+        Route::patch('/customers/{customer}/portal/toggle-status', [CustomerPortalController::class, 'toggleStatus'])->middleware('can:customers.update')->name('customers.portal.toggle-status');
         Route::resource('neighborhoods', NeighborhoodController::class)->except(['show'])->middleware('can:plots.manage');
         Route::resource('avenues', AvenueController::class)->except(['show'])->middleware('can:plots.manage');
         Route::get('/plots', [PlotController::class, 'index'])->middleware('can:plots.view')->name('plots.index');
@@ -108,8 +116,17 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/subscriptions/{subscription}/contract/{contract}', [ContractController::class, 'download'])->middleware('can:documents.download')->scopeBindings()->name('subscriptions.contract.download');
         Route::get('/subscriptions/{subscription}/installments', [InstallmentController::class, 'index'])->middleware('can:installments.view')->name('subscriptions.installments.index');
         Route::post('/subscriptions/{subscription}/installments/generate', [InstallmentScheduleController::class, 'store'])->middleware('can:installments.manage')->name('subscriptions.installments.generate');
+        Route::get('/ancillary-fee-types', [AncillaryFeeTypeController::class, 'index'])->middleware('can:payments.view')->name('ancillary-fee-types.index');
+        Route::get('/ancillary-fee-types/create', [AncillaryFeeTypeController::class, 'create'])->middleware('can:payments.create')->name('ancillary-fee-types.create');
+        Route::post('/ancillary-fee-types', [AncillaryFeeTypeController::class, 'store'])->middleware('can:payments.create')->name('ancillary-fee-types.store');
+        Route::get('/ancillary-fee-types/{ancillary_fee_type}/edit', [AncillaryFeeTypeController::class, 'edit'])->middleware('can:payments.create')->name('ancillary-fee-types.edit');
+        Route::put('/ancillary-fee-types/{ancillary_fee_type}', [AncillaryFeeTypeController::class, 'update'])->middleware('can:payments.create')->name('ancillary-fee-types.update');
+        Route::delete('/ancillary-fee-types/{ancillary_fee_type}', [AncillaryFeeTypeController::class, 'destroy'])->middleware('can:payments.create')->name('ancillary-fee-types.destroy');
         Route::get('/payments', [PaymentController::class, 'index'])->middleware('can:payments.view')->name('payments.index');
         Route::get('/subscriptions/{subscription}/payments/create', [PaymentController::class, 'create'])->middleware('can:payments.create')->name('payments.create');
+        Route::post('/subscriptions/{subscription}/bornage/realize', [AncillaryFeeController::class, 'realizeSurvey'])->middleware('can:subscriptions.update')->name('subscriptions.bornage.realize');
+        Route::get('/ancillary-fees/{ancillary_fee}/payments/create', [PaymentController::class, 'createAncillaryFee'])->middleware('can:payments.create')->name('payments.ancillary.create');
+        Route::post('/ancillary-fees/{ancillary_fee}/payments', [PaymentController::class, 'storeAncillaryFee'])->middleware('can:payments.create')->name('payments.ancillary.store');
         Route::post('/payments', [PaymentController::class, 'store'])->middleware('can:payments.create')->name('payments.store');
         Route::get('/payments/{payment}', [PaymentController::class, 'show'])->middleware('can:payments.view')->name('payments.show');
         Route::patch('/payments/{payment}/reverse', PaymentReversalController::class)->middleware('can:payments.cancel')->name('payments.reverse');
@@ -142,6 +159,7 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/subscriptions/{subscription}', [PortalSubscriptionController::class, 'show'])->whereNumber('subscription')->name('subscriptions.show');
             Route::get('/payments', [PortalPaymentController::class, 'index'])->name('payments.index');
             Route::get('/installments', [PortalInstallmentController::class, 'index'])->name('installments.index');
+            Route::get('/ancillary-fees', [PortalAncillaryFeeController::class, 'index'])->name('ancillary-fees.index');
             Route::get('/receipts', [PortalReceiptController::class, 'index'])->name('receipts.index');
             Route::get('/receipts/{receipt}/download', [PortalReceiptController::class, 'download'])->middleware('signed')->whereNumber('receipt')->name('receipts.download');
             Route::get('/profile', [PortalProfileController::class, 'edit'])->middleware('can:profile.view')->name('profile.edit');

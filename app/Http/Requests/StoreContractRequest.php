@@ -23,7 +23,7 @@ class StoreContractRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'signed_at' => ['nullable', 'date'], 'status' => ['required', 'in:draft,signed,cancelled,archived'],
+            'signed_at' => ['nullable', 'required_if:status,signed', 'date'], 'status' => ['required', 'in:draft,signed,cancelled,archived'],
             'document' => ['nullable', 'file', 'mimes:pdf', 'extensions:pdf', 'max:20480'],
         ];
     }

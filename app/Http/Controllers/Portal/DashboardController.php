@@ -15,7 +15,7 @@ class DashboardController extends Controller
     {
         $customer = $this->customer($request);
         $subscriptions = $customer->subscriptions()->with(['plot.avenue.neighborhood', 'paymentPlan'])
-            ->withSum(['payments as validated_paid' => fn ($query) => $query->where('status', 'validated')], 'amount')
+            ->withSum(['payments as validated_paid' => fn ($query) => $query->where('status', 'validated')->whereNull('ancillary_fee_id')], 'amount')
             ->latest()->get();
         $nextInstallment = Installment::query()->whereHas('subscription', fn ($query) => $query->whereBelongsTo($customer))
             ->whereIn('status', ['upcoming', 'due', 'partially_paid', 'overdue'])->orderBy('due_date')->first();
@@ -23,7 +23,7 @@ class DashboardController extends Controller
         return view('portal.dashboard', [
             'customer' => $customer,
             'subscriptions' => $subscriptions,
-            'paid' => (float) Payment::query()->whereBelongsTo($customer)->where('status', 'validated')->sum('amount'),
+            'paid' => (float) Payment::query()->whereBelongsTo($customer)->whereNull('ancillary_fee_id')->where('status', 'validated')->sum('amount'),
             'remaining' => (float) $subscriptions->sum('balance'),
             'nextInstallment' => $nextInstallment,
         ]);

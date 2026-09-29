@@ -24,7 +24,8 @@ class StoreSubscriptionRequest extends FormRequest
     {
         return [
             'customer_id' => ['required', 'integer', 'exists:customers,id'], 'plot_id' => ['required', 'integer', 'exists:plots,id'],
-            'payment_plan_id' => ['required', 'integer', 'exists:payment_plans,id'], 'subscription_date' => ['required', 'date'],
+            'payment_plan_id' => ['required', 'integer', 'exists:payment_plans,id'],
+            'development_payment_mode' => ['required', 'in:total,monthly'], 'subscription_date' => ['required', 'date'],
             'start_date' => ['required', 'date'],
             'deposit' => ['nullable', 'numeric', 'min:1'],
             'deposit_method' => ['nullable', 'in:cash,bank_transfer,mobile_money,card,other'],

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AncillaryFee;
 use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\User;
@@ -10,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class PaymentService
 {
-    public function __construct(private InstallmentScheduleService $scheduleService, private ReceiptService $receiptService, private AuditService $auditService, private SettingService $settings, private ReferenceGenerator $references) {}
+    public function __construct(private InstallmentScheduleService $scheduleService, private ReceiptService $receiptService, private AuditService $auditService, private SettingService $settings, private ReferenceGenerator $references, private AncillaryFeeService $ancillaryFeeService) {}
 
     /** @param array<string, mixed> $data */
     public function record(Subscription $subscription, User $user, array $data): Payment
@@ -85,6 +86,67 @@ class PaymentService
         }, 3);
     }
 
+    /** @param array<string, mixed> $data */
+    public function recordAncillaryFee(AncillaryFee $fee, User $user, array $data): Payment
+    {
+        return DB::transaction(function () use ($fee, $user, $data): Payment {
+            $existing = Payment::query()->where('idempotency_key', $data['idempotency_key'])->first();
+
+            if ($existing !== null) {
+                if ($existing->ancillary_fee_id !== $fee->id) {
+                    throw ValidationException::withMessages(['idempotency_key' => __('Cette clé a déjà été utilisée pour un autre paiement.')]);
+                }
+
+                return $existing;
+            }
+
+            $fee = AncillaryFee::query()->lockForUpdate()->with('subscription')->findOrFail($fee->id);
+            $amountCents = $this->toCents($data['amount']);
+            $balanceCents = $this->toCents($fee->balance);
+
+            if ($balanceCents <= 0) {
+                throw ValidationException::withMessages(['amount' => __('Ce frais est déjà intégralement réglé.')]);
+            }
+
+            if ($amountCents > $balanceCents) {
+                throw ValidationException::withMessages(['amount' => __('Le montant dépasse le solde du frais.')]);
+            }
+
+            if (! $this->settings->boolean('subscription', 'allow_partial_payment', true) && $amountCents !== $balanceCents) {
+                throw ValidationException::withMessages(['amount' => __('Les paiements partiels sont désactivés.')]);
+            }
+
+            if (! $this->settings->boolean('subscription', 'allow_advance_payment', true) && $fee->due_date->isFuture()) {
+                throw ValidationException::withMessages(['amount' => __('Les paiements anticipés sont désactivés.')]);
+            }
+
+            $payment = Payment::query()->create([
+                ...$data,
+                'payment_reference' => $this->references->generate(Payment::class, 'payment_reference', 'payment', 'PAY'),
+                'customer_id' => $fee->subscription->customer_id,
+                'subscription_id' => $fee->subscription_id,
+                'ancillary_fee_id' => $fee->id,
+                'status' => 'validated',
+                'received_by' => $user->id,
+            ]);
+
+            $fee->update([
+                'amount_paid' => $this->fromCents($this->toCents($fee->amount_paid) + $amountCents),
+                'paid_at' => $amountCents === $balanceCents ? $data['payment_date'] : null,
+            ]);
+            $this->ancillaryFeeService->refreshStatus($fee);
+
+            $this->receiptService->createForPayment($payment, $user);
+            $this->auditService->record($user, 'ancillary_fee.payment.created', $payment, null, [
+                'status' => $payment->status,
+                'amount' => $payment->amount,
+                'ancillary_fee_id' => $fee->id,
+            ]);
+
+            return $payment->load('ancillaryFee', 'receipt');
+        }, 3);
+    }
+
     public function reverse(Payment $payment, User $user, string $reason): Payment
     {
         return DB::transaction(function () use ($payment, $user, $reason): Payment {
@@ -96,16 +158,25 @@ class PaymentService
 
             $subscription = Subscription::query()->lockForUpdate()->findOrFail($payment->subscription_id);
 
-            foreach ($payment->allocations()->with('installment')->lockForUpdate()->get() as $allocation) {
-                $newPaidCents = $this->toCents($allocation->installment->amount_paid) - $this->toCents($allocation->amount);
-                $allocation->installment->update(['amount_paid' => $this->fromCents($newPaidCents), 'paid_at' => null]);
+            if ($payment->ancillary_fee_id !== null) {
+                $fee = AncillaryFee::query()->lockForUpdate()->findOrFail($payment->ancillary_fee_id);
+                $newPaidCents = $this->toCents($fee->amount_paid) - $this->toCents($payment->amount);
+                $fee->update(['amount_paid' => $this->fromCents($newPaidCents), 'paid_at' => null]);
+                $this->ancillaryFeeService->refreshStatus($fee);
+            } else {
+                foreach ($payment->allocations()->with('installment')->lockForUpdate()->get() as $allocation) {
+                    $newPaidCents = $this->toCents($allocation->installment->amount_paid) - $this->toCents($allocation->amount);
+                    $allocation->installment->update(['amount_paid' => $this->fromCents($newPaidCents), 'paid_at' => null]);
+                }
             }
 
             $oldValues = $payment->only(['status', 'reversal_reason', 'reversed_by', 'reversed_at']);
             $payment->update(['status' => 'reversed', 'reversal_reason' => $reason, 'reversed_by' => $user->id, 'reversed_at' => now()]);
             $this->receiptService->cancelForPayment($payment);
-            $this->recalculate($subscription);
-            $this->scheduleService->refreshStatuses($subscription);
+            if ($payment->ancillary_fee_id === null) {
+                $this->recalculate($subscription);
+                $this->scheduleService->refreshStatuses($subscription);
+            }
             $this->auditService->record($user, 'payment.reversed', $payment, $oldValues, $payment->only(['status', 'reversal_reason', 'reversed_by', 'reversed_at']));
 
             return $payment->refresh();
@@ -114,7 +185,7 @@ class PaymentService
 
     private function recalculate(Subscription $subscription): void
     {
-        $paid = Payment::query()->where('subscription_id', $subscription->id)->where('status', 'validated')->sum('amount');
+        $paid = Payment::query()->where('subscription_id', $subscription->id)->whereNull('ancillary_fee_id')->where('status', 'validated')->sum('amount');
         $paidCents = $this->toCents($paid);
         $totalCents = $this->toCents($subscription->contract_total);
         $status = match (true) {

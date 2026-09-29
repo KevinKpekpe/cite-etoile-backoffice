@@ -15,7 +15,13 @@
         </header>
 
         <section class="profile-summary">
-            <span class="profile-summary__avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($user->first_name, 0, 1).mb_substr($user->last_name, 0, 1)) }}</span>
+            <span class="profile-summary__avatar" aria-hidden="true">
+                @if($user->avatar_path)
+                    <img src="{{ Storage::url($user->avatar_path) }}" alt="{{ $user->first_name }}" class="w-full h-full object-cover rounded-full">
+                @else
+                    {{ mb_strtoupper(mb_substr($user->first_name, 0, 1).mb_substr($user->last_name, 0, 1)) }}
+                @endif
+            </span>
             <div>
                 <strong>{{ $user->first_name }} {{ $user->last_name }}</strong>
                 <span>{{ $user->roles->pluck('name')->map(fn ($role) => str($role)->replace('_', ' ')->title())->join(', ') }}</span>
@@ -23,13 +29,34 @@
             <span class="status status-{{ $user->status === 'active' ? 'green' : 'red' }}">{{ $user->status === 'active' ? 'Compte actif' : 'Compte suspendu' }}</span>
         </section>
 
-        <form method="POST" action="{{ route('profile.update') }}" class="form-page__content">
+        <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="form-page__content">
             @csrf
             @method('PUT')
 
             <section class="form-section">
                 <div class="form-section__header">
                     <span class="form-section__number">01</span>
+                    <div><h2>Photo de profil</h2><p>Personnalisez l'avatar de votre compte utilisateur.</p></div>
+                </div>
+                <div class="form-section__body">
+                    <div class="d-flex align-items-center gap-4">
+                        <div>
+                            <label class="form-label mb-1">Choisir une image</label>
+                            <input type="file" name="avatar" accept="image/png,image/jpeg,image/jpg,image/webp" class="form-control mb-2 @error('avatar') is-invalid @enderror">
+                            @error('avatar')<span class="form-field__error d-block mb-2">{{ $message }}</span>@enderror
+                            @if($user->avatar_path)
+                                <label class="form-check-label text-danger small cursor-pointer">
+                                    <input type="checkbox" name="remove_avatar" value="1" class="form-check-input me-1"> Supprimer la photo actuelle
+                                </label>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="form-section__header">
+                    <span class="form-section__number">02</span>
                     <div><h2>Informations personnelles</h2><p>Ces informations sont utilisées dans votre session et les traces d’audit.</p></div>
                 </div>
                 <div class="form-section__body">

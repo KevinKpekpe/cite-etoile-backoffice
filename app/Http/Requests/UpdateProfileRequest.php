@@ -23,6 +23,8 @@ class UpdateProfileRequest extends FormRequest
             'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:190', Rule::unique('users')->ignore($this->user()?->id)],
             'phone' => ['required', 'string', 'max:50'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+            'remove_avatar' => ['nullable', 'boolean'],
         ];
     }
 }

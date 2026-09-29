@@ -30,6 +30,7 @@ class StoreCustomerRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:190'], 'address' => ['nullable', 'string', 'max:1000'],
             'commune' => ['nullable', 'string', 'max:100'], 'city' => ['nullable', 'string', 'max:100'],
             'country' => ['nullable', 'string', 'max:100'], 'nationality' => ['nullable', 'string', 'max:100'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'], 'remove_avatar' => ['nullable', 'boolean'],
             'internal_notes' => ['nullable', 'string', 'max:5000'], 'status' => ['required', 'in:prospect,active,settled,suspended'],
             'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
             // Souscription initiale optionnelle

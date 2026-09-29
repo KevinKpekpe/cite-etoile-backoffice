@@ -1,9 +1,11 @@
 <x-layouts.app :title="'Reçu '.$receipt->receipt_number">
     @php
-        $nextInstallment = $receipt->subscription?->installments
+        $nextInstallment = $receipt->payment->ancillary_fee_id === null
+            ? $receipt->subscription?->installments
             ->whereIn('status', ['overdue', 'due', 'upcoming'])
             ->sortBy('due_date')
-            ->first();
+            ->first()
+            : null;
     @endphp
 
     <div class="receipt-page">
@@ -55,7 +57,7 @@
                 <dl class="receipt-document__list">
                     <div><dt>Référence paiement</dt><dd>{{ $receipt->payment->payment_reference }}</dd></div>
                     <div><dt>Parcelle</dt><dd>{{ $receipt->subscription->plot->reference }} · {{ $receipt->subscription->plot->avenue->neighborhood->name }}</dd></div>
-                    <div><dt>Formule</dt><dd>{{ $receipt->subscription->paymentPlan->name }}</dd></div>
+                    <div><dt>{{ $receipt->payment->ancillaryFee ? 'Frais connexe' : 'Formule' }}</dt><dd>{{ $receipt->payment->ancillaryFee?->label() ?? $receipt->subscription->paymentPlan->name }}</dd></div>
                     <div><dt>Mode de règlement</dt><dd>{{ ucfirst(str_replace('_', ' ', $receipt->payment->payment_method)) }}</dd></div>
                     @if($receipt->payment->transaction_reference)
                         <div><dt>Référence externe</dt><dd>{{ $receipt->payment->transaction_reference }}</dd></div>
@@ -69,14 +71,14 @@
             </section>
 
             <section class="receipt-document__section">
-                <h2>Situation de la souscription</h2>
+                <h2>{{ $receipt->payment->ancillaryFee ? 'Situation du frais' : 'Situation de la souscription' }}</h2>
                 <dl class="receipt-document__list">
-                    <div><dt>Cumul versé</dt><dd>{{ number_format((float) $receipt->subscription->amount_paid, 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
-                    <div><dt>Solde restant</dt><dd>{{ number_format((float) $receipt->subscription->balance, 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
+                    <div><dt>Cumul versé</dt><dd>{{ number_format((float) ($receipt->payment->ancillaryFee?->amount_paid ?? $receipt->subscription->amount_paid), 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
+                    <div><dt>Solde restant</dt><dd>{{ number_format((float) ($receipt->payment->ancillaryFee?->balance ?? $receipt->subscription->balance), 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
                     @if($nextInstallment && (float) $receipt->subscription->balance > 0)
                         <div><dt>Prochaine échéance</dt><dd>{{ $nextInstallment->due_date->format('d/m/Y') }} · {{ number_format((float) $nextInstallment->amount_due, 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
                     @else
-                        <div><dt>Situation</dt><dd>Souscription soldée</dd></div>
+                        <div><dt>Situation</dt><dd>{{ $receipt->payment->ancillaryFee ? str($receipt->payment->ancillaryFee->status)->replace('_', ' ')->title() : 'Souscription soldée' }}</dd></div>
                     @endif
                 </dl>
             </section>

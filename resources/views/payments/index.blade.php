@@ -64,9 +64,13 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <a href="{{ route('customers.show', $subscription->customer) }}" class="text-decoration-none font-bold text-dark">
-                                        {{ $subscription->customer->first_name }} {{ $subscription->customer->last_name }}
-                                    </a>
+                                    @if($subscription->customer)
+                                        <a href="{{ route('customers.show', $subscription->customer) }}" class="text-decoration-none font-bold text-dark">
+                                            {{ $subscription->customer->first_name }} {{ $subscription->customer->last_name }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted small">—</span>
+                                    @endif
                                 </td>
                                 <td>
                                     @if($subscription->plot)
@@ -158,9 +162,16 @@
                                     <a href="{{ route('payments.show', $payment) }}" class="resource-reference">
                                         {{ $payment->payment_reference }}
                                     </a>
+                                    @if($payment->ancillaryFee)<small class="d-block text-muted">{{ $payment->ancillaryFee->label() }}</small>@endif
                                 </td>
                                 <td>
-                                    <strong>{{ $payment->customer->first_name }} {{ $payment->customer->last_name }}</strong>
+                                    @if($payment->customer)
+                                        <a href="{{ route('customers.show', $payment->customer) }}" class="text-decoration-none font-bold text-dark">
+                                            {{ $payment->customer->first_name }} {{ $payment->customer->last_name }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted small">—</span>
+                                    @endif
                                 </td>
                                 <td>
                                     @if($payment->subscription?->plot)

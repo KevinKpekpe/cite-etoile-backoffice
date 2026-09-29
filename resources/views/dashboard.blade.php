@@ -77,8 +77,8 @@
         $yAxisLabels = collect($yLevels)->map(function ($ratio) use ($chartMaximum) {
             $value = $chartMaximum * $ratio;
             $label = $value >= 1000 ? number_format($value / 1000, 1).'k' : number_format($value, 0);
-            $y = 184 - ($ratio * 168);
-            $bottomPct = round(((200 - $y) / 200) * 100, 2);
+            $y = 220 - ($ratio * 200);
+            $bottomPct = round(((240 - $y) / 240) * 100, 2);
             return ['pct' => $bottomPct, 'label' => $label, 'y' => round($y, 2)];
         });
     @endphp
@@ -222,73 +222,12 @@
                     <span class="status-badge status-badge--active">{{ $periodLabels[$period] }}</span>
                 </div>
                 @if($hasChartData)
-                    <div class="dashboard-line-chart">
-                        <div class="dashboard-line-chart__yaxis">
-                            @foreach($yAxisLabels->reverse() as $axisItem)
-                                <span style="bottom:{{ $axisItem['pct'] }}%">{{ $axisItem['label'] }}</span>
-                            @endforeach
-                        </div>
-                        <div class="dashboard-line-chart__plot">
-                            <svg viewBox="0 0 1000 200" preserveAspectRatio="none" role="img" aria-label="Évolution des encaissements">
-                                <defs>
-                                    <linearGradient id="chart-area-gradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#1abb9c" stop-opacity=".22"/>
-                                        <stop offset="80%" stop-color="#1abb9c" stop-opacity=".03"/>
-                                        <stop offset="100%" stop-color="#1abb9c" stop-opacity="0"/>
-                                    </linearGradient>
-                                </defs>
-
-                                {{-- Horizontal grid lines --}}
-                                @foreach($yAxisLabels as $axisItem)
-                                    <line x1="0" y1="{{ $axisItem['y'] }}" x2="1000" y2="{{ $axisItem['y'] }}" class="dashboard-line-chart__grid"/>
-                                @endforeach
-
-                                {{-- Area fill --}}
-                                @if($currentChartAreaPath)
-                                    <path d="{{ $currentChartAreaPath }}" fill="url(#chart-area-gradient)"/>
-                                @endif
-
-                                {{-- Previous period line --}}
-                                @if($previousChartPath && $previousChartValues->max() > 0)
-                                    <path d="{{ $previousChartPath }}" class="dashboard-line-chart__line dashboard-line-chart__line--previous"/>
-                                @endif
-
-                                {{-- Current period line --}}
-                                @if($currentChartPath)
-                                    <path d="{{ $currentChartPath }}" class="dashboard-line-chart__line dashboard-line-chart__line--current"/>
-                                @endif
-
-                                {{-- Data point dots (non-zero values only) --}}
-                                @foreach($currentCoordinates as $index => $coord)
-                                    @if(($chartValues[$index] ?? 0) > 0)
-                                        <circle cx="{{ $coord[0] }}" cy="{{ $coord[1] }}" r="4"
-                                            fill="#1abb9c" stroke="white" stroke-width="2"
-                                            vector-effect="non-scaling-stroke">
-                                            <title>{{ $payment_chart[$index]->label }} — {{ number_format($chartValues[$index], 0, ',', ' ') }} USD</title>
-                                        </circle>
-                                    @endif
-                                @endforeach
-                            </svg>
-                            <div class="dashboard-line-chart__labels">
-                                @foreach($payment_chart as $index => $point)
-                                    @if($index === 0 || $index === $chartCount - 1 || $index % $chartLabelStep === 0)
-                                        @php
-                                            $pct = round(($index / max(1, $chartCount - 1)) * 100, 2);
-                                            $transform = match(true) {
-                                                $index === 0 => 'translateX(0)',
-                                                $index === $chartCount - 1 => 'translateX(-100%)',
-                                                default => 'translateX(-50%)',
-                                            };
-                                        @endphp
-                                        <span style="left: {{ $pct }}%; transform: {{ $transform }};">{{ $point->label }}</span>
-                                    @endif
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                    <div class="dashboard-card__footer dashboard-chart-legend">
-                        <span><i class="dashboard-chart-legend__swatch dashboard-chart-legend__swatch--current"></i>Période sélectionnée</span>
-                        <span><i class="dashboard-chart-legend__swatch dashboard-chart-legend__swatch--previous"></i>Période précédente</span>
+                    <div class="dashboard-chart-container" style="position: relative; height: 320px; width: 100%; padding: 1rem 1.25rem;">
+                        <canvas id="dashboard-chart-canvas"
+                                data-labels='@json($payment_chart->pluck("label"))'
+                                data-current='@json($payment_chart->pluck("current"))'
+                                data-previous='@json($payment_chart->pluck("previous"))'>
+                        </canvas>
                     </div>
                 @else
                     <div class="dashboard-empty"><strong>Aucun encaissement</strong><span>Aucun paiement validé sur cette période.</span></div>

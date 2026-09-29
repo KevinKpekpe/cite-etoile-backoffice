@@ -25,7 +25,7 @@ it('creates a subscription transactionally with a financial snapshot', function 
 
     $this->actingAs($this->commercial)->post(route('subscriptions.store'), [
         'customer_id' => $customer->id, 'plot_id' => $plot->id, 'payment_plan_id' => $plan->id,
-        'subscription_date' => '2026-09-15', 'start_date' => '2026-10-01',
+        'subscription_date' => '2026-09-15', 'start_date' => '2026-10-01', 'development_payment_mode' => 'monthly',
     ])->assertRedirect();
 
     $subscription = Subscription::query()->firstOrFail();
@@ -33,6 +33,7 @@ it('creates a subscription transactionally with a financial snapshot', function 
     expect($subscription->contract_total)->toBe('6200.00')
         ->and($subscription->monthly_amount)->toBe('175.00')
         ->and($subscription->duration_months)->toBe(36)
+        ->and($subscription->development_payment_mode)->toBe('monthly')
         ->and($subscription->commercial_status)->toBe('pending')
         ->and($plot->refresh()->commercial_status)->toBe('reserved');
     $this->assertDatabaseHas('audit_logs', ['action' => 'subscription.created', 'entity_id' => $subscription->id]);
@@ -41,7 +42,7 @@ it('creates a subscription transactionally with a financial snapshot', function 
 it('rejects unavailable plots and rolls back the subscription', function () {
     $plot = Plot::factory()->create(['commercial_status' => 'blocked']);
 
-    $this->actingAs($this->commercial)->post(route('subscriptions.store'), ['customer_id' => Customer::factory()->create()->id, 'plot_id' => $plot->id, 'payment_plan_id' => PaymentPlan::factory()->create()->id, 'subscription_date' => '2026-09-15', 'start_date' => '2026-09-15', 'commercial_status' => 'active'])->assertUnprocessable();
+    $this->actingAs($this->commercial)->post(route('subscriptions.store'), ['customer_id' => Customer::factory()->create()->id, 'plot_id' => $plot->id, 'payment_plan_id' => PaymentPlan::factory()->create()->id, 'subscription_date' => '2026-09-15', 'start_date' => '2026-09-15', 'development_payment_mode' => 'monthly', 'commercial_status' => 'active'])->assertUnprocessable();
 
     $this->assertDatabaseCount('subscriptions', 0);
 });

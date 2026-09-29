@@ -22,19 +22,21 @@ class ReceiptService
             return $existing;
         }
 
-        $payment->load(['customer', 'subscription.plot.avenue.neighborhood', 'subscription.paymentPlan', 'subscription.installments']);
+        $payment->load(['customer', 'subscription.plot.avenue.neighborhood', 'subscription.paymentPlan', 'subscription.installments', 'ancillaryFee']);
         $receipt = Receipt::query()->create([
             'receipt_number' => $this->references->generate(Receipt::class, 'receipt_number', 'receipt', 'REC'),
             'payment_id' => $payment->id, 'customer_id' => $payment->customer_id,
             'subscription_id' => $payment->subscription_id, 'amount' => $payment->amount,
             'issued_at' => now(), 'verification_code' => Str::random(48), 'issued_by' => $issuer->id, 'status' => 'valid',
         ]);
-        $receipt->load(['payment', 'customer', 'subscription.plot.avenue.neighborhood', 'subscription.paymentPlan', 'issuedBy']);
+        $receipt->load(['payment.ancillaryFee', 'customer', 'subscription.plot.avenue.neighborhood', 'subscription.paymentPlan', 'issuedBy']);
 
-        $nextInstallment = $payment->subscription?->installments
-            ->whereIn('status', ['overdue', 'due', 'upcoming'])
-            ->sortBy('due_date')
-            ->first();
+        $nextInstallment = $payment->ancillary_fee_id === null
+            ? $payment->subscription?->installments
+                ->whereIn('status', ['overdue', 'due', 'upcoming'])
+                ->sortBy('due_date')
+                ->first()
+            : null;
         $verificationUrl = route('receipts.verify', $receipt->verification_code);
         $options = new Options;
         $options->set('isRemoteEnabled', false);

@@ -71,12 +71,33 @@
                             <span class="form-field__label">Formule d’acquisition<span class="text-danger ms-1 fw-bold">*</span></span>
                             <select name="payment_plan_id" id="payment_plan_id" class="form-select" data-plan-select required>
                                 @foreach($paymentPlans as $plan)
-                                    <option value="{{ $plan->id }}" data-duration="{{ $plan->duration_months }}" data-price="{{ $plan->total_price }}" data-monthly="{{ $plan->monthly_amount }}" @selected(old('payment_plan_id') == $plan->id)>
+                                    @php
+                                        $developmentOption = match ($plan->duration_months) {
+                                            0 => 'cash',
+                                            12 => 'one_year',
+                                            36 => 'three_years',
+                                            60 => 'five_years',
+                                            120 => 'ten_years',
+                                            default => 'three_years',
+                                        };
+                                        $developmentPrice = $developmentPricingOptions[$developmentOption] ?? [];
+                                    @endphp
+                                    <option value="{{ $plan->id }}" data-duration="{{ $plan->duration_months }}" data-price="{{ $plan->total_price }}" data-monthly="{{ $plan->monthly_amount }}" data-development-total="{{ $developmentPrice['total'] ?? '' }}" data-development-monthly="{{ $developmentPrice['monthly'] ?? '' }}" @selected(old('payment_plan_id') == $plan->id)>
                                         {{ $plan->name }} · {{ number_format((float) $plan->total_price, 2, ',', ' ') }} USD
                                     </option>
                                 @endforeach
                             </select>
                             @error('payment_plan_id')<span class="form-field__error">{{ $message }}</span>@enderror
+                        </label>
+
+                        <label class="form-field">
+                            <span class="form-field__label">Paiement de l’aménagement<span class="text-danger ms-1 fw-bold">*</span></span>
+                            <select name="development_payment_mode" class="form-select" required>
+                                <option value="monthly" data-label="Mensualités" @selected(old('development_payment_mode', 'monthly') === 'monthly')>Mensualités — {{ number_format((float) ($developmentPricingOptions['three_years']['monthly'] ?? 0), 2, ',', ' ') }} USD pendant 36 mois</option>
+                                <option value="total" data-label="Montant total" @selected(old('development_payment_mode') === 'total')>Montant total — {{ number_format((float) ($developmentPricingOptions['three_years']['total'] ?? 0), 2, ',', ' ') }} USD</option>
+                            </select>
+                            <small class="text-muted">Première échéance un mois après la signature du contrat.</small>
+                            @error('development_payment_mode')<span class="form-field__error">{{ $message }}</span>@enderror
                         </label>
 
                         <div class="form-plan-summary form-grid__wide hidden" data-plan-summary><span data-plan-summary-text></span></div>

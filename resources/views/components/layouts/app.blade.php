@@ -60,6 +60,7 @@
                 <a href="{{ route('portal.subscriptions.index') }}" class="app-nav-link {{ request()->routeIs('portal.subscriptions.*') ? 'is-active' : '' }}"><i class="bi bi-file-earmark-text app-nav-link__marker" aria-hidden="true"></i><span>Mes souscriptions</span></a>
                 <a href="{{ route('portal.payments.index') }}" class="app-nav-link {{ request()->routeIs('portal.payments.*') ? 'is-active' : '' }}"><i class="bi bi-credit-card app-nav-link__marker" aria-hidden="true"></i><span>Mes paiements</span></a>
                 <a href="{{ route('portal.installments.index') }}" class="app-nav-link {{ request()->routeIs('portal.installments.*') ? 'is-active' : '' }}"><i class="bi bi-calendar3 app-nav-link__marker" aria-hidden="true"></i><span>Mon échéancier</span></a>
+                <a href="{{ route('portal.ancillary-fees.index') }}" class="app-nav-link {{ request()->routeIs('portal.ancillary-fees.*') ? 'is-active' : '' }}"><i class="bi bi-receipt-cutoff app-nav-link__marker" aria-hidden="true"></i><span>Mes frais connexes</span></a>
                 <a href="{{ route('portal.receipts.index') }}" class="app-nav-link {{ request()->routeIs('portal.receipts.*') ? 'is-active' : '' }}"><i class="bi bi-receipt app-nav-link__marker" aria-hidden="true"></i><span>Mes reçus</span></a>
                 <a href="{{ route('portal.profile.edit') }}" class="app-nav-link {{ request()->routeIs('portal.profile.*') ? 'is-active' : '' }}"><i class="bi bi-person app-nav-link__marker" aria-hidden="true"></i><span>Mon profil</span></a>
             @else
@@ -82,6 +83,7 @@
                 @endcan
                 @can('payments.view')
                     <a href="{{ route('payments.index') }}" class="app-nav-link {{ request()->routeIs('payments.*', 'receipts.*') ? 'is-active' : '' }}"><i class="bi bi-credit-card app-nav-link__marker" aria-hidden="true"></i><span>Paiements</span></a>
+                    <a href="{{ route('ancillary-fee-types.index') }}" class="app-nav-link {{ request()->routeIs('ancillary-fee-types.*') ? 'is-active' : '' }}"><i class="bi bi-receipt-cutoff app-nav-link__marker" aria-hidden="true"></i><span>Types de frais connexes</span></a>
                 @endcan
 
                 <p class="app-nav-label app-nav-label--spaced">Gestion</p>
@@ -110,7 +112,14 @@
 
         <div class="app-sidebar__footer">
             <div class="app-sidebar-user">
-                <span class="app-sidebar-user__avatar" aria-hidden="true">{{ $userInitials }}<span></span></span>
+                <span class="app-sidebar-user__avatar" aria-hidden="true">
+                    @if($user?->avatar_path)
+                        <img src="{{ Storage::url($user->avatar_path) }}" alt="{{ $userName }}" class="w-full h-full object-cover rounded-full">
+                    @else
+                        {{ $userInitials }}
+                    @endif
+                    <span></span>
+                </span>
                 <span class="app-sidebar-user__identity">
                     <strong>{{ $userName }}</strong>
                     <small>{{ $isPortalClient ? 'Client' : 'Administration' }}</small>
@@ -142,7 +151,13 @@
 
                 <div class="dropdown">
                     <button class="app-user-menu" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="app-user-menu__avatar" aria-hidden="true">{{ $userInitials }}</span>
+                        <span class="app-user-menu__avatar" aria-hidden="true">
+                            @if($user?->avatar_path)
+                                <img src="{{ Storage::url($user->avatar_path) }}" alt="{{ $userName }}" class="w-full h-full object-cover rounded-full">
+                            @else
+                                {{ $userInitials }}
+                            @endif
+                        </span>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end app-user-dropdown">
                         @if($isPortalClient)

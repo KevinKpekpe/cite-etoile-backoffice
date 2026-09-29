@@ -16,7 +16,7 @@ class ReceiptController extends Controller
 
     public function show(Receipt $receipt): View
     {
-        $receipt->load(['payment', 'customer', 'subscription.plot.avenue.neighborhood', 'subscription.paymentPlan', 'issuedBy', 'subscription.installments']);
+        $receipt->load(['payment.ancillaryFee', 'customer', 'subscription.plot.avenue.neighborhood', 'subscription.paymentPlan', 'issuedBy', 'subscription.installments']);
 
         $branding = [
             'company' => $this->settings->value('company', 'name', 'MJIC IMMOBILIER SARL'),

@@ -46,14 +46,16 @@
                 <span class="record-heading__avatar" aria-hidden="true"><i class="bi bi-file-earmark-check"></i></span>
                 <div>
                     <p class="app-kicker">{{ $subscription->subscription_number }}</p>
-                    <h1>{{ $subscription->customer->first_name }} {{ $subscription->customer->last_name }}</h1>
-                    <p>{{ $subscription->plot->reference }} · {{ $subscription->plot->avenue->neighborhood->name }}</p>
+                    <h1>{{ $subscription->customer ? ($subscription->customer->first_name . ' ' . $subscription->customer->last_name) : 'Client non renseigné' }}</h1>
+                    <p>{{ $subscription->plot?->reference }} · {{ $subscription->plot?->avenue?->neighborhood?->name }}</p>
                 </div>
             </div>
             <div class="resource-heading__actions">
-                @can('customers.view')
-                    <a href="{{ route('customers.show', $subscription->customer) }}" class="btn btn-outline-secondary resource-button">Fiche client</a>
-                @endcan
+                @if($subscription->customer)
+                    @can('customers.view')
+                        <a href="{{ route('customers.show', $subscription->customer) }}" class="btn btn-outline-secondary resource-button">Fiche client</a>
+                    @endcan
+                @endif
                 @can('installments.view')
                     <a href="{{ route('subscriptions.installments.index', $subscription) }}" class="btn btn-outline-secondary resource-button">Échéancier</a>
                 @endcan
@@ -159,6 +161,49 @@
             </section>
         </div>
 
+        <section class="resource-table" aria-labelledby="ancillary-fees-title">
+            <div class="resource-table__header">
+                <div><h2 id="ancillary-fees-title">Frais connexes</h2><p>{{ $subscription->ancillaryFees->count() }} frais ou échéance(s) enregistrés</p></div>
+                @if(!$subscription->ancillaryFees->contains('fee_type', 'survey') && !in_array($subscription->commercial_status, ['cancelled', 'terminated'], true))
+                    @can('subscriptions.update')
+                        <form method="POST" action="{{ route('subscriptions.bornage.realize', $subscription) }}">
+                            @csrf
+                            <button class="btn btn-outline-secondary resource-button" type="submit">Marquer le bornage réalisé</button>
+                        </form>
+                    @endcan
+                @endif
+            </div>
+            <div class="table-responsive">
+                <table class="table resource-data-table align-middle mb-0">
+                    <thead><tr><th>Frais</th><th>Échéance</th><th class="text-end">Montant</th><th class="text-end">Payé</th><th class="text-end">Solde</th><th>Statut</th><th class="text-end">Action / reçu</th></tr></thead>
+                    <tbody>
+                        @forelse($subscription->ancillaryFees as $fee)
+                            <tr>
+                                <td><strong>{{ $fee->label() }}</strong>@if($fee->fee_type === 'development' && $subscription->development_payment_mode === 'monthly')<small class="d-block text-muted">Mensualité {{ $fee->installment_number }} sur 36</small>@endif</td>
+                                <td class="resource-data-table__secondary">{{ $fee->due_date->format('d/m/Y') }}</td>
+                                <td class="record-money text-end">{{ number_format((float) $fee->amount_due, 2, ',', ' ') }} USD</td>
+                                <td class="record-money text-end">{{ number_format((float) $fee->amount_paid, 2, ',', ' ') }} USD</td>
+                                <td class="record-money text-end">{{ number_format((float) $fee->balance, 2, ',', ' ') }} USD</td>
+                                <td><span class="status-badge status-badge--{{ $fee->status === 'paid' ? 'active' : ($fee->status === 'overdue' ? 'danger' : 'neutral') }}">{{ str($fee->status)->replace('_', ' ')->title() }}</span></td>
+                                <td class="text-end">
+                                    @if((float) $fee->balance > 0)
+                                        @can('payments.create')<a href="{{ route('payments.ancillary.create', $fee) }}" class="btn btn-sm btn-outline-secondary">Encaisser</a>@endcan
+                                    @endif
+                                    @foreach($fee->payments->where('status', 'validated') as $feePayment)
+                                        @if($feePayment->receipt)
+                                            @can('receipts.download')<a href="{{ route('receipts.download', $feePayment->receipt) }}" class="resource-reference ms-2">{{ $feePayment->receipt->receipt_number }}</a>@endcan
+                                        @endif
+                                    @endforeach
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="7"><div class="resource-empty"><strong>Aucun frais connexe généré</strong><span>Les frais cadastraux et d’aménagement apparaîtront à la signature du contrat. Le bornage sera ajouté quand sa réalisation sera enregistrée.</span></div></td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <section class="resource-table" aria-labelledby="subscription-payments-title">
             <div class="resource-table__header">
                 <div><h2 id="subscription-payments-title">Paiements et reçus</h2><p>{{ $subscription->payments->count() }} versement(s) enregistré(s)</p></div>
@@ -169,7 +214,7 @@
                     <tbody>
                         @forelse($subscription->payments as $payment)
                             <tr>
-                                <td><a href="{{ route('payments.show', $payment) }}" class="resource-reference">{{ $payment->payment_reference }}</a></td>
+                                <td><a href="{{ route('payments.show', $payment) }}" class="resource-reference">{{ $payment->payment_reference }}</a>@if($payment->ancillaryFee)<small class="d-block text-muted">{{ $payment->ancillaryFee->label() }}</small>@endif</td>
                                 <td class="resource-data-table__secondary">{{ $payment->payment_date->format('d/m/Y H:i') }}</td>
                                 <td class="resource-data-table__secondary">{{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</td>
                                 <td class="record-money text-end">{{ number_format((float) $payment->amount, 2, ',', ' ') }} {{ $payment->currency }}</td>

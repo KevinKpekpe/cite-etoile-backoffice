@@ -113,11 +113,23 @@
                                             <span class="status-badge status-badge--{{ $row->commercial_status }} ms-2">{{ $plotStatusLabels[$row->commercial_status] ?? ucfirst($row->commercial_status) }}</span>
                                         @elseif($type === 'payments')
                                             <a href="{{ route('payments.show', $row) }}" class="resource-reference me-2">{{ $row->payment_reference }}</a>
-                                            <strong>{{ $row->customer->first_name }} {{ $row->customer->last_name }}</strong>
+                                            @if($row->customer)
+                                                <strong>{{ $row->customer->first_name }} {{ $row->customer->last_name }}</strong>
+                                            @else
+                                                <span class="text-muted small">—</span>
+                                            @endif
                                         @else
-                                            <a href="{{ route('subscriptions.show', $row->subscription) }}" class="resource-reference me-2">{{ $row->subscription->subscription_number }}</a>
-                                            <strong>{{ $row->subscription->customer->first_name }} {{ $row->subscription->customer->last_name }}</strong>
-                                            <small class="text-muted ms-2">({{ $row->subscription->plot?->reference }})</small>
+                                            @if($row->subscription)
+                                                <a href="{{ route('subscriptions.show', $row->subscription) }}" class="resource-reference me-2">{{ $row->subscription->subscription_number }}</a>
+                                                @if($row->subscription->customer)
+                                                    <strong>{{ $row->subscription->customer->first_name }} {{ $row->subscription->customer->last_name }}</strong>
+                                                @else
+                                                    <span class="text-muted small">—</span>
+                                                @endif
+                                                <small class="text-muted ms-2">({{ $row->subscription->plot?->reference }})</small>
+                                            @else
+                                                <span class="text-muted small">—</span>
+                                            @endif
                                         @endif
                                     </td>
 

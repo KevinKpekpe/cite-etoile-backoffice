@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSubscriptionRequest;
+use App\Models\AncillaryFeeType;
 use App\Models\Customer;
 use App\Models\PaymentPlan;
 use App\Models\Plot;
 use App\Models\Subscription;
+use App\Services\AncillaryFeeService;
 use App\Services\AuditService;
 use App\Services\InstallmentScheduleService;
 use App\Services\PaymentService;
@@ -72,6 +74,7 @@ class SubscriptionController extends Controller
             'paymentPlans' => PaymentPlan::query()->where('active', true)->where(fn ($query) => $query->whereNull('valid_from')->orWhere('valid_from', '<=', $today))->where(fn ($query) => $query->whereNull('valid_until')->orWhere('valid_until', '>=', $today))->orderBy('total_price')->get(),
             'preselectedCustomer' => $preselectedCustomer,
             'preselectedPlot' => $preselectedPlot,
+            'developmentPricingOptions' => AncillaryFeeType::query()->where('code', 'development')->firstOrFail()->pricing_options,
         ]);
     }
 
@@ -94,7 +97,7 @@ class SubscriptionController extends Controller
 
             $startDate = CarbonImmutable::parse($request->date('start_date'));
             $subscription = Subscription::query()->create([
-                ...$request->safe()->only(['customer_id', 'plot_id', 'payment_plan_id', 'subscription_date', 'start_date']),
+                ...$request->safe()->only(['customer_id', 'plot_id', 'payment_plan_id', 'subscription_date', 'start_date', 'development_payment_mode']),
                 'commercial_status' => 'pending',
                 'subscription_number' => 'SUB-'.now()->format('Ymd').'-'.Str::upper(Str::random(8)),
                 'expected_end_date' => $plan->duration_months > 0 ? $startDate->addMonths($plan->duration_months)->toDateString() : $startDate->toDateString(),
@@ -126,9 +129,10 @@ class SubscriptionController extends Controller
         return redirect()->route('subscriptions.show', $subscription)->with('status', __('Souscription créée.'));
     }
 
-    public function show(Subscription $subscription): View
+    public function show(Subscription $subscription, AncillaryFeeService $fees): View
     {
-        $subscription->load(['customer', 'plot.avenue.neighborhood', 'paymentPlan', 'contract', 'installments', 'payments', 'receipts']);
+        $fees->syncOverdueStatuses();
+        $subscription->load(['customer', 'plot.avenue.neighborhood', 'paymentPlan', 'contract', 'installments', 'payments.ancillaryFee', 'payments.receipt', 'receipts', 'ancillaryFees' => fn ($query) => $query->with('payments.receipt')->orderBy('due_date')->orderBy('id')]);
 
         $nextInstallment = $subscription->installments
             ->whereIn('status', ['overdue', 'due', 'upcoming'])

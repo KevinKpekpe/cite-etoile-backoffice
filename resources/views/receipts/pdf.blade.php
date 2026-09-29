@@ -179,14 +179,18 @@
 
 <table class="item-table">
     <tr>
-        <td class="item-name">Versement parcelle</td>
+        <td class="item-name">{{ $receipt->payment->ancillaryFee ? $receipt->payment->ancillaryFee->label() : 'Versement parcelle' }}</td>
         <td class="item-price bold">{{ number_format((float)$receipt->amount, 2) }} {{ $branding['currency'] }}</td>
     </tr>
     <tr>
         <td colspan="2" class="small mt2" style="padding-left:2px; color:#111;">
             Parcelle : {{ $receipt->subscription->plot->reference }}
             ({{ $receipt->subscription->plot->avenue->neighborhood->name }})<br>
-            Formule  : {{ $receipt->subscription->paymentPlan->name }}<br>
+            @if($receipt->payment->ancillaryFee)
+                Frais : {{ $receipt->payment->ancillaryFee->label() }} · échéance {{ $receipt->payment->ancillaryFee->installment_number }}<br>
+            @else
+                Formule : {{ $receipt->subscription->paymentPlan->name }}<br>
+            @endif
             Réf. Pmt : {{ $receipt->payment->payment_reference }}
         </td>
     </tr>
@@ -198,11 +202,11 @@
 <table class="total-table">
     <tr>
         <td>Cumul versé</td>
-        <td class="right">{{ number_format((float)$receipt->subscription->amount_paid, 2) }} {{ $branding['currency'] }}</td>
+        <td class="right">{{ number_format((float)($receipt->payment->ancillaryFee?->amount_paid ?? $receipt->subscription->amount_paid), 2) }} {{ $branding['currency'] }}</td>
     </tr>
     <tr>
         <td>Solde restant</td>
-        <td class="right">{{ number_format((float)$receipt->subscription->balance, 2) }} {{ $branding['currency'] }}</td>
+        <td class="right">{{ number_format((float)($receipt->payment->ancillaryFee?->balance ?? $receipt->subscription->balance), 2) }} {{ $branding['currency'] }}</td>
     </tr>
     <tr class="total-row">
         <td>TOTAL ENCAISSÉ</td>
