@@ -220,6 +220,7 @@ class CustomerController extends Controller
     {
         $scheduleService->syncOverdueStatuses();
         $customer->load([
+            'user',
             'assignedAgent:id,first_name,last_name', 'documents',
             'subscriptions' => fn ($query) => $query->with(['plot', 'paymentPlan', 'installments'])->latest(),
             'payments' => fn ($query) => $query->with('receipt')->latest('payment_date'),

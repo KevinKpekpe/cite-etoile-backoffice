@@ -12,6 +12,7 @@ use App\Http\Controllers\AvenueController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDocumentController;
+use App\Http\Controllers\CustomerPortalController;
 use App\Http\Controllers\CustomerStatementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstallmentController;
@@ -78,6 +79,10 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/customers/{customer}/archive', [CustomerController::class, 'archive'])->middleware('can:customers.delete')->name('customers.archive');
         Route::post('/customers/{customer}/documents', [CustomerDocumentController::class, 'store'])->middleware('can:customers.update')->name('customers.documents.store');
         Route::get('/customers/{customer}/documents/{document}', [CustomerDocumentController::class, 'download'])->middleware('can:documents.download')->scopeBindings()->name('customers.documents.download');
+        Route::post('/customers/{customer}/portal/create-access', [CustomerPortalController::class, 'createAccess'])->middleware('can:customers.update')->name('customers.portal.create-access');
+        Route::post('/customers/{customer}/portal/reset-password', [CustomerPortalController::class, 'resetPassword'])->middleware('can:customers.update')->name('customers.portal.reset-password');
+        Route::post('/customers/{customer}/portal/resend-credentials', [CustomerPortalController::class, 'resendCredentials'])->middleware('can:customers.update')->name('customers.portal.resend-credentials');
+        Route::patch('/customers/{customer}/portal/toggle-status', [CustomerPortalController::class, 'toggleStatus'])->middleware('can:customers.update')->name('customers.portal.toggle-status');
         Route::resource('neighborhoods', NeighborhoodController::class)->except(['show'])->middleware('can:plots.manage');
         Route::resource('avenues', AvenueController::class)->except(['show'])->middleware('can:plots.manage');
         Route::get('/plots', [PlotController::class, 'index'])->middleware('can:plots.view')->name('plots.index');
