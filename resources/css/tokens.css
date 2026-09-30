@@ -1639,6 +1639,10 @@ textarea:focus {
     grid-template-columns: minmax(0, 1fr);
 }
 
+.form-field--full {
+    grid-column: 1 / -1;
+}
+
 .form-field {
     display: flex;
     flex-direction: column;

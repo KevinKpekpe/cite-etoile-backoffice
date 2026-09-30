@@ -31,6 +31,15 @@ function settingsPayload(array $overrides = []): array
         'finance' => ['currency' => 'CDF', 'payment_methods' => ['cash', 'mobile_money']],
         'customer' => ['prefix' => 'CUS'], 'payment' => ['prefix' => 'PMT'], 'receipt' => ['prefix' => 'RCP'], 'contract' => ['prefix' => 'CNT'],
         'subscription' => ['allow_partial_payment' => true, 'allow_advance_payment' => false],
+        'platform' => ['locale' => 'fr'],
+        'portal' => [
+            'site_title' => 'Espace Client Test',
+            'welcome_message' => 'Bienvenue.',
+            'support_email' => 'support@test.cd',
+            'support_phone' => '+243000000001',
+            'allow_profile_edit' => true,
+            'show_payment_history' => true,
+        ],
     ], $overrides);
 }
 
@@ -38,7 +47,7 @@ it('allows authorized administrators to update all setting groups and audits eac
     $this->actingAs($this->admin)->put(route('settings.update'), settingsPayload())->assertRedirect()->assertSessionHasNoErrors();
 
     $this->assertDatabaseHas('settings', ['setting_group' => 'finance', 'setting_key' => 'currency', 'value' => 'CDF']);
-    expect(Setting::query()->where('updated_by', $this->admin->id)->count())->toBe(14);
+    expect(Setting::query()->where('updated_by', $this->admin->id)->count())->toBe(21);
     $this->assertDatabaseHas('audit_logs', ['action' => 'setting.updated', 'user_id' => $this->admin->id]);
 });
 

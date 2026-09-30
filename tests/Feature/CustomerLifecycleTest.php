@@ -216,6 +216,15 @@ it('admin can update settings and super_admin can access all back-office section
         'finance' => ['currency' => 'USD', 'payment_methods' => ['cash', 'mobile_money']],
         'customer' => ['prefix' => 'CUS'], 'payment' => ['prefix' => 'PMT'], 'receipt' => ['prefix' => 'RCP'], 'contract' => ['prefix' => 'CNT'],
         'subscription' => ['allow_partial_payment' => true, 'allow_advance_payment' => true],
+        'platform' => ['locale' => 'fr'],
+        'portal' => [
+            'site_title' => 'Espace Client Test',
+            'welcome_message' => 'Bienvenue.',
+            'support_email' => 'support@test.cd',
+            'support_phone' => '+243000000001',
+            'allow_profile_edit' => true,
+            'show_payment_history' => true,
+        ],
     ];
 
     $this->actingAs($this->admin)

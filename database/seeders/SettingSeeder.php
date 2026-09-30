@@ -27,6 +27,15 @@ class SettingSeeder extends Seeder
             ['setting_group' => 'contract', 'setting_key' => 'prefix', 'value' => 'CTR', 'value_type' => 'string', 'is_public' => false],
             ['setting_group' => 'subscription', 'setting_key' => 'allow_partial_payment', 'value' => 'true', 'value_type' => 'boolean', 'is_public' => false],
             ['setting_group' => 'subscription', 'setting_key' => 'allow_advance_payment', 'value' => 'true', 'value_type' => 'boolean', 'is_public' => false],
+            // Platform
+            ['setting_group' => 'platform', 'setting_key' => 'locale', 'value' => 'fr', 'value_type' => 'string', 'is_public' => false],
+            // Client portal
+            ['setting_group' => 'portal', 'setting_key' => 'site_title', 'value' => 'Espace Client — Cité Étoile du Monde', 'value_type' => 'string', 'is_public' => true],
+            ['setting_group' => 'portal', 'setting_key' => 'welcome_message', 'value' => 'Bienvenue sur votre espace client.', 'value_type' => 'string', 'is_public' => true],
+            ['setting_group' => 'portal', 'setting_key' => 'support_email', 'value' => '', 'value_type' => 'string', 'is_public' => true],
+            ['setting_group' => 'portal', 'setting_key' => 'support_phone', 'value' => '', 'value_type' => 'string', 'is_public' => true],
+            ['setting_group' => 'portal', 'setting_key' => 'allow_profile_edit', 'value' => 'true', 'value_type' => 'boolean', 'is_public' => false],
+            ['setting_group' => 'portal', 'setting_key' => 'show_payment_history', 'value' => 'true', 'value_type' => 'boolean', 'is_public' => false],
         ];
 
         DB::table('settings')->upsert($settings, ['setting_group', 'setting_key'], [
