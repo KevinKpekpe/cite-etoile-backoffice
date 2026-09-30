@@ -49,7 +49,7 @@ it('renders the customer 360 degree record', function () {
     Subscription::factory()->for($customer)->create(['subscription_number' => 'SUB-360-01']);
 
     $this->actingAs($this->agent)->get(route('customers.show', $customer))
-        ->assertOk()->assertSee('Sarah')->assertSee('SUB-360-01')->assertSee('Situation financière');
+        ->assertOk()->assertSee('Sarah')->assertSee('SUB-360-01')->assertSee('Total versé');
 });
 
 it('audits updates and archives without deleting the customer', function () {
