@@ -20,16 +20,21 @@ class SetLocale
 
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = Cache::remember('setting.platform.locale', 3600, function (): string {
+        $platformLocale = Cache::remember('setting.platform.locale', 3600, function (): string {
             return (string) (Setting::query()
                 ->where('setting_group', 'platform')
                 ->where('setting_key', 'locale')
                 ->value('value') ?? config('app.locale', 'fr'));
         });
 
-        if (! in_array($locale, self::SUPPORTED, true)) {
-            $locale = 'fr';
+        if (! in_array($platformLocale, self::SUPPORTED, true)) {
+            $platformLocale = 'fr';
         }
+
+        $accountLocale = $request->user()?->locale;
+        $sessionLocale = $request->session()->get('locale');
+        $preferredLocale = $accountLocale ?? $sessionLocale;
+        $locale = in_array($preferredLocale, self::SUPPORTED, true) ? $preferredLocale : $platformLocale;
 
         App::setLocale($locale);
 

@@ -31,7 +31,7 @@
                         <x-auth-input name="name" label="Nom de la formule" :value="old('name', $paymentPlan->name)" required />
 
                         <label class="form-field form-grid__wide">
-                            <span class="form-field__label">Description</span>
+                            <span class="form-field__label">{{ __("Description") }}</span>
                             <textarea name="description" rows="4" class="form-control" placeholder="Précisez les conditions ou le public concerné">{{ old('description', $paymentPlan->description) }}</textarea>
                             @error('description')<span class="form-field__error">{{ $message }}</span>@enderror
                         </label>
@@ -56,8 +56,8 @@
                         <label class="form-field">
                             <span class="form-field__label">Fréquence<span class="text-danger ms-1 fw-bold">*</span></span>
                             <select name="frequency" class="form-select" required>
-                                <option value="once" @selected(old('frequency', $paymentPlan->frequency) === 'once')>Paiement unique</option>
-                                <option value="monthly" @selected(old('frequency', $paymentPlan->frequency) === 'monthly')>Paiement mensuel</option>
+                                <option value="once" @selected(old('frequency', $paymentPlan->frequency) === 'once')>{{ __("Paiement unique") }}</option>
+                                <option value="monthly" @selected(old('frequency', $paymentPlan->frequency) === 'monthly')>{{ __("Paiement mensuel") }}</option>
                             </select>
                             @error('frequency')<span class="form-field__error">{{ $message }}</span>@enderror
                         </label>
@@ -90,7 +90,7 @@
             </section>
 
             <div class="form-actions">
-                <a href="{{ route('payment-plans.index') }}" class="btn btn-outline">Annuler</a>
+                <a href="{{ route('payment-plans.index') }}" class="btn btn-outline">{{ __("Annuler") }}</a>
                 <button class="btn btn-primary" type="submit">
                     {{ $paymentPlan->exists ? 'Enregistrer les modifications' : 'Créer la formule' }}
                 </button>

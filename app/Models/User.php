@@ -14,10 +14,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 /**
+ * @property string|null $locale
  * @property string|null $two_factor_secret
  * @property array<int, string>|null $two_factor_recovery_codes
  */
-#[Fillable(['first_name', 'last_name', 'email', 'phone', 'password', 'status', 'must_change_password', 'avatar_path'])]
+#[Fillable(['first_name', 'last_name', 'email', 'locale', 'phone', 'password', 'status', 'must_change_password', 'avatar_path'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable
 {

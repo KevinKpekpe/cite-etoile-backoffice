@@ -2,14 +2,14 @@
     <div class="form-page">
         <header class="resource-heading">
             <div><p class="app-kicker">Gestion financière</p><h1 class="resource-heading__title">{{ $feeType->exists ? 'Modifier un type de frais' : 'Créer un type de frais' }}</h1><p class="resource-heading__description">Le code identifie le type dans les frais générés et ne peut pas être modifié après sa création.</p></div>
-            <a href="{{ route('ancillary-fee-types.index') }}" class="btn btn-outline">Retour au catalogue</a>
+            <a href="{{ route('ancillary-fee-types.index') }}" class="btn btn-outline">{{ __("Retour au catalogue") }}</a>
         </header>
         @if($errors->has('fee_type'))<div class="alert alert-danger">{{ $errors->first('fee_type') }}</div>@endif
         <form method="POST" action="{{ $feeType->exists ? route('ancillary-fee-types.update', $feeType) : route('ancillary-fee-types.store') }}" class="form-page__content">
             @csrf
             @if($feeType->exists) @method('PUT') @endif
             <section class="form-section">
-                <div class="form-section__header"><span class="form-section__number">01</span><div><h2>Type de frais</h2><p>Définissez son nom et ses montants de référence ou ses tarifs par formule.</p></div></div>
+                <div class="form-section__header"><span class="form-section__number">01</span><div><h2>{{ __("Type de frais") }}</h2><p>Définissez son nom et ses montants de référence ou ses tarifs par formule.</p></div></div>
                 <div class="form-section__body"><div class="form-grid">
                     @if($feeType->exists)
                         <x-auth-input name="code_display" label="Code" :value="$feeType->code" readonly />
@@ -51,7 +51,7 @@
                     @error('name')<span class="form-field__error">{{ $message }}</span>@enderror
                 </div></div>
             </section>
-            <div class="form-actions"><a href="{{ route('ancillary-fee-types.index') }}" class="btn btn-outline">Annuler</a><button class="btn btn-primary" type="submit">{{ $feeType->exists ? 'Enregistrer les modifications' : 'Créer le type' }}</button></div>
+            <div class="form-actions"><a href="{{ route('ancillary-fee-types.index') }}" class="btn btn-outline">{{ __("Annuler") }}</a><button class="btn btn-primary" type="submit">{{ $feeType->exists ? 'Enregistrer les modifications' : 'Créer le type' }}</button></div>
         </form>
     </div>
 </x-layouts.app>

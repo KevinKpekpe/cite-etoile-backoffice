@@ -57,7 +57,7 @@
                             @error('finance.currency')<span class="form-field__error">{{ $message }}</span>@enderror
                         </label>
                         <fieldset class="form-field">
-                            <legend class="form-field__label">Modes de paiement autorisés</legend>
+                            <legend class="form-field__label">{{ __("Modes de paiement autorisés") }}</legend>
                             <div class="settings-options">
                                 @foreach(['cash' => 'Espèces', 'bank_transfer' => 'Virement bancaire', 'mobile_money' => 'Mobile money', 'card' => 'Carte bancaire', 'other' => 'Autre'] as $method => $label)
                                     <label class="form-check">
@@ -183,14 +183,14 @@
                         <input type="hidden" name="portal[show_payment_history]" value="0">
                         <label class="form-toggle">
                             <input class="form-check-input" type="checkbox" name="portal[show_payment_history]" value="1" @checked(filter_var($value('portal.show_payment_history', 'true'), FILTER_VALIDATE_BOOL))>
-                            <span><strong>Historique des paiements</strong><small>Afficher la liste complète des paiements et reçus sur le portail client.</small></span>
+                            <span><strong>{{ __("Historique des paiements") }}</strong><small>Afficher la liste complète des paiements et reçus sur le portail client.</small></span>
                         </label>
                     </div>
                 </div>
             </section>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Enregistrer les paramètres</button>
+                <button type="submit" class="btn btn-primary">{{ __("Enregistrer les paramètres") }}</button>
             </div>
         </form>
     </div>

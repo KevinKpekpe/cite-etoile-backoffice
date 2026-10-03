@@ -16,10 +16,10 @@
                 <p class="resource-heading__description">Émis le {{ $receipt->issued_at->format('d/m/Y à H:i') }} pour {{ $receipt->customer->first_name }} {{ $receipt->customer->last_name }}.</p>
             </div>
             <div class="resource-heading__actions">
-                <a href="{{ route('payments.show', $receipt->payment) }}" class="btn btn-outline-secondary resource-button">Retour au paiement</a>
-                <button onclick="window.print()" type="button" class="btn btn-outline-secondary resource-button"><i class="bi bi-printer me-1"></i> Imprimer</button>
+                <a href="{{ route('payments.show', $receipt->payment) }}" class="btn btn-outline-secondary resource-button">{{ __("Retour au paiement") }}</a>
+                <button onclick="window.print()" type="button" class="btn btn-outline-secondary resource-button"><i class="bi bi-printer me-1"></i> {{ __("Imprimer") }}</button>
                 @can('receipts.download')
-                    <a href="{{ route('receipts.download', $receipt) }}" class="btn btn-app-primary resource-button"><i class="bi bi-download me-1"></i> Télécharger le PDF</a>
+                    <a href="{{ route('receipts.download', $receipt) }}" class="btn btn-app-primary resource-button"><i class="bi bi-download me-1"></i> {{ __("Télécharger le PDF") }}</a>
                 @endcan
             </div>
         </header>
@@ -43,11 +43,11 @@
             <section class="receipt-document__section">
                 <h2>Informations générales</h2>
                 <dl class="receipt-document__list">
-                    <div><dt>Date d’émission</dt><dd>{{ $receipt->issued_at->format('d/m/Y H:i') }}</dd></div>
-                    <div><dt>Client</dt><dd>{{ $receipt->customer->last_name }} {{ $receipt->customer->first_name }}</dd></div>
-                    <div><dt>Référence client</dt><dd>{{ $receipt->customer->customer_number }}</dd></div>
+                    <div><dt>{{ __("Date d’émission") }}</dt><dd>{{ $receipt->issued_at->format('d/m/Y H:i') }}</dd></div>
+                    <div><dt>{{ __("Client") }}</dt><dd>{{ $receipt->customer->last_name }} {{ $receipt->customer->first_name }}</dd></div>
+                    <div><dt>{{ __("Référence client") }}</dt><dd>{{ $receipt->customer->customer_number }}</dd></div>
                     @if($receipt->issuedBy)
-                        <div><dt>Agent</dt><dd>{{ $receipt->issuedBy->last_name }} {{ $receipt->issuedBy->first_name }}</dd></div>
+                        <div><dt>{{ __("Agent") }}</dt><dd>{{ $receipt->issuedBy->last_name }} {{ $receipt->issuedBy->first_name }}</dd></div>
                     @endif
                 </dl>
             </section>
@@ -56,9 +56,9 @@
                 <h2>Opération</h2>
                 <dl class="receipt-document__list">
                     <div><dt>Référence paiement</dt><dd>{{ $receipt->payment->payment_reference }}</dd></div>
-                    <div><dt>Parcelle</dt><dd>{{ $receipt->subscription->plot->reference }} · {{ $receipt->subscription->plot->avenue->neighborhood->name }}</dd></div>
+                    <div><dt>{{ __("Parcelle") }}</dt><dd>{{ $receipt->subscription->plot->reference }} · {{ $receipt->subscription->plot->avenue->neighborhood->name }}</dd></div>
                     <div><dt>{{ $receipt->payment->ancillaryFee ? 'Frais connexe' : 'Formule' }}</dt><dd>{{ $receipt->payment->ancillaryFee?->label() ?? $receipt->subscription->paymentPlan->name }}</dd></div>
-                    <div><dt>Mode de règlement</dt><dd>{{ ucfirst(str_replace('_', ' ', $receipt->payment->payment_method)) }}</dd></div>
+                    <div><dt>Mode de règlement</dt><dd>{{ __('payment_methods.'.$receipt->payment->payment_method) }}</dd></div>
                     @if($receipt->payment->transaction_reference)
                         <div><dt>Référence externe</dt><dd>{{ $receipt->payment->transaction_reference }}</dd></div>
                     @endif
@@ -66,7 +66,7 @@
             </section>
 
             <section class="receipt-document__amount">
-                <span>Montant encaissé</span>
+                <span>{{ __("Montant encaissé") }}</span>
                 <strong>{{ number_format((float) $receipt->amount, 2, ',', ' ') }} {{ $branding['currency'] }}</strong>
             </section>
 
@@ -74,7 +74,7 @@
                 <h2>{{ $receipt->payment->ancillaryFee ? 'Situation du frais' : 'Situation de la souscription' }}</h2>
                 <dl class="receipt-document__list">
                     <div><dt>Cumul versé</dt><dd>{{ number_format((float) ($receipt->payment->ancillaryFee?->amount_paid ?? $receipt->subscription->amount_paid), 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
-                    <div><dt>Solde restant</dt><dd>{{ number_format((float) ($receipt->payment->ancillaryFee?->balance ?? $receipt->subscription->balance), 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
+                    <div><dt>{{ __("Solde restant") }}</dt><dd>{{ number_format((float) ($receipt->payment->ancillaryFee?->balance ?? $receipt->subscription->balance), 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
                     @if($nextInstallment && (float) $receipt->subscription->balance > 0)
                         <div><dt>Prochaine échéance</dt><dd>{{ $nextInstallment->due_date->format('d/m/Y') }} · {{ number_format((float) $nextInstallment->amount_due, 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
                     @else

@@ -6,7 +6,7 @@
                 <h1 class="resource-heading__title">Modifier {{ $customer->first_name }} {{ $customer->last_name }}</h1>
                 <p class="resource-heading__description">Mettez à jour les informations personnelles et l’attribution du dossier.</p>
             </div>
-            <a href="{{ route('customers.show', $customer) }}" class="btn btn-outline-secondary resource-button">Retour au dossier</a>
+            <a href="{{ route('customers.show', $customer) }}" class="btn btn-outline-secondary resource-button">{{ __("Retour au dossier") }}</a>
         </header>
 
         <form method="POST" action="{{ route('customers.update', $customer) }}" enctype="multipart/form-data" class="form-page__content">
@@ -20,8 +20,8 @@
                 <div class="form-section__body"><x-customer-form :customer="$customer" :agents="$agents" /></div>
             </section>
             <div class="form-actions">
-                <a href="{{ route('customers.show', $customer) }}" class="btn btn-outline-secondary resource-button">Annuler</a>
-                <button class="btn btn-app-primary resource-button" type="submit">Enregistrer les modifications</button>
+                <a href="{{ route('customers.show', $customer) }}" class="btn btn-outline-secondary resource-button">{{ __("Annuler") }}</a>
+                <button class="btn btn-app-primary resource-button" type="submit">{{ __("Enregistrer les modifications") }}</button>
             </div>
         </form>
     </div>

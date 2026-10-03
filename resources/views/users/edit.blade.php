@@ -12,8 +12,8 @@
                 <div class="form-section__body"><x-user-form :roles="$roles" :user="$user" /></div>
             </section>
             <div class="form-actions">
-                <a href="{{ route('users.show', $user) }}" class="btn btn-outline-secondary resource-button">Annuler</a>
-                <button class="btn btn-app-primary resource-button" type="submit">Enregistrer les modifications</button>
+                <a href="{{ route('users.show', $user) }}" class="btn btn-outline-secondary resource-button">{{ __("Annuler") }}</a>
+                <button class="btn btn-app-primary resource-button" type="submit">{{ __("Enregistrer les modifications") }}</button>
             </div>
         </form>
     </div>

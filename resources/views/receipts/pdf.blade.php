@@ -171,7 +171,7 @@
 <table class="item-table">
     <tr>
         <td class="item-name bold upper">Désignation</td>
-        <td class="item-price bold upper">Montant</td>
+        <td class="item-price bold upper">{{ __("Montant") }}</td>
     </tr>
 </table>
 
@@ -205,7 +205,7 @@
         <td class="right">{{ number_format((float)($receipt->payment->ancillaryFee?->amount_paid ?? $receipt->subscription->amount_paid), 2) }} {{ $branding['currency'] }}</td>
     </tr>
     <tr>
-        <td>Solde restant</td>
+        <td>{{ __("Solde restant") }}</td>
         <td class="right">{{ number_format((float)($receipt->payment->ancillaryFee?->balance ?? $receipt->subscription->balance), 2) }} {{ $branding['currency'] }}</td>
     </tr>
     <tr class="total-row">

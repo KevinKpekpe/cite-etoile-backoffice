@@ -13,13 +13,13 @@
                 <div class="form-section__body">
                     <div class="form-grid">
                         @if($neighborhood->exists)<x-auth-input name="code" label="Code" :value="old('code', $neighborhood->code)" readonly />@endif
-                        <x-auth-input name="name" label="Nom" :value="old('name', $neighborhood->name)" required />
-                        <label class="form-field"><span class="form-field__label">Statut <span class="form-required">*</span></span><select name="status" class="form-select">@foreach($statusLabels as $value => $label)<option value="{{ $value }}" @selected(old('status', $neighborhood->status) === $value)>{{ $label }}</option>@endforeach</select>@error('status')<span class="form-field__error">{{ $message }}</span>@enderror</label>
-                        <label class="form-field form-grid__wide"><span class="form-field__label">Description</span><textarea name="description" rows="4" class="form-control">{{ old('description', $neighborhood->description) }}</textarea>@error('description')<span class="form-field__error">{{ $message }}</span>@enderror</label>
+                        <x-auth-input name="name" :label="__('Nom')" :value="old('name', $neighborhood->name)" required />
+                        <label class="form-field"><span class="form-field__label">{{ __("Statut") }} <span class="form-required">*</span></span><select name="status" class="form-select">@foreach($statusLabels as $value => $label)<option value="{{ $value }}" @selected(old('status', $neighborhood->status) === $value)>{{ __($label) }}</option>@endforeach</select>@error('status')<span class="form-field__error">{{ $message }}</span>@enderror</label>
+                        <label class="form-field form-grid__wide"><span class="form-field__label">{{ __("Description") }}</span><textarea name="description" rows="4" class="form-control">{{ old('description', $neighborhood->description) }}</textarea>@error('description')<span class="form-field__error">{{ $message }}</span>@enderror</label>
                     </div>
                 </div>
             </section>
-            <div class="form-actions"><a href="{{ route('neighborhoods.index') }}" class="btn btn-outline">Annuler</a><button class="btn btn-primary" type="submit">{{ $neighborhood->exists ? 'Enregistrer les modifications' : 'Créer le quartier' }}</button></div>
+            <div class="form-actions"><a href="{{ route('neighborhoods.index') }}" class="btn btn-outline">{{ __("Annuler") }}</a><button class="btn btn-primary" type="submit">{{ $neighborhood->exists ? 'Enregistrer les modifications' : 'Créer le quartier' }}</button></div>
         </form>
     </div>
 </x-layouts.app>

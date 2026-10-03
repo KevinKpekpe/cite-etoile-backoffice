@@ -39,14 +39,14 @@
                     @can('customers.restore')
                         <form method="POST" action="{{ route('customers.restore', $customer) }}">
                             @csrf
-                            <button class="btn btn-success resource-button" type="submit">Restaurer</button>
+                            <button class="btn btn-success resource-button" type="submit">{{ __("Restaurer") }}</button>
                         </form>
                     @endcan
                     @can('customers.force_delete')
                         <form method="POST" action="{{ route('customers.force-delete', $customer) }}" data-confirm="Supprimer définitivement ce client ? Cette action est irréversible.">
                             @csrf
                             @method('DELETE')
-                            <button class="btn btn-danger resource-button" type="submit">Supprimer définitivement</button>
+                            <button class="btn btn-danger resource-button" type="submit">{{ __("Supprimer définitivement") }}</button>
                         </form>
                     @endcan
                 </div>
@@ -66,7 +66,7 @@
                     <p class="app-kicker">{{ $customer->customer_number }}</p>
                     <h1>{{ $customer->first_name }} {{ $customer->middle_name }} {{ $customer->last_name }}</h1>
                     <p>
-                        <span class="status-badge status-badge--{{ $customer->status }}">{{ $statusLabels[$customer->status] ?? ucfirst($customer->status) }}</span>
+                        <span class="status-badge status-badge--{{ $customer->status }}">{{ __('statuses.'.$customer->status) }}</span>
                         · {{ $customer->phone }}
                         @if($customer->email) · {{ $customer->email }} @endif
                     </p>
@@ -81,7 +81,7 @@
                     @endcan
                     @can('customers.update')
                         <a href="{{ route('customers.edit', $customer) }}" class="btn btn-outline-secondary resource-button">
-                            <i class="bi bi-pencil" aria-hidden="true"></i>Modifier
+                            <i class="bi bi-pencil" aria-hidden="true"></i>{{ __("Modifier") }}
                         </a>
                     @endcan
                     @can('subscriptions.create')
@@ -108,7 +108,7 @@
         {{-- KPI financiers --}}
         <div class="record-metrics record-metrics--bordered">
             <div>
-                <span>Souscriptions</span>
+                <span>{{ __("Souscriptions") }}</span>
                 <strong>{{ $customer->subscriptions->count() }}</strong>
                 <small>Dossiers enregistrés</small>
             </div>
@@ -118,7 +118,7 @@
                 <small>Paiements validés</small>
             </div>
             <div class="{{ $overdueCount > 0 ? 'record-metric--danger' : '' }}">
-                <span>Solde restant</span>
+                <span>{{ __("Solde restant") }}</span>
                 <strong>{{ number_format((float) $remainingBalance, 2, ',', ' ') }} <small>USD</small></strong>
                 <small>{{ $overdueCount > 0 ? number_format((float) $overdueTotal, 2, ',', ' ').' USD en retard' : 'Situation à jour' }}</small>
             </div>
@@ -142,13 +142,13 @@
                             <dd><a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $customer->whatsapp) }}" target="_blank" rel="noopener noreferrer">{{ $customer->whatsapp }}</a></dd>
                         </div>
                     @endif
-                    <div><dt>E-mail</dt><dd>{{ $customer->email ?: 'Non renseigné' }}</dd></div>
+                    <div><dt>{{ __("E-mail") }}</dt><dd>{{ $customer->email ?: 'Non renseigné' }}</dd></div>
                     <div><dt>Adresse résidentielle</dt><dd>{{ $customer->address ?: 'Non renseignée' }}</dd></div>
                     <div><dt>Commune / Ville</dt><dd>{{ implode(', ', array_filter([$customer->commune, $customer->city])) ?: 'Non renseignée' }}</dd></div>
-                    <div><dt>Pays</dt><dd>{{ $customer->country ?: 'Non renseigné' }}</dd></div>
-                    <div><dt>Nationalité</dt><dd>{{ $customer->nationality ?: 'Non renseignée' }}</dd></div>
+                    <div><dt>{{ __("Pays") }}</dt><dd>{{ $customer->country ?: 'Non renseigné' }}</dd></div>
+                    <div><dt>{{ __("Nationalité") }}</dt><dd>{{ $customer->nationality ?: 'Non renseignée' }}</dd></div>
                     @if($customer->birth_date)
-                        <div><dt>Date de naissance</dt><dd>{{ $customer->birth_date->format('d/m/Y') }}</dd></div>
+                        <div><dt>{{ __("Date de naissance") }}</dt><dd>{{ $customer->birth_date->format('d/m/Y') }}</dd></div>
                     @endif
                     @if($customer->gender)
                         <div><dt>Genre</dt><dd>{{ ucfirst($customer->gender) }}</dd></div>
@@ -172,7 +172,7 @@
                     <p>{{ $customer->subscriptions->count() }} {{ Str::plural('souscription', $customer->subscriptions->count()) }}</p>
                 </div>
                 @can('subscriptions.create')
-                    <a href="{{ route('subscriptions.create', ['customer_id' => $customer->id]) }}" class="btn btn-sm btn-app-primary">Nouvelle souscription</a>
+                    <a href="{{ route('subscriptions.create', ['customer_id' => $customer->id]) }}" class="btn btn-sm btn-app-primary">{{ __("Nouvelle souscription") }}</a>
                 @endcan
             </div>
             <div class="table-responsive">
@@ -180,12 +180,12 @@
                     <thead>
                         <tr>
                             <th>Souscription</th>
-                            <th>Parcelle</th>
-                            <th>Formule</th>
-                            <th>Échéances</th>
-                            <th>Statut</th>
-                            <th class="text-end">Solde</th>
-                            <th class="text-end">Actions</th>
+                            <th>{{ __("Parcelle") }}</th>
+                            <th>{{ __("Formule") }}</th>
+                            <th>{{ __("Échéances") }}</th>
+                            <th>{{ __("Statut") }}</th>
+                            <th class="text-end">{{ __("Solde") }}</th>
+                            <th class="text-end">{{ __("Actions") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -211,17 +211,17 @@
                                     @elseif($subscription->financial_status === 'paid')
                                         <span class="status-badge status-badge--settled">Soldée</span>
                                     @else
-                                        <span class="status-badge status-badge--neutral">À jour</span>
+                                        <span class="status-badge status-badge--neutral">{{ __("À jour") }}</span>
                                     @endif
                                 </td>
-                                <td><span class="status-badge status-badge--neutral">{{ ucfirst($subscription->commercial_status) }}</span></td>
+                                <td><span class="status-badge status-badge--neutral">{{ __('statuses.'.$subscription->commercial_status) }}</span></td>
                                 <td class="record-money text-end">{{ number_format((float) $subscription->balance, 2, ',', ' ') }} USD</td>
                                 <td class="text-end">
                                     <div class="record-table-actions">
                                         <a href="{{ route('subscriptions.show', $subscription) }}" class="resource-row-action">Détails</a>
                                         @if($canPay)
                                             @can('payments.create')
-                                                <a href="{{ route('payments.create', ['subscription' => $subscription->id]) }}" class="resource-row-action {{ $subOverdueCount > 0 ? 'resource-row-action--danger' : '' }}">Encaisser</a>
+                                                <a href="{{ route('payments.create', ['subscription' => $subscription->id]) }}" class="resource-row-action {{ $subOverdueCount > 0 ? 'resource-row-action--danger' : '' }}">{{ __("Encaisser") }}</a>
                                             @endcan
                                         @endif
                                     </div>
@@ -231,7 +231,7 @@
                             <tr>
                                 <td colspan="7">
                                     <div class="resource-empty">
-                                        <strong>Aucune souscription</strong>
+                                        <strong>{{ __("Aucune souscription") }}</strong>
                                         <span>Ce client ne possède encore aucune parcelle réservée.</span>
                                     </div>
                                 </td>
@@ -254,10 +254,10 @@
                 <table class="table resource-data-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th>Référence</th>
-                            <th>Date</th>
+                            <th>{{ __("Référence") }}</th>
+                            <th>{{ __("Date") }}</th>
                             <th>Mode</th>
-                            <th class="text-end">Montant</th>
+                            <th class="text-end">{{ __("Montant") }}</th>
                             <th class="text-end">Reçu</th>
                         </tr>
                     </thead>
@@ -266,15 +266,15 @@
                             <tr>
                                 <td><a href="{{ route('payments.show', $payment) }}" class="resource-reference">{{ $payment->payment_reference }}</a></td>
                                 <td class="resource-data-table__secondary">{{ $payment->payment_date->format('d/m/Y H:i') }}</td>
-                                <td class="resource-data-table__secondary">{{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</td>
+                                <td class="resource-data-table__secondary">{{ __('payment_methods.'.$payment->payment_method) }}</td>
                                 <td class="record-money text-end">{{ number_format((float) $payment->amount, 2, ',', ' ') }} {{ $payment->currency }}</td>
                                 <td class="text-end">
                                     @if($payment->receipt)
                                         @can('receipts.download')
-                                            <a href="{{ route('receipts.download', $payment->receipt) }}" class="btn btn-sm btn-outline-secondary">Télécharger</a>
+                                            <a href="{{ route('receipts.download', $payment->receipt) }}" class="btn btn-sm btn-outline-secondary">{{ __("Télécharger") }}</a>
                                         @endcan
                                     @else
-                                        <span class="text-muted small">Non généré</span>
+                                        <span class="text-muted small">{{ __("Non généré") }}</span>
                                     @endif
                                 </td>
                             </tr>
@@ -282,8 +282,8 @@
                             <tr>
                                 <td colspan="5">
                                     <div class="resource-empty">
-                                        <strong>Aucun paiement enregistré</strong>
-                                        <span>Les versements associés à ce client apparaîtront ici.</span>
+                                        <strong>{{ __("Aucun paiement enregistré") }}</strong>
+                                        <span>{{ __("Les versements associés à ce client apparaîtront ici.") }}</span>
                                     </div>
                                 </td>
                             </tr>
@@ -305,9 +305,9 @@
                 <table class="table resource-data-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th>Nom</th>
+                            <th>{{ __("Nom") }}</th>
                             <th>Type</th>
-                            <th class="text-end">Action</th>
+                            <th class="text-end">{{ __("Action") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -318,7 +318,7 @@
                                 <td class="text-end">
                                     @can('documents.download')
                                         <a class="btn btn-sm btn-outline-secondary" href="{{ route('customers.documents.download', [$customer, $document]) }}">
-                                            <i class="bi bi-download me-1" aria-hidden="true"></i>Télécharger
+                                            <i class="bi bi-download me-1" aria-hidden="true"></i>{{ __("Télécharger") }}
                                         </a>
                                     @endcan
                                 </td>
@@ -327,7 +327,7 @@
                             <tr>
                                 <td colspan="3">
                                     <div class="resource-empty">
-                                        <strong>Aucun document importé</strong>
+                                        <strong>{{ __("Aucun document importé") }}</strong>
                                         <span>Ajoutez une pièce d'identité, une photo ou tout autre document lié à ce client.</span>
                                     </div>
                                 </td>
@@ -353,7 +353,7 @@
                             <input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png,.webp" required class="form-control form-control-sm">
                         </div>
                         <button class="btn btn-sm btn-app-primary resource-button" type="submit">
-                            <i class="bi bi-upload me-1" aria-hidden="true"></i>Ajouter
+                            <i class="bi bi-upload me-1" aria-hidden="true"></i>{{ __("Ajouter") }}
                         </button>
                         @error('document')<span class="form-field__error w-100">{{ $message }}</span>@enderror
                     </form>
@@ -366,7 +366,7 @@
             <section class="detail-sheet" aria-labelledby="customer-portal-title">
                 <div class="detail-section">
                     <div class="detail-section__heading">
-                        <p class="app-kicker">Sécurité</p>
+                        <p class="app-kicker">{{ __("Sécurité") }}</p>
                         <h2 id="customer-portal-title">Accès au portail client</h2>
                     </div>
 
@@ -374,7 +374,7 @@
                         @php $portalUser = $customer->user; $isActive = $portalUser->status === 'active'; @endphp
                         <dl class="detail-grid">
                             <div>
-                                <dt>Statut du compte</dt>
+                                <dt>{{ __("Statut du compte") }}</dt>
                                 <dd>
                                     <span class="status-badge status-badge--{{ $isActive ? 'active' : 'suspended' }}">
                                         {{ $isActive ? 'Actif' : 'Suspendu' }}
@@ -390,7 +390,7 @@
                                 <dd>{{ $portalUser->last_login_at?->translatedFormat('d F Y à H:i') ?? 'Jamais connecté' }}</dd>
                             </div>
                             <div>
-                                <dt>Mot de passe</dt>
+                                <dt>{{ __("Mot de passe") }}</dt>
                                 <dd>
                                     @if($portalUser->must_change_password)
                                         <span class="status-badge status-badge--warning">Changement requis</span>
@@ -434,7 +434,7 @@
                             <form method="POST" action="{{ route('customers.portal.create-access', $customer) }}">
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-app-primary resource-button">
-                                    <i class="bi bi-person-plus me-1" aria-hidden="true"></i>Créer un accès portail
+                                    <i class="bi bi-person-plus me-1" aria-hidden="true"></i>{{ __("Créer un accès portail") }}
                                 </button>
                             </form>
                         </div>

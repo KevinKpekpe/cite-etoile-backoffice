@@ -14,4 +14,5 @@ return [
     'token' => 'Ce jeton de réinitialisation de mot de passe n\'est pas valide ou a expiré.',
     'user' => 'Votre adresse e-mail n\'existe pas dans le système.',
 
+    'send_error' => 'Une erreur est survenue lors de l’envoi de l’e-mail (:error). Veuillez réessayer dans quelques instants.',
 ];

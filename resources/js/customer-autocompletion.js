@@ -86,6 +86,8 @@ class CustomerFormAutocompletion {
         this.countryInput = formContainer.querySelector('#country') || document.querySelector('input[name="country"]');
         this.nationalityInput = formContainer.querySelector('#nationality') || document.querySelector('input[name="nationality"]');
 
+        this.copy = JSON.parse(formContainer.dataset.autocompleteCopy ?? '{}');
+
         this.setupDatalists();
         this.loadCountriesData();
         this.bindEvents();
@@ -278,9 +280,7 @@ class CustomerFormAutocompletion {
 
         const badge = document.createElement('small');
         badge.className = 'address-autocomplete-badge';
-        const badgeLabel = fieldType === 'city' ? 'Saisie assistée des villes' :
-                           fieldType === 'commune' ? 'Saisie assistée des communes' :
-                           'Saisie assistée d’adresse';
+        const badgeLabel = this.copy[fieldType === 'city' ? 'city' : fieldType === 'commune' ? 'commune' : 'address'];
 
         badge.innerHTML = `<i class="bi bi-geo-alt-fill me-1"></i>${badgeLabel}`;
         wrapper.appendChild(badge);

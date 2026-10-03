@@ -46,7 +46,7 @@ class PasswordResetLinkController extends Controller
 
             return back()
                 ->withInput(['email' => $email])
-                ->withErrors(['email' => __('Une erreur s\'est produite lors de l\'envoi de l\'e-mail ('.$e->getMessage().'). Veuillez réessayer dans quelques instants.')]);
+                ->withErrors(['email' => __('passwords.send_error', ['error' => $e->getMessage()])]);
         }
     }
 }

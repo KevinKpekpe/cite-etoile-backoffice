@@ -52,11 +52,11 @@
                             <td>{{ $user->email }}</td>
                         </tr>
                         <tr>
-                            <td>Mot de passe</td>
+                            <td>{{ __("Mot de passe") }}</td>
                             <td><span class="password-value">{{ $temporaryPassword }}</span></td>
                         </tr>
                         <tr>
-                            <td>Rôle</td>
+                            <td>{{ __("Rôle") }}</td>
                             <td>{{ $roleName ?? ($user->roles->first()?->name ?? 'Client') }}</td>
                         </tr>
                     </table>

@@ -22,20 +22,20 @@
                     <a href="{{ route('customers.trashed') }}" class="btn btn-outline-secondary resource-button">Corbeille</a>
                 @endcan
                 @can('customers.create')
-                    <a href="{{ route('customers.create') }}" class="btn btn-app-primary resource-button">Nouveau client</a>
+                    <a href="{{ route('customers.create') }}" class="btn btn-app-primary resource-button">{{ __("Nouveau client") }}</a>
                 @endcan
             </div>
         </header>
 
         <form method="GET" action="{{ route('customers.index') }}" class="resource-filters">
             <div class="resource-filters__search">
-                <label for="customer-search" class="form-label">Rechercher</label>
+                <label for="customer-search" class="form-label">{{ __("Rechercher") }}</label>
                 <input id="customer-search" name="search" value="{{ $filters['search'] ?? '' }}" class="form-control" placeholder="Nom, téléphone ou numéro client">
             </div>
             <div>
                 <label for="customer-status" class="form-label">Situation</label>
                 <select id="customer-status" name="status" class="form-select">
-                    <option value="">Tous les statuts</option>
+                    <option value="">{{ __("Tous les statuts") }}</option>
                     <option value="overdue" @selected(($filters['status'] ?? '') === 'overdue')>En retard de paiement</option>
                     @foreach($statusLabels as $statusKey => $statusLabel)
                         <option value="{{ $statusKey }}" @selected(($filters['status'] ?? '') === $statusKey)>{{ $statusLabel }}</option>
@@ -46,7 +46,7 @@
                 @if($hasFilters)
                     <a href="{{ route('customers.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>
                 @endif
-                <button class="btn btn-app-primary resource-button" type="submit">Appliquer</button>
+                <button class="btn btn-app-primary resource-button" type="submit">{{ __("Appliquer") }}</button>
             </div>
         </form>
 
@@ -66,14 +66,14 @@
                     <thead>
                         <tr>
                             <th scope="col">Numéro</th>
-                            <th scope="col">Client</th>
+                            <th scope="col">{{ __("Client") }}</th>
                             <th scope="col">Parcelle(s)</th>
                             <th scope="col">Formule(s)</th>
-                            <th scope="col">Téléphone</th>
-                            <th scope="col">Statut</th>
+                            <th scope="col">{{ __("Téléphone") }}</th>
+                            <th scope="col">{{ __("Statut") }}</th>
                             <th scope="col">Situation</th>
                             <th scope="col">Responsable</th>
-                            <th scope="col" class="text-end">Actions</th>
+                            <th scope="col" class="text-end">{{ __("Actions") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -120,12 +120,12 @@
                                     @endforelse
                                 </td>
                                 <td class="resource-data-table__secondary">{{ $customer->phone }}</td>
-                                <td><span class="status-badge status-badge--{{ $customer->status }}">{{ $statusLabels[$customer->status] ?? ucfirst($customer->status) }}</span></td>
+                                <td><span class="status-badge status-badge--{{ $customer->status }}">{{ __('statuses.'.$customer->status) }}</span></td>
                                 <td>
                                     @if($overdueCount > 0)
                                         <span class="status-badge status-badge--danger">{{ $overdueCount }} {{ Str::plural('impayé', $overdueCount) }}</span>
                                     @else
-                                        <span class="status-badge status-badge--neutral">À jour</span>
+                                        <span class="status-badge status-badge--neutral">{{ __("À jour") }}</span>
                                     @endif
                                 </td>
                                 <td class="resource-data-table__secondary">
@@ -134,11 +134,11 @@
                                 <td class="text-end">
                                     <div class="d-inline-flex gap-2 align-items-center justify-content-end">
                                         <a href="{{ route('customers.show', $customer) }}" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Voir le dossier">
-                                            Voir
+                                            {{ __("Voir") }}
                                         </a>
                                         @can('customers.manage')
                                             <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Modifier le client">
-                                                Modifier
+                                                {{ __("Modifier") }}
                                             </a>
                                         @endcan
                                         @can('customers.delete')
@@ -146,7 +146,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer le client">
-                                                    Supprimer
+                                                    {{ __("Supprimer") }}
                                                 </button>
                                             </form>
                                         @endcan
@@ -157,7 +157,7 @@
                             <tr>
                                 <td colspan="9">
                                     <div class="resource-empty">
-                                        <strong>Aucun client trouvé</strong>
+                                        <strong>{{ __("Aucun client trouvé") }}</strong>
                                         <span>{{ $hasFilters ? 'Modifiez ou réinitialisez les critères de recherche.' : 'Les dossiers clients apparaîtront ici après leur création.' }}</span>
                                         @if($hasFilters)
                                             <a href="{{ route('customers.index') }}">Afficher tous les clients</a>

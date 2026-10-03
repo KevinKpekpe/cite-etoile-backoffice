@@ -3,13 +3,13 @@
         <header class="resource-heading">
             <div>
                 <p class="app-kicker">Gestion commerciale</p>
-                <h1 class="resource-heading__title">Souscriptions</h1>
+                <h1 class="resource-heading__title">{{ __("Souscriptions") }}</h1>
                 <p class="resource-heading__description">Gestion des contrats de réservation et suivi des paiements.</p>
             </div>
             <div class="resource-heading__actions">
                 @can('subscriptions.create')
                     <a href="{{ route('subscriptions.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-lg me-1"></i> Nouvelle souscription
+                        <i class="bi bi-plus-lg me-1"></i> {{ __("Nouvelle souscription") }}
                     </a>
                 @endcan
             </div>
@@ -20,15 +20,15 @@
             <div class="d-flex flex-wrap gap-2 align-items-center">
                 <a href="{{ route('subscriptions.index', ['status' => 'all']) }}"
                    class="chart-tab {{ $statusFilter === 'all' ? 'active' : '' }}">
-                    Toutes <span class="filter-count">{{ $counts['all'] }}</span>
+                    {{ __("Toutes") }} <span class="filter-count">{{ $counts['all'] }}</span>
                 </a>
                 <a href="{{ route('subscriptions.index', ['status' => 'overdue']) }}"
                    class="chart-tab chart-tab--danger {{ $statusFilter === 'overdue' ? 'active' : '' }}">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i> En retard <span class="filter-count">{{ $counts['overdue'] }}</span>
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ __("En retard") }} <span class="filter-count">{{ $counts['overdue'] }}</span>
                 </a>
                 <a href="{{ route('subscriptions.index', ['status' => 'active']) }}"
                    class="chart-tab {{ $statusFilter === 'active' ? 'active' : '' }}">
-                    En cours <span class="filter-count">{{ $counts['active'] }}</span>
+                    {{ __("En cours") }} <span class="filter-count">{{ $counts['active'] }}</span>
                 </a>
                 <a href="{{ route('subscriptions.index', ['status' => 'paid']) }}"
                    class="chart-tab {{ $statusFilter === 'paid' ? 'active' : '' }}">
@@ -58,13 +58,13 @@
                     <thead>
                         <tr>
                             <th scope="col">Numéro</th>
-                            <th scope="col">Client</th>
-                            <th scope="col">Parcelle</th>
-                            <th scope="col">Formule</th>
+                            <th scope="col">{{ __("Client") }}</th>
+                            <th scope="col">{{ __("Parcelle") }}</th>
+                            <th scope="col">{{ __("Formule") }}</th>
                             <th scope="col">Échéances / Retards</th>
-                            <th scope="col">Statut</th>
-                            <th scope="col" class="text-end">Solde restant</th>
-                            <th scope="col" class="text-end">Actions</th>
+                            <th scope="col">{{ __("Statut") }}</th>
+                            <th scope="col" class="text-end">{{ __("Solde restant") }}</th>
+                            <th scope="col" class="text-end">{{ __("Actions") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -110,14 +110,14 @@
                                     @elseif($item->financial_status === 'paid')
                                         <span class="status-badge status-badge--active"><i class="bi bi-check-circle-fill me-1"></i> Soldée</span>
                                     @else
-                                        <span class="status-badge status-badge--neutral">À jour</span>
+                                        <span class="status-badge status-badge--neutral">{{ __("À jour") }}</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if($item->commercial_status === 'active')
-                                        <span class="status-badge status-badge--active">En cours</span>
+                                        <span class="status-badge status-badge--active">{{ __("En cours") }}</span>
                                     @elseif($item->commercial_status === 'pending')
-                                        <span class="status-badge status-badge--pending">En attente</span>
+                                        <span class="status-badge status-badge--pending">{{ __("En attente") }}</span>
                                     @elseif($item->commercial_status === 'completed')
                                         <span class="status-badge status-badge--completed">Terminée</span>
                                     @else
@@ -130,13 +130,13 @@
                                 <td class="text-end">
                                     <div class="d-inline-flex gap-2 align-items-center justify-content-end">
                                         <a href="{{ route('subscriptions.show', $item) }}" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Voir les détails">
-                                            Voir
+                                            {{ __("Voir") }}
                                         </a>
                                         @if($canPay)
                                             @can('payments.create')
                                                 <a href="{{ route('payments.create', ['subscription' => $item->id]) }}"
                                                    class="btn btn-sm {{ $isOverdue ? 'btn-outline-danger' : 'btn-outline-success' }} py-1 px-2" title="Encaisser un versement">
-                                                    Encaisser
+                                                    {{ __("Encaisser") }}
                                                 </a>
                                             @endcan
                                         @endif
@@ -147,7 +147,7 @@
                             <tr>
                                 <td colspan="8">
                                     <div class="resource-empty">
-                                        <strong>Aucune souscription trouvée</strong>
+                                        <strong>{{ __("Aucune souscription trouvée") }}</strong>
                                         <span>Modifiez vos filtres ou créez une nouvelle souscription.</span>
                                         @if($statusFilter !== 'all')
                                             <a href="{{ route('subscriptions.index') }}">Afficher toutes les souscriptions</a>

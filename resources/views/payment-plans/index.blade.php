@@ -11,7 +11,7 @@
                     <a href="{{ route('payment-plans.trashed') }}" class="btn btn-outline">Corbeille</a>
                     <a href="{{ route('payment-plans.create') }}" class="btn btn-primary">
                         <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                        Nouvelle formule
+                        {{ __("Nouvelle formule") }}
                     </a>
                 @endcan
             </div>
@@ -46,13 +46,13 @@
 
                     @can('payment_plans.manage')
                         <div class="pricing-tier__actions">
-                            <a href="{{ route('payment-plans.edit', $plan) }}" class="btn {{ $plan->active ? 'btn-primary' : 'btn-outline' }}">Modifier</a>
+                            <a href="{{ route('payment-plans.edit', $plan) }}" class="btn {{ $plan->active ? 'btn-primary' : 'btn-outline' }}">{{ __("Modifier") }}</a>
                             <form method="POST" action="{{ route('payment-plans.destroy', $plan) }}" data-confirm="Placer cette formule en corbeille ?">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-outline-danger" title="Supprimer la formule">
                                     <i class="bi bi-trash" aria-hidden="true"></i>
-                                    <span class="visually-hidden">Supprimer</span>
+                                    <span class="visually-hidden">{{ __("Supprimer") }}</span>
                                 </button>
                             </form>
                         </div>
@@ -60,7 +60,7 @@
                 </article>
             @empty
                 <div class="resource-empty resource-empty--standalone pricing-grid__empty">
-                    <strong>Aucune formule enregistrée</strong>
+                    <strong>{{ __("Aucune formule enregistrée") }}</strong>
                     <span>Créez la première formule tarifaire pour permettre les souscriptions.</span>
                 </div>
             @endforelse

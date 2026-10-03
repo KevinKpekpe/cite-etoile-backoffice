@@ -10,16 +10,16 @@
         <header class="resource-heading">
             <div>
                 <p class="app-kicker">Sécurité & Traçabilité</p>
-                <h1 class="resource-heading__title">Journal d’audit</h1>
+                <h1 class="resource-heading__title">{{ __("Journal d’audit") }}</h1>
                 <p class="resource-heading__description">Historique immuable des opérations sensibles et des modifications système.</p>
             </div>
         </header>
 
         <form method="GET" action="{{ route('audit-logs.index') }}" class="resource-filters resource-filters--wide">
             <div>
-                <label for="audit-user" class="form-label">Utilisateur</label>
+                <label for="audit-user" class="form-label">{{ __("Utilisateur") }}</label>
                 <select id="audit-user" name="user_id" class="form-select">
-                    <option value="">Tous les utilisateurs</option>
+                    <option value="">{{ __("Tous les utilisateurs") }}</option>
                     @foreach($users as $user)
                         <option value="{{ $user->id }}" @selected((string)($filters['user_id'] ?? '') === (string)$user->id)>
                             {{ $user->first_name }} {{ $user->last_name }}
@@ -28,7 +28,7 @@
                 </select>
             </div>
             <div>
-                <label for="audit-action" class="form-label">Action</label>
+                <label for="audit-action" class="form-label">{{ __("Action") }}</label>
                 <input id="audit-action" name="action" value="{{ $filters['action'] ?? '' }}" class="form-control" placeholder="ex: payment.reversed">
             </div>
             <div>
@@ -43,7 +43,7 @@
                 @if($hasFilters)
                     <a href="{{ route('audit-logs.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>
                 @endif
-                <button class="btn btn-primary" type="submit">Rechercher</button>
+                <button class="btn btn-primary" type="submit">{{ __("Rechercher") }}</button>
             </div>
         </form>
 
@@ -59,9 +59,9 @@
                 <table class="table resource-data-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th scope="col">Date & Heure</th>
-                            <th scope="col">Utilisateur</th>
-                            <th scope="col">Action</th>
+                            <th scope="col">{{ __("Date & Heure") }}</th>
+                            <th scope="col">{{ __("Utilisateur") }}</th>
+                            <th scope="col">{{ __("Action") }}</th>
                             <th scope="col">Entité concernée</th>
                             <th scope="col" class="text-end">Modifications (Avant / Après)</th>
                         </tr>
@@ -77,7 +77,7 @@
                                 </td>
                                 <td class="text-end">
                                     <details class="audit-details">
-                                        <summary class="btn btn-sm btn-outline">Consulter</summary>
+                                        <summary class="btn btn-sm btn-outline">{{ __("Consulter") }}</summary>
                                         <div class="audit-details__panel">
                                             <div><strong>Avant</strong><pre>{{ json_encode($log->old_values, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre></div>
                                             <div><strong>Après</strong><pre>{{ json_encode($log->new_values, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre></div>
@@ -89,7 +89,7 @@
                             <tr>
                                 <td colspan="5">
                                     <div class="resource-empty">
-                                        <strong>Aucune trace d’audit trouvée</strong>
+                                        <strong>{{ __("Aucune trace d’audit trouvée") }}</strong>
                                         <span>Modifiez ou réinitialisez les filtres de recherche.</span>
                                     </div>
                                 </td>

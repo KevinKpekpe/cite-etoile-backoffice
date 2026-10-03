@@ -4,6 +4,7 @@ import './dashboard-chart.js';
 
 
 const root = document.documentElement;
+const uiCopy = JSON.parse(document.body?.dataset.uiCopy ?? '{}');
 const sidebarOpenButton = document.querySelector('[data-sidebar-open]');
 const sidebarCloseButtons = document.querySelectorAll('[data-sidebar-close]');
 const sidebarCollapseButton = document.querySelector('[data-sidebar-collapse]');
@@ -43,7 +44,7 @@ sidebarElement?.addEventListener('touchend', (event) => {
 
 const syncSidebarControl = () => {
     const isCollapsed = root.dataset.sidebar === 'collapsed';
-    sidebarCollapseButton?.setAttribute('aria-label', isCollapsed ? 'Déployer le menu latéral' : 'Réduire le menu latéral');
+    sidebarCollapseButton?.setAttribute('aria-label', isCollapsed ? uiCopy.expandSidebar : uiCopy.collapseSidebar);
     sidebarCollapseButton?.setAttribute('aria-expanded', String(!isCollapsed));
 };
 
@@ -62,10 +63,10 @@ document.addEventListener('keydown', (event) => {
 
 const syncThemeControl = () => {
     const isDark = root.dataset.bsTheme === 'dark';
-    themeToggle?.setAttribute('aria-label', isDark ? 'Activer le mode clair' : 'Activer le mode sombre');
+    themeToggle?.setAttribute('aria-label', isDark ? uiCopy.enableLightMode : uiCopy.enableDarkMode);
 
     if (themeLabel) {
-        themeLabel.textContent = isDark ? 'Mode clair' : 'Mode sombre';
+        themeLabel.textContent = isDark ? uiCopy.lightMode : uiCopy.darkMode;
     }
 
     if (themeIcon) {
@@ -157,7 +158,7 @@ document.querySelectorAll('form[data-confirm]').forEach((form) => {
         pendingConfirmationForm = form;
         confirmationTrigger = event.submitter;
 
-        const message = form.dataset.confirm ?? 'Confirmer cette opération ?';
+        const message = form.dataset.confirm ?? uiCopy.confirmQuestion;
         const isDestructive = /supprim|corbeille|irréversible/i.test(message);
 
         if (confirmationMessage) {
@@ -165,7 +166,7 @@ document.querySelectorAll('form[data-confirm]').forEach((form) => {
         }
 
         if (confirmationTitle) {
-            confirmationTitle.textContent = isDestructive ? 'Confirmer la suppression' : 'Confirmer l’opération';
+            confirmationTitle.textContent = isDestructive ? uiCopy.confirmDelete : uiCopy.confirmAction;
         }
 
         confirmationModal?.showModal();
@@ -203,7 +204,7 @@ document.querySelectorAll('[data-credentials-panel]').forEach((panel) => {
         const originalLabel = label?.textContent;
 
         if (label) {
-            label.textContent = 'Copié';
+            label.textContent = uiCopy.copied;
             window.setTimeout(() => {
                 label.textContent = originalLabel;
             }, 2000);

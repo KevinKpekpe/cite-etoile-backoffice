@@ -104,7 +104,7 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
                 </div>
                 <div class="dashboard-kpi__body">
-                    <div class="dashboard-kpi__label">Clients</div>
+                    <div class="dashboard-kpi__label">{{ __("Clients") }}</div>
                     <div class="dashboard-kpi__value-row">
                         <span class="dashboard-kpi__value">{{ number_format($clients['total'], 0, ',', ' ') }}</span>
                         <span class="dashboard-kpi__badge dashboard-kpi__badge--up">{{ number_format($clients['active'], 0, ',', ' ') }} actifs</span>
@@ -181,7 +181,7 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 </div>
                 <div class="dashboard-kpi__body">
-                    <div class="dashboard-kpi__label">Total encaissé</div>
+                    <div class="dashboard-kpi__label">{{ __("Total encaissé") }}</div>
                     <div class="dashboard-kpi__value-row">
                         <span class="dashboard-kpi__value">{{ number_format($collected, 0, ',', ' ') }} <em>USD</em></span>
                         <span class="dashboard-kpi__badge dashboard-kpi__badge--up">{{ number_format(min(100, $collectionRate), 0) }}%</span>
@@ -230,7 +230,7 @@
                         </canvas>
                     </div>
                 @else
-                    <div class="dashboard-empty"><strong>Aucun encaissement</strong><span>Aucun paiement validé sur cette période.</span></div>
+                    <div class="dashboard-empty"><strong>{{ __("Aucun encaissement") }}</strong><span>{{ __("Aucun paiement validé sur cette période.") }}</span></div>
                 @endif
             </section>
 
@@ -243,7 +243,7 @@
                             <div><p>{{ ucfirst(str_replace(['.', '_'], ' ', $activity->action)) }}</p><small>{{ $activity->created_at->diffForHumans() }}</small></div>
                         </div>
                     @empty
-                        <div class="dashboard-empty"><strong>Aucune activité récente</strong><span>Les opérations enregistrées apparaîtront ici.</span></div>
+                        <div class="dashboard-empty"><strong>{{ __("Aucune activité récente") }}</strong><span>{{ __("Les opérations enregistrées apparaîtront ici.") }}</span></div>
                     @endforelse
                 </div>
             </section>
@@ -252,7 +252,7 @@
         @can('reports.view')
             <div class="dashboard-secondary-grid">
                 <section class="dashboard-card">
-                    <div class="dashboard-card__header"><div><h2>Échéances en retard</h2><p>Dossiers nécessitant une action</p></div><a href="{{ route('subscriptions.index', ['status' => 'overdue']) }}">Voir tout</a></div>
+                    <div class="dashboard-card__header"><div><h2>Échéances en retard</h2><p>Dossiers nécessitant une action</p></div><a href="{{ route('subscriptions.index', ['status' => 'overdue']) }}">{{ __("Voir tout") }}</a></div>
                     <div class="dashboard-list">
                         @forelse($overdue_installments->take(5) as $item)
                             <a href="{{ route('subscriptions.installments.index', $item->subscription) }}" class="dashboard-list__item">
@@ -260,7 +260,7 @@
                                 <span class="dashboard-list__amount dashboard-list__amount--danger">{{ number_format((float) $item->balance, 2, ',', ' ') }} USD</span>
                             </a>
                         @empty
-                            <div class="dashboard-empty"><strong>Aucun retard</strong><span>Toutes les échéances sont à jour.</span></div>
+                            <div class="dashboard-empty"><strong>{{ __("Aucun retard") }}</strong><span>{{ __("Toutes les échéances sont à jour.") }}</span></div>
                         @endforelse
                     </div>
                 </section>
@@ -274,7 +274,7 @@
                                 <span class="dashboard-list__amount">{{ number_format((float) $item->balance, 2, ',', ' ') }} USD</span>
                             </a>
                         @empty
-                            <div class="dashboard-empty"><strong>Aucune échéance proche</strong><span>Aucun paiement prévu dans les 7 prochains jours.</span></div>
+                            <div class="dashboard-empty"><strong>{{ __("Aucune échéance proche") }}</strong><span>{{ __("Aucun paiement prévu dans les 7 prochains jours.") }}</span></div>
                         @endforelse
                     </div>
                 </section>
@@ -285,7 +285,7 @@
                         @forelse($plan_distribution as $item)
                             <div class="plan-list__item"><div class="plan-list__header"><span>{{ $item->name }}</span><strong>{{ number_format($item->total, 0, ',', ' ') }}</strong></div><div class="plan-list__track"><span style="width: {{ ((int) $item->total / $maxPlanTotal) * 100 }}%"></span></div></div>
                         @empty
-                            <div class="dashboard-empty"><strong>Aucune souscription</strong><span>La répartition apparaîtra ici.</span></div>
+                            <div class="dashboard-empty"><strong>{{ __("Aucune souscription") }}</strong><span>La répartition apparaîtra ici.</span></div>
                         @endforelse
                     </div>
                 </section>

@@ -197,6 +197,14 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'address' => 'address', 'amount' => 'amount', 'avatar' => 'profile photo', 'city' => 'city',
+        'code' => 'code', 'commune' => 'commune', 'country' => 'country', 'current_password' => 'current password',
+        'customer_id' => 'customer', 'date' => 'date', 'deposit' => 'deposit', 'document' => 'document',
+        'email' => 'email address', 'first_name' => 'first name', 'last_name' => 'last name', 'locale' => 'language',
+        'name' => 'name', 'password' => 'password', 'payment_date' => 'payment date', 'payment_method' => 'payment method',
+        'phone' => 'phone', 'plot_id' => 'plot', 'price' => 'price', 'proof' => 'proof', 'role_id' => 'role',
+        'status' => 'status', 'subscription_date' => 'subscription date',
+    ],
 
 ];

@@ -23,11 +23,11 @@
                     <thead>
                         <tr>
                             <th scope="col">Numéro</th>
-                            <th scope="col">Client</th>
+                            <th scope="col">{{ __("Client") }}</th>
                             <th scope="col">Coordonnées</th>
                             <th scope="col">Responsable</th>
                             <th scope="col">Suppression</th>
-                            <th scope="col" class="text-end">Actions</th>
+                            <th scope="col" class="text-end">{{ __("Actions") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -44,7 +44,7 @@
                                             <form method="POST" action="{{ route('customers.restore', $customer) }}" class="d-inline">
                                                 @csrf
                                                 <button class="btn btn-sm btn-outline-success py-1 px-2" type="submit">
-                                                    Restaurer
+                                                    {{ __("Restaurer") }}
                                                 </button>
                                             </form>
                                         @endcan
@@ -53,7 +53,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-sm btn-outline-danger py-1 px-2" type="submit">
-                                                    Supprimer
+                                                    {{ __("Supprimer") }}
                                                 </button>
                                             </form>
                                         @endcan
@@ -64,8 +64,8 @@
                             <tr>
                                 <td colspan="6">
                                     <div class="resource-empty">
-                                        <strong>La corbeille est vide</strong>
-                                        <span>Aucun dossier client supprimé.</span>
+                                        <strong>{{ __("La corbeille est vide") }}</strong>
+                                        <span>{{ __("Aucun dossier client supprimé.") }}</span>
                                     </div>
                                 </td>
                             </tr>

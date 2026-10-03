@@ -15,7 +15,7 @@
             </div>
             <div class="resource-heading__actions">
                 @if(! $user->trashed())
-                    <a href="{{ route('users.edit', $user) }}" class="btn btn-outline-secondary resource-button">Modifier</a>
+                    <a href="{{ route('users.edit', $user) }}" class="btn btn-outline-secondary resource-button">{{ __("Modifier") }}</a>
                     @if(!$user->hasRole('super_admin') || auth()->user()?->hasRole('super_admin'))
                         <form method="POST" action="{{ route('users.toggle-status', $user) }}">@csrf @method('PATCH')
                             <button class="btn {{ $user->status === 'active' ? 'btn-outline-warning' : 'btn-outline-success' }} resource-button" type="submit">{{ $user->status === 'active' ? 'Suspendre' : 'Réactiver' }}</button>
@@ -24,19 +24,19 @@
                     @can('users.delete')
                         @if((! $user->hasRole('super_admin') || auth()->user()?->hasRole('super_admin')) && $user->id !== auth()->id())
                             <form method="POST" action="{{ route('users.destroy', $user) }}" data-confirm="Placer ce compte utilisateur en corbeille ?">@csrf @method('DELETE')
-                                <button class="btn btn-outline-danger resource-button" type="submit">Supprimer</button>
+                                <button class="btn btn-outline-danger resource-button" type="submit">{{ __("Supprimer") }}</button>
                             </form>
                         @endif
                     @endcan
                 @else
                     @can('users.delete')
                         @if(! $user->hasRole('super_admin') || auth()->user()?->hasRole('super_admin'))
-                            <form method="POST" action="{{ route('users.restore', $user) }}">@csrf<button class="btn btn-outline-success resource-button" type="submit">Restaurer</button></form>
+                            <form method="POST" action="{{ route('users.restore', $user) }}">@csrf<button class="btn btn-outline-success resource-button" type="submit">{{ __("Restaurer") }}</button></form>
                         @endif
                     @endcan
                     @can('users.force_delete')
                         <form method="POST" action="{{ route('users.force-delete', $user) }}" data-confirm="Suppression définitive et irréversible de ce compte ?">@csrf @method('DELETE')
-                            <button class="btn btn-danger resource-button" type="submit">Supprimer définitivement</button>
+                            <button class="btn btn-danger resource-button" type="submit">{{ __("Supprimer définitivement") }}</button>
                         </form>
                     @endcan
                 @endif
@@ -51,11 +51,11 @@
 
         <div class="detail-sheet">
             <section class="detail-section">
-                <div class="detail-section__heading"><p class="app-kicker">Profil</p><h2>Informations du compte</h2></div>
+                <div class="detail-section__heading"><p class="app-kicker">{{ __("Profil") }}</p><h2>Informations du compte</h2></div>
                 <dl class="detail-grid">
-                    <div><dt>Statut</dt><dd><span class="status-badge status-badge--{{ $user->trashed() ? 'danger' : ($user->status === 'active' ? 'active' : 'suspended') }}">{{ $user->trashed() ? 'Supprimé' : ($user->status === 'active' ? 'Actif' : 'Suspendu') }}</span></dd></div>
-                    <div><dt>Rôle principal</dt><dd>{{ ucfirst(str_replace('_', ' ', $roleName)) }}</dd></div>
-                    <div><dt>Téléphone</dt><dd>{{ $user->phone ?? 'Non renseigné' }}</dd></div>
+                    <div><dt>{{ __("Statut") }}</dt><dd><span class="status-badge status-badge--{{ $user->trashed() ? 'danger' : ($user->status === 'active' ? 'active' : 'suspended') }}">{{ $user->trashed() ? 'Supprimé' : ($user->status === 'active' ? 'Actif' : 'Suspendu') }}</span></dd></div>
+                    <div><dt>{{ __("Rôle principal") }}</dt><dd>{{ __('roles.'.$roleName) }}</dd></div>
+                    <div><dt>{{ __("Téléphone") }}</dt><dd>{{ $user->phone ?? 'Non renseigné' }}</dd></div>
                     <div><dt>Authentification à deux facteurs</dt><dd>{{ $user->hasTwoFactorAuthenticationEnabled() ? 'Activée' : 'Désactivée' }}</dd></div>
                     <div><dt>Dernière connexion</dt><dd>{{ $user->last_login_at?->format('d/m/Y H:i') ?? 'Jamais' }}</dd></div>
                     <div><dt>Compte créé le</dt><dd>{{ $user->created_at->format('d/m/Y') }}</dd></div>
@@ -67,7 +67,7 @@
                     @forelse($auditEntries as $entry)
                         <div class="timeline-list__item"><span class="timeline-list__marker"></span><span><strong>{{ ucfirst(str_replace(['.', '_'], ' ', $entry->action)) }}</strong><small>{{ $entry->created_at->format('d/m/Y H:i') }}</small></span></div>
                     @empty
-                        <p class="record-empty-copy">Aucune modification enregistrée dans le journal.</p>
+                        <p class="record-empty-copy">{{ __("Aucune modification enregistrée dans le journal.") }}</p>
                     @endforelse
                 </div>
             </section>

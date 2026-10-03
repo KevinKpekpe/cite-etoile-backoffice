@@ -31,27 +31,27 @@
                 <input type="date" id="report-to" name="to" value="{{ $filters['to'] ?? '' }}" class="form-control">
             </div>
             <div>
-                <label for="report-customer-status" class="form-label">Statut client</label>
+                <label for="report-customer-status" class="form-label">{{ __("Statut client") }}</label>
                 <select id="report-customer-status" name="customer_status" class="form-select">
-                    <option value="">Tous les statuts</option>
+                    <option value="">{{ __("Tous les statuts") }}</option>
                     @foreach($customerStatusLabels as $key => $label)
                         <option value="{{ $key }}" @selected(($filters['customer_status'] ?? '') === $key)>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
-                <label for="report-plot-status" class="form-label">Statut parcelle</label>
+                <label for="report-plot-status" class="form-label">{{ __("Statut parcelle") }}</label>
                 <select id="report-plot-status" name="plot_status" class="form-select">
-                    <option value="">Tous les statuts</option>
+                    <option value="">{{ __("Tous les statuts") }}</option>
                     @foreach($plotStatusLabels as $key => $label)
                         <option value="{{ $key }}" @selected(($filters['plot_status'] ?? '') === $key)>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
-                <label for="report-plan" class="form-label">Formule</label>
+                <label for="report-plan" class="form-label">{{ __("Formule") }}</label>
                 <select id="report-plan" name="payment_plan_id" class="form-select">
-                    <option value="">Toutes les formules</option>
+                    <option value="">{{ __("Toutes les formules") }}</option>
                     @foreach($plans as $plan)
                         <option value="{{ $plan->id }}" @selected((string)($filters['payment_plan_id'] ?? '') === (string)$plan->id)>{{ $plan->name }}</option>
                     @endforeach
@@ -60,7 +60,7 @@
             <div>
                 <label for="report-agent" class="form-label">Agent commercial</label>
                 <select id="report-agent" name="agent_id" class="form-select">
-                    <option value="">Tous les agents</option>
+                    <option value="">{{ __("Tous les agents") }}</option>
                     @foreach($agents as $agent)
                         <option value="{{ $agent->id }}" @selected((string)($filters['agent_id'] ?? '') === (string)$agent->id)>{{ $agent->first_name }} {{ $agent->last_name }}</option>
                     @endforeach
@@ -70,13 +70,13 @@
                 @if($hasFilters)
                     <a href="{{ route('reports.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>
                 @endif
-                <button class="btn btn-app-primary resource-button" type="submit">Appliquer</button>
+                <button class="btn btn-app-primary resource-button" type="submit">{{ __("Appliquer") }}</button>
             </div>
         </form>
 
         <section class="report-metrics" aria-label="Synthèse des rapports">
-            <div><span>Clients</span><strong>{{ number_format($customers->count(), 0, ",", " ") }}</strong><small>Dossiers extraits</small></div>
-            <div><span>Parcelles</span><strong>{{ number_format($plots->count(), 0, ",", " ") }}</strong><small>Biens extraits</small></div>
+            <div><span>{{ __("Clients") }}</span><strong>{{ number_format($customers->count(), 0, ",", " ") }}</strong><small>Dossiers extraits</small></div>
+            <div><span>{{ __("Parcelles") }}</span><strong>{{ number_format($plots->count(), 0, ",", " ") }}</strong><small>Biens extraits</small></div>
             <div class="report-metric--success"><span>Paiements encaissés</span><strong>{{ number_format((float) $paymentTotal, 2, ",", " ") }} <em>USD</em></strong><small>Transactions validées</small></div>
             <div class="report-metric--danger"><span>Total impayé</span><strong>{{ number_format((float) $overdueTotal, 2, ",", " ") }} <em>USD</em></strong><small>Solde en retard</small></div>
         </section>
@@ -92,7 +92,7 @@
                     </div>
                     <div>
                         <a href="{{ route('reports.export', ['report' => $type, ...$filters]) }}" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-download me-1"></i> Exporter CSV
+                            <i class="bi bi-download me-1"></i> {{ __("Exporter CSV") }}
                         </a>
                     </div>
                 </div>
@@ -106,11 +106,11 @@
                                         @if($type === 'customers')
                                             <a href="{{ route('customers.show', $row) }}" class="resource-reference me-2">{{ $row->customer_number }}</a>
                                             <strong>{{ $row->first_name }} {{ $row->last_name }}</strong>
-                                            <span class="status-badge status-badge--{{ $row->status }} ms-2">{{ $customerStatusLabels[$row->status] ?? ucfirst($row->status) }}</span>
+                                            <span class="status-badge status-badge--{{ $row->status }} ms-2">{{ __('statuses.'.$row->status) }}</span>
                                         @elseif($type === 'plots')
                                             <a href="{{ route('plots.show', $row) }}" class="resource-reference me-2">{{ $row->reference }}</a>
                                             <span>{{ $row->avenue->neighborhood->name }} · {{ $row->avenue->name }}</span>
-                                            <span class="status-badge status-badge--{{ $row->commercial_status }} ms-2">{{ $plotStatusLabels[$row->commercial_status] ?? ucfirst($row->commercial_status) }}</span>
+                                            <span class="status-badge status-badge--{{ $row->commercial_status }} ms-2">{{ __('statuses.'.$row->commercial_status) }}</span>
                                         @elseif($type === 'payments')
                                             <a href="{{ route('payments.show', $row) }}" class="resource-reference me-2">{{ $row->payment_reference }}</a>
                                             @if($row->customer)
@@ -152,7 +152,7 @@
                                 <tr>
                                     <td colspan="2">
                                         <div class="resource-empty py-3">
-                                            <span>Aucune donnée enregistrée pour ce filtre.</span>
+                                            <span>{{ __("Aucune donnée enregistrée pour ce filtre.") }}</span>
                                         </div>
                                     </td>
                                 </tr>

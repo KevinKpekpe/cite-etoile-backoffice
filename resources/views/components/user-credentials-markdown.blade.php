@@ -24,10 +24,10 @@
             </div>
             <div class="credentials-panel__actions">
                 <button type="button" class="btn btn-sm btn-app-primary" data-copy-credentials>
-                    <i class="bi bi-clipboard" aria-hidden="true"></i><span>Copier</span>
+                    <i class="bi bi-clipboard" aria-hidden="true"></i><span>{{ __("Copier") }}</span>
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-secondary" data-download-credentials data-filename="acces-{{ now()->format('YmdHis') }}.txt">
-                    <i class="bi bi-download" aria-hidden="true"></i><span>Télécharger</span>
+                    <i class="bi bi-download" aria-hidden="true"></i><span>{{ __("Télécharger") }}</span>
                 </button>
             </div>
         </div>
@@ -35,16 +35,16 @@
         <div class="credentials-panel__body">
             <dl class="credentials-panel__grid">
                 @if($name)
-                    <div><dt>Nom</dt><dd>{{ $name }}</dd></div>
+                    <div><dt>{{ __("Nom") }}</dt><dd>{{ $name }}</dd></div>
                 @endif
                 @if($email)
                     <div><dt>Identifiant</dt><dd><code>{{ $email }}</code></dd></div>
                 @endif
                 @if($password)
-                    <div><dt>Mot de passe</dt><dd><code class="credentials-panel__password">{{ $password }}</code></dd></div>
+                    <div><dt>{{ __("Mot de passe") }}</dt><dd><code class="credentials-panel__password">{{ $password }}</code></dd></div>
                 @endif
                 @if($role)
-                    <div><dt>Rôle</dt><dd>{{ $role }}</dd></div>
+                    <div><dt>{{ __("Rôle") }}</dt><dd>{{ $role }}</dd></div>
                 @endif
             </dl>
         </div>

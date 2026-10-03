@@ -19,4 +19,5 @@ return [
     'token' => 'This password reset token is invalid.',
     'user' => "We can't find a user with that email address.",
 
+    'send_error' => 'An error occurred while sending the email (:error). Please try again in a few moments.',
 ];

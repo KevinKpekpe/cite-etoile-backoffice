@@ -27,7 +27,7 @@
                             <th scope="col">Mensualité</th>
                             <th scope="col">Durée</th>
                             <th scope="col">Supprimée le</th>
-                            <th scope="col" class="text-end">Actions</th>
+                            <th scope="col" class="text-end">{{ __("Actions") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -47,7 +47,7 @@
                                             <form method="POST" action="{{ route('payment-plans.restore', $plan) }}" class="d-inline">
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2">
-                                                    Restaurer
+                                                    {{ __("Restaurer") }}
                                                 </button>
                                             </form>
                                         @endcan
@@ -56,7 +56,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2">
-                                                    Supprimer
+                                                    {{ __("Supprimer") }}
                                                 </button>
                                             </form>
                                         @endcan
@@ -67,8 +67,8 @@
                             <tr>
                                 <td colspan="6">
                                     <div class="resource-empty">
-                                        <strong>La corbeille est vide</strong>
-                                        <span>Aucune formule tarifaire supprimée.</span>
+                                        <strong>{{ __("La corbeille est vide") }}</strong>
+                                        <span>{{ __("Aucune formule tarifaire supprimée.") }}</span>
                                     </div>
                                 </td>
                             </tr>

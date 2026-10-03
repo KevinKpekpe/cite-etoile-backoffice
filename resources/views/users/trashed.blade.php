@@ -22,11 +22,11 @@
                 <table class="table resource-data-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th scope="col">Nom & Prénom</th>
-                            <th scope="col">E-mail</th>
-                            <th scope="col">Rôle</th>
+                            <th scope="col">{{ __("Nom & Prénom") }}</th>
+                            <th scope="col">{{ __("E-mail") }}</th>
+                            <th scope="col">{{ __("Rôle") }}</th>
                             <th scope="col">Supprimé le</th>
-                            <th scope="col" class="text-end">Actions</th>
+                            <th scope="col" class="text-end">{{ __("Actions") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -46,7 +46,7 @@
                                             <form method="POST" action="{{ route('users.restore', $user) }}" class="d-inline">
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2">
-                                                    Restaurer
+                                                    {{ __("Restaurer") }}
                                                 </button>
                                             </form>
                                         @endif
@@ -55,7 +55,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2">
-                                                    Supprimer
+                                                    {{ __("Supprimer") }}
                                                 </button>
                                             </form>
                                         @endcan
@@ -66,8 +66,8 @@
                             <tr>
                                 <td colspan="5">
                                     <div class="resource-empty">
-                                        <strong>La corbeille est vide</strong>
-                                        <span>Aucun compte utilisateur supprimé.</span>
+                                        <strong>{{ __("La corbeille est vide") }}</strong>
+                                        <span>{{ __("Aucun compte utilisateur supprimé.") }}</span>
                                     </div>
                                 </td>
                             </tr>

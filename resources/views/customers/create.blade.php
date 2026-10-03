@@ -3,7 +3,7 @@
         <header class="resource-heading">
             <div>
                 <p class="app-kicker">Nouveau dossier</p>
-                <h1 class="resource-heading__title">Créer un client</h1>
+                <h1 class="resource-heading__title">{{ __("Créer un client") }}</h1>
                 <p class="resource-heading__description">Enregistrez l’identité du client et, si nécessaire, sa première souscription.</p>
             </div>
             <a href="{{ route('customers.index') }}" class="btn btn-outline-secondary resource-button">Retour aux clients</a>
@@ -53,7 +53,7 @@
 
                         <div class="form-plan-summary form-grid__wide hidden" data-plan-summary><span data-plan-summary-text></span></div>
 
-                        <x-auth-input name="subscription_date" label="Date de souscription" type="date" :value="old('subscription_date', now()->toDateString())" />
+                        <x-auth-input name="subscription_date" :label="__('Date de souscription')" type="date" :value="old('subscription_date', now()->toDateString())" />
                         <x-auth-input name="start_date" label="Début de l’échéancier" type="date" :value="old('start_date', now()->toDateString())" />
 
                         <div class="form-subsection form-grid__wide">
@@ -61,13 +61,13 @@
                             <div class="form-grid">
                                 <x-auth-input name="deposit" label="Montant de l’acompte (USD)" type="number" step="0.01" min="1" :value="old('deposit')" />
                                 <label class="form-field">
-                                    <span class="form-field__label">Mode de paiement</span>
+                                    <span class="form-field__label">{{ __("Mode de paiement") }}</span>
                                     <select name="deposit_method" class="form-select">
-                                        <option value="cash" @selected(old('deposit_method', 'cash') === 'cash')>Espèces</option>
-                                        <option value="bank_transfer" @selected(old('deposit_method') === 'bank_transfer')>Virement bancaire</option>
-                                        <option value="mobile_money" @selected(old('deposit_method') === 'mobile_money')>Mobile Money</option>
-                                        <option value="card" @selected(old('deposit_method') === 'card')>Carte</option>
-                                        <option value="other" @selected(old('deposit_method') === 'other')>Autre</option>
+                                        <option value="cash" @selected(old('deposit_method', 'cash') === 'cash')>{{ __("Espèces") }}</option>
+                                        <option value="bank_transfer" @selected(old('deposit_method') === 'bank_transfer')>{{ __("Virement bancaire") }}</option>
+                                        <option value="mobile_money" @selected(old('deposit_method') === 'mobile_money')>{{ __("Mobile Money") }}</option>
+                                        <option value="card" @selected(old('deposit_method') === 'card')>{{ __("Carte") }}</option>
+                                        <option value="other" @selected(old('deposit_method') === 'other')>{{ __("Autre") }}</option>
                                     </select>
                                 </label>
                             </div>
@@ -77,8 +77,8 @@
             </section>
 
             <div class="form-actions">
-                <a href="{{ route('customers.index') }}" class="btn btn-outline-secondary resource-button">Annuler</a>
-                <button class="btn btn-app-primary resource-button" type="submit">Créer le client</button>
+                <a href="{{ route('customers.index') }}" class="btn btn-outline-secondary resource-button">{{ __("Annuler") }}</a>
+                <button class="btn btn-app-primary resource-button" type="submit">{{ __("Créer le client") }}</button>
             </div>
         </form>
     </div>

@@ -7,7 +7,7 @@
         <header class="resource-heading">
             <div>
                 <p class="app-kicker">Gestion des accès</p>
-                <h1 class="resource-heading__title">Utilisateurs</h1>
+                <h1 class="resource-heading__title">{{ __("Utilisateurs") }}</h1>
                 <p class="resource-heading__description">Gestion des comptes utilisateurs, agents et administrateurs de la plateforme.</p>
             </div>
             <div class="resource-heading__actions">
@@ -15,38 +15,38 @@
                     <a href="{{ route('users.trashed') }}" class="btn btn-outline-secondary resource-button">Corbeille</a>
                 @endcan
                 @can('users.manage')
-                    <a href="{{ route('users.create') }}" class="btn btn-app-primary resource-button">Nouvel utilisateur</a>
+                    <a href="{{ route('users.create') }}" class="btn btn-app-primary resource-button">{{ __("Nouvel utilisateur") }}</a>
                 @endcan
             </div>
         </header>
 
         <form method="GET" action="{{ route('users.index') }}" class="resource-filters">
             <div class="resource-filters__search">
-                <label for="user-search" class="form-label">Rechercher</label>
+                <label for="user-search" class="form-label">{{ __("Rechercher") }}</label>
                 <input id="user-search" name="search" value="{{ $filters['search'] ?? '' }}" class="form-control" placeholder="Nom ou adresse e-mail">
             </div>
             <div>
-                <label for="user-role" class="form-label">Rôle</label>
+                <label for="user-role" class="form-label">{{ __("Rôle") }}</label>
                 <select id="user-role" name="role" class="form-select">
-                    <option value="">Tous les rôles</option>
+                    <option value="">{{ __("Tous les rôles") }}</option>
                     @foreach($roles as $role)
                         <option value="{{ $role->name }}" @selected(($filters['role'] ?? '') === $role->name)>{{ ucfirst(str_replace('_', ' ', $role->name)) }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
-                <label for="user-status" class="form-label">Statut</label>
+                <label for="user-status" class="form-label">{{ __("Statut") }}</label>
                 <select id="user-status" name="status" class="form-select">
-                    <option value="">Tous les statuts</option>
-                    <option value="active" @selected(($filters['status'] ?? '') === 'active')>Actif</option>
-                    <option value="suspended" @selected(($filters['status'] ?? '') === 'suspended')>Suspendu</option>
+                    <option value="">{{ __("Tous les statuts") }}</option>
+                    <option value="active" @selected(($filters['status'] ?? '') === 'active')>{{ __("Actif") }}</option>
+                    <option value="suspended" @selected(($filters['status'] ?? '') === 'suspended')>{{ __("Suspendu") }}</option>
                 </select>
             </div>
             <div class="resource-filters__actions">
                 @if($hasFilters)
                     <a href="{{ route('users.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>
                 @endif
-                <button class="btn btn-app-primary resource-button" type="submit">Appliquer</button>
+                <button class="btn btn-app-primary resource-button" type="submit">{{ __("Appliquer") }}</button>
             </div>
         </form>
 
@@ -65,12 +65,12 @@
                 <table class="table resource-data-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th scope="col">Utilisateur</th>
-                            <th scope="col">E-mail</th>
-                            <th scope="col">Rôle</th>
-                            <th scope="col">Statut</th>
+                            <th scope="col">{{ __("Utilisateur") }}</th>
+                            <th scope="col">{{ __("E-mail") }}</th>
+                            <th scope="col">{{ __("Rôle") }}</th>
+                            <th scope="col">{{ __("Statut") }}</th>
                             <th scope="col">Dernière connexion</th>
-                            <th scope="col" class="text-end">Actions</th>
+                            <th scope="col" class="text-end">{{ __("Actions") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -89,7 +89,7 @@
                                 <td class="resource-data-table__secondary">{{ $user->email }}</td>
                                 <td>
                                     <span class="status-badge status-badge--neutral">
-                                        {{ ucfirst(str_replace('_', ' ', $roleName)) }}
+                                        {{ __('roles.'.$roleName) }}
                                     </span>
                                 </td>
                                 <td>
@@ -103,11 +103,11 @@
                                 <td class="text-end">
                                     <div class="d-inline-flex gap-2 align-items-center justify-content-end">
                                         <a href="{{ route('users.show', $user) }}" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Voir l'utilisateur">
-                                            Voir
+                                            {{ __("Voir") }}
                                         </a>
                                         @can('users.manage')
                                             <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Modifier l'utilisateur">
-                                                Modifier
+                                                {{ __("Modifier") }}
                                             </a>
                                         @endcan
                                         @can('users.delete')
@@ -116,7 +116,7 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Supprimer l'utilisateur">
-                                                        Supprimer
+                                                        {{ __("Supprimer") }}
                                                     </button>
                                                 </form>
                                             @endif
@@ -128,7 +128,7 @@
                             <tr>
                                 <td colspan="6">
                                     <div class="resource-empty">
-                                        <strong>Aucun utilisateur trouvé</strong>
+                                        <strong>{{ __("Aucun utilisateur trouvé") }}</strong>
                                         <span>{{ $hasFilters ? 'Modifiez ou réinitialisez les critères de recherche.' : 'Les comptes utilisateurs apparaîtront ici après leur création.' }}</span>
                                     </div>
                                 </td>

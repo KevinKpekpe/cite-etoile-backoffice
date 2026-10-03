@@ -15,7 +15,7 @@
             <div class="resource-table__header"><div><h2>Catalogue des types</h2><p>{{ $feeTypes->total() }} type(s) enregistré(s)</p></div></div>
             <div class="table-responsive">
                 <table class="table resource-data-table align-middle mb-0">
-                    <thead><tr><th>Type de frais</th><th>Montant par défaut</th><th>Frais existants</th><th class="text-end">Actions</th></tr></thead>
+                    <thead><tr><th>{{ __("Type de frais") }}</th><th>Montant par défaut</th><th>Frais existants</th><th class="text-end">{{ __("Actions") }}</th></tr></thead>
                 <tbody>
                     @forelse($feeTypes as $feeType)
                         <tr>
@@ -33,18 +33,18 @@
                             <td>{{ $feeType->fees_count }}</td>
                             <td class="text-end"><div class="d-inline-flex gap-2 align-items-center justify-content-end">
                                 @can('payments.create')
-                                    <a href="{{ route('ancillary-fee-types.edit', $feeType) }}" class="btn btn-outline btn-sm">Modifier</a>
+                                    <a href="{{ route('ancillary-fee-types.edit', $feeType) }}" class="btn btn-outline btn-sm">{{ __("Modifier") }}</a>
                                     @if(!$feeType->is_system && $feeType->fees_count === 0)
                                         <form method="POST" action="{{ route('ancillary-fee-types.destroy', $feeType) }}" data-confirm="Supprimer ce type de frais ?">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-outline-danger btn-sm">Supprimer</button>
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">{{ __("Supprimer") }}</button>
                                         </form>
                                     @endif
                                 @endcan
                             </div></td>
                         </tr>
                     @empty
-                        <tr><td colspan="5"><div class="resource-empty"><strong>Aucun type de frais</strong><span>Créez le premier type de frais connexe.</span></div></td></tr>
+                        <tr><td colspan="5"><div class="resource-empty"><strong>{{ __("Aucun type de frais") }}</strong><span>Créez le premier type de frais connexe.</span></div></td></tr>
                     @endforelse
                     </tbody>
                 </table>

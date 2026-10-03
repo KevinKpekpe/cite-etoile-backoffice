@@ -15,25 +15,25 @@
         <header class="resource-heading">
             <div>
                 <p class="app-kicker">{{ $subscription->subscription_number }}</p>
-                <h1 class="resource-heading__title">Enregistrer un paiement</h1>
+                <h1 class="resource-heading__title">{{ __("Enregistrer un paiement") }}</h1>
                 <p class="resource-heading__description">{{ $subscription->customer->first_name }} {{ $subscription->customer->last_name }} · {{ $subscription->plot->reference }} · {{ $subscription->plot->avenue->neighborhood->name }}</p>
             </div>
-            <a href="{{ route('subscriptions.show', $subscription) }}" class="btn btn-outline-secondary resource-button">Retour à la souscription</a>
+            <a href="{{ route('subscriptions.show', $subscription) }}" class="btn btn-outline-secondary resource-button">{{ __("Retour à la souscription") }}</a>
         </header>
 
         <div class="record-metrics record-metrics--bordered">
-            <div><span>Montant contractuel</span><strong>{{ number_format((float) $subscription->contract_total, 2, ',', ' ') }} <small>{{ $currency }}</small></strong><small>{{ $subscription->paymentPlan->name }}</small></div>
+            <div><span>{{ __("Montant contractuel") }}</span><strong>{{ number_format((float) $subscription->contract_total, 2, ',', ' ') }} <small>{{ $currency }}</small></strong><small>{{ $subscription->paymentPlan->name }}</small></div>
             <div class="record-metric--success"><span>Déjà encaissé</span><strong>{{ number_format((float) $subscription->amount_paid, 2, ',', ' ') }} <small>{{ $currency }}</small></strong><small>Paiements validés</small></div>
-            <div class="record-metric--danger"><span>Solde restant</span><strong>{{ number_format((float) $subscription->balance, 2, ',', ' ') }} <small>{{ $currency }}</small></strong><small>Avant ce versement</small></div>
+            <div class="record-metric--danger"><span>{{ __("Solde restant") }}</span><strong>{{ number_format((float) $subscription->balance, 2, ',', ' ') }} <small>{{ $currency }}</small></strong><small>Avant ce versement</small></div>
         </div>
 
         <section class="detail-sheet">
             <div class="detail-section">
-                <div class="detail-section__heading"><p class="app-kicker">Échéancier</p><h2>Situation actuelle</h2></div>
+                <div class="detail-section__heading"><p class="app-kicker">{{ __("Échéancier") }}</p><h2>Situation actuelle</h2></div>
                 <div class="installment-summary">
                     @if($overdueInstallments->isNotEmpty())
                         <div class="installment-summary__group installment-summary__group--danger">
-                            <div class="installment-summary__heading"><strong>En retard</strong><span>{{ number_format($overdueTotal, 2, ',', ' ') }} {{ $currency }}</span></div>
+                            <div class="installment-summary__heading"><strong>{{ __("En retard") }}</strong><span>{{ number_format($overdueTotal, 2, ',', ' ') }} {{ $currency }}</span></div>
                             @foreach($overdueInstallments as $installment)
                                 <div class="installment-summary__row"><span>Échéance {{ $installment->installment_number }} · {{ $installment->due_date->format('d/m/Y') }}</span><strong>{{ number_format((float) $installment->balance, 2, ',', ' ') }} {{ $currency }}</strong></div>
                             @endforeach
@@ -49,7 +49,7 @@
                     @endif
                     @if($dueInstallments->isNotEmpty())
                         <div class="installment-summary__group installment-summary__group--info">
-                            <div class="installment-summary__heading"><strong>À payer ce mois</strong><span>{{ number_format($dueTotal, 2, ',', ' ') }} {{ $currency }}</span></div>
+                            <div class="installment-summary__heading"><strong>{{ __("À payer ce mois") }}</strong><span>{{ number_format($dueTotal, 2, ',', ' ') }} {{ $currency }}</span></div>
                             @foreach($dueInstallments as $installment)
                                 <div class="installment-summary__row"><span>Échéance {{ $installment->installment_number }} · {{ $installment->due_date->format('d/m/Y') }}</span><strong>{{ number_format((float) $installment->balance, 2, ',', ' ') }} {{ $currency }}</strong></div>
                             @endforeach
@@ -73,11 +73,11 @@
             <section class="form-section">
                 <div class="form-section__header">
                     <span class="form-section__number">01</span>
-                    <div><h2>Détails du versement</h2><p>Date, montant et canal utilisé pour l’encaissement.</p></div>
+                    <div><h2>{{ __("Détails du versement") }}</h2><p>Date, montant et canal utilisé pour l’encaissement.</p></div>
                 </div>
                 <div class="form-section__body">
                     <div class="form-grid">
-                        <x-auth-input name="payment_date" label="Date du paiement" type="datetime-local" :value="old('payment_date', now()->format('Y-m-d\TH:i'))" required />
+                        <x-auth-input name="payment_date" :label="__('Date du paiement')" type="datetime-local" :value="old('payment_date', now()->format('Y-m-d\TH:i'))" required />
                         <label class="form-field">
                             <span class="form-field__label">Montant ({{ $currency }})<span class="text-danger ms-1 fw-bold">*</span></span>
                             <div class="payment-amount-field">
@@ -124,8 +124,8 @@
             </section>
 
             <div class="form-actions">
-                <a href="{{ route('subscriptions.show', $subscription) }}" class="btn btn-outline-secondary resource-button">Annuler</a>
-                <button type="submit" class="btn btn-app-primary resource-button">Valider le paiement</button>
+                <a href="{{ route('subscriptions.show', $subscription) }}" class="btn btn-outline-secondary resource-button">{{ __("Annuler") }}</a>
+                <button type="submit" class="btn btn-app-primary resource-button">{{ __("Valider le paiement") }}</button>
             </div>
         </form>
     </div>

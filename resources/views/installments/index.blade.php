@@ -16,7 +16,7 @@
         <header class="resource-heading">
             <div>
                 <p class="app-kicker">{{ $subscription->subscription_number }}</p>
-                <h1 class="resource-heading__title">Échéancier</h1>
+                <h1 class="resource-heading__title">{{ __("Échéancier") }}</h1>
                 <p class="resource-heading__description">{{ $subscription->customer->first_name }} {{ $subscription->customer->last_name }} · parcelle {{ $subscription->plot->reference }}</p>
             </div>
             <div class="resource-heading__actions">
@@ -25,7 +25,7 @@
                     @if($subscription->installments->isEmpty() && $subscription->duration_months > 0)
                         <form method="POST" action="{{ route('subscriptions.installments.generate', $subscription) }}">
                             @csrf
-                            <button class="btn btn-app-primary resource-button" type="submit">Générer l’échéancier</button>
+                            <button class="btn btn-app-primary resource-button" type="submit">{{ __("Générer l’échéancier") }}</button>
                         </form>
                     @endif
                 @endcan
@@ -34,14 +34,14 @@
 
         @if($subscription->duration_months === 0)
             <div class="resource-empty resource-empty--standalone">
-                <strong>Paiement comptant</strong>
+                <strong>{{ __("Paiement comptant") }}</strong>
                 <span>Cette souscription ne comporte aucune échéance mensuelle.</span>
             </div>
         @else
             <div class="record-metrics record-metrics--bordered">
                 <div><span>Total attendu</span><strong>{{ number_format($totalExpected, 2, ',', ' ') }} <small>USD</small></strong><small>{{ $subscription->installments->count() }} échéance(s)</small></div>
-                <div class="record-metric--success"><span>Total payé</span><strong>{{ number_format($totalPaid, 2, ',', ' ') }} <small>USD</small></strong><small>Montant affecté</small></div>
-                <div class="{{ $totalBalance > 0 ? 'record-metric--danger' : 'record-metric--success' }}"><span>Reste à payer</span><strong>{{ number_format($totalBalance, 2, ',', ' ') }} <small>USD</small></strong><small>Solde de l’échéancier</small></div>
+                <div class="record-metric--success"><span>{{ __("Total payé") }}</span><strong>{{ number_format($totalPaid, 2, ',', ' ') }} <small>USD</small></strong><small>Montant affecté</small></div>
+                <div class="{{ $totalBalance > 0 ? 'record-metric--danger' : 'record-metric--success' }}"><span>{{ __("Reste à payer") }}</span><strong>{{ number_format($totalBalance, 2, ',', ' ') }} <small>USD</small></strong><small>Solde de l’échéancier</small></div>
             </div>
 
             <section class="resource-table" aria-labelledby="installments-table-title">
@@ -50,7 +50,7 @@
                 </div>
                 <div class="table-responsive">
                     <table class="table resource-data-table align-middle mb-0">
-                        <thead><tr><th>N°</th><th>Date prévue</th><th class="text-end">Montant dû</th><th class="text-end">Montant payé</th><th class="text-end">Solde</th><th>Statut</th></tr></thead>
+                        <thead><tr><th>N°</th><th>{{ __("Date prévue") }}</th><th class="text-end">{{ __("Montant dû") }}</th><th class="text-end">{{ __("Montant payé") }}</th><th class="text-end">{{ __("Solde") }}</th><th>{{ __("Statut") }}</th></tr></thead>
                         <tbody>
                             @forelse($subscription->installments as $installment)
                                 <tr class="{{ $installment->status === 'overdue' ? 'resource-data-table__row--attention' : '' }}">
@@ -59,7 +59,7 @@
                                     <td class="record-money text-end">{{ number_format((float) $installment->amount_due, 2, ',', ' ') }} USD</td>
                                     <td class="record-money text-end text-success">{{ number_format((float) $installment->amount_paid, 2, ',', ' ') }} USD</td>
                                     <td class="record-money text-end">{{ number_format((float) $installment->balance, 2, ',', ' ') }} USD</td>
-                                    <td><span class="status-badge status-badge--{{ $installment->status === 'overdue' ? 'danger' : $installment->status }}">{{ $statusLabels[$installment->status] ?? ucfirst($installment->status) }}</span></td>
+                                    <td><span class="status-badge status-badge--{{ $installment->status === 'overdue' ? 'danger' : $installment->status }}">{{ __('statuses.'.$installment->status) }}</span></td>
                                 </tr>
                             @empty
                                 <tr><td colspan="6"><div class="resource-empty"><strong>Échéancier non généré</strong><span>Utilisez l’action de génération pour créer le calendrier contractuel.</span></div></td></tr>

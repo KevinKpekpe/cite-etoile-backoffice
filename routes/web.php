@@ -17,6 +17,7 @@ use App\Http\Controllers\CustomerStatementController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\InstallmentScheduleController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NeighborhoodController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentPlanController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\Portal\InstallmentController as PortalInstallmentContro
 use App\Http\Controllers\Portal\PaymentController as PortalPaymentController;
 use App\Http\Controllers\Portal\ProfileController as PortalProfileController;
 use App\Http\Controllers\Portal\ReceiptController as PortalReceiptController;
+use App\Http\Controllers\Portal\SettingController as PortalSettingController;
 use App\Http\Controllers\Portal\SubscriptionController as PortalSubscriptionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReceiptController;
@@ -38,6 +40,8 @@ use App\Http\Controllers\SubscriptionStatusController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VerifyReceiptController;
 use Illuminate\Support\Facades\Route;
+
+Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::get('/verify/receipts/{verificationCode}', VerifyReceiptController::class)->middleware('throttle:30,1')->name('receipts.verify');
 
@@ -165,6 +169,8 @@ Route::middleware('auth')->group(function (): void {
             Route::get('/profile', [PortalProfileController::class, 'edit'])->middleware('can:profile.view')->name('profile.edit');
             Route::put('/profile', [PortalProfileController::class, 'update'])->middleware('can:profile.update')->name('profile.update');
             Route::put('/profile/password', [PortalProfileController::class, 'updatePassword'])->middleware('can:profile.update')->name('profile.password.update');
+            Route::get('/settings', [PortalSettingController::class, 'index'])->name('settings.index');
+            Route::put('/settings', [PortalSettingController::class, 'update'])->name('settings.update');
         });
     });
 });
