@@ -8,6 +8,7 @@ use App\Services\SettingService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
@@ -39,6 +40,13 @@ class SettingController extends Controller
 
         // Bust the locale cache when platform settings are saved
         Cache::forget('setting.platform.locale');
+
+        if (isset($values['platform']['locale'])) {
+            $newLocale = (string) $values['platform']['locale'];
+            session(['locale' => $newLocale]);
+            $request->user()?->update(['locale' => $newLocale]);
+            App::setLocale($newLocale);
+        }
 
         return back()->with('status', __('Paramètres mis à jour.'));
     }

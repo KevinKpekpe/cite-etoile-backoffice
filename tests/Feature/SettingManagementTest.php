@@ -96,3 +96,19 @@ it('validates payments against configured currency and methods', function () {
     $this->actingAs($this->admin)->post(route('payments.store'), ['subscription_id' => $subscription->id, 'idempotency_key' => (string) Str::uuid(), 'payment_date' => now(), 'amount' => 100, 'currency' => 'USD', 'payment_method' => 'cash'])
         ->assertSessionHasErrors(['currency', 'payment_method']);
 });
+
+it('updates the application and user session language when platform locale setting is updated', function () {
+    $payload = settingsPayload(['platform' => ['locale' => 'en']]);
+
+    $this->actingAs($this->admin)
+        ->put(route('settings.update'), $payload)
+        ->assertRedirect()
+        ->assertSessionHas('locale', 'en');
+
+    expect($this->admin->fresh()->locale)->toBe('en');
+
+    $this->get(route('settings.index'))
+        ->assertSee('<html lang="en"', false)
+        ->assertSee('System configuration')
+        ->assertSee('General settings');
+});
