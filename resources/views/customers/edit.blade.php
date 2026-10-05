@@ -1,10 +1,10 @@
-<x-layouts.app title="Modifier le client">
+<x-layouts.app title="{{ __('Modifier le client') }}">
     <div class="form-page">
         <header class="resource-heading">
             <div>
                 <p class="app-kicker">Dossier {{ $customer->customer_number }}</p>
                 <h1 class="resource-heading__title">Modifier {{ $customer->first_name }} {{ $customer->last_name }}</h1>
-                <p class="resource-heading__description">Mettez à jour les informations personnelles et l’attribution du dossier.</p>
+                <p class="resource-heading__description">{{ __("Mettez à jour les informations personnelles et l’attribution du dossier.") }}</p>
             </div>
             <a href="{{ route('customers.show', $customer) }}" class="btn btn-outline-secondary resource-button">{{ __("Retour au dossier") }}</a>
         </header>
@@ -15,7 +15,7 @@
             <section class="form-section">
                 <div class="form-section__header">
                     <span class="form-section__number">01</span>
-                    <div><h2>Informations du client</h2><p>Identité, coordonnées et suivi commercial.</p></div>
+                    <div><h2>{{ __("Informations du client") }}</h2><p>{{ __("Identité, coordonnées et suivi commercial.") }}</p></div>
                 </div>
                 <div class="form-section__body"><x-customer-form :customer="$customer" :agents="$agents" /></div>
             </section>

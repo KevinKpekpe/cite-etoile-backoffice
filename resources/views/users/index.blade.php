@@ -1,4 +1,4 @@
-<x-layouts.app title="Utilisateurs">
+<x-layouts.app title="{{ __('Utilisateurs') }}">
     @php
         $hasFilters = filled($filters['search'] ?? null) || filled($filters['role'] ?? null) || filled($filters['status'] ?? null);
     @endphp
@@ -6,13 +6,13 @@
     <div class="resource-page">
         <header class="resource-heading">
             <div>
-                <p class="app-kicker">Gestion des accès</p>
+                <p class="app-kicker">{{ __("Gestion des accès") }}</p>
                 <h1 class="resource-heading__title">{{ __("Utilisateurs") }}</h1>
-                <p class="resource-heading__description">Gestion des comptes utilisateurs, agents et administrateurs de la plateforme.</p>
+                <p class="resource-heading__description">{{ __("Gestion des comptes utilisateurs, agents et administrateurs de la plateforme.") }}</p>
             </div>
             <div class="resource-heading__actions">
                 @can('users.delete')
-                    <a href="{{ route('users.trashed') }}" class="btn btn-outline-secondary resource-button">Corbeille</a>
+                    <a href="{{ route('users.trashed') }}" class="btn btn-outline-secondary resource-button">{{ __("Corbeille") }}</a>
                 @endcan
                 @can('users.manage')
                     <a href="{{ route('users.create') }}" class="btn btn-app-primary resource-button">{{ __("Nouvel utilisateur") }}</a>
@@ -44,7 +44,7 @@
             </div>
             <div class="resource-filters__actions">
                 @if($hasFilters)
-                    <a href="{{ route('users.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>
+                    <a href="{{ route('users.index') }}" class="btn btn-link resource-filter-reset">{{ __("Réinitialiser") }}</a>
                 @endif
                 <button class="btn btn-app-primary resource-button" type="submit">{{ __("Appliquer") }}</button>
             </div>
@@ -53,11 +53,11 @@
         <section class="resource-table" aria-labelledby="users-table-title">
             <div class="resource-table__header">
                 <div>
-                    <h2 id="users-table-title">Liste des utilisateurs</h2>
+                    <h2 id="users-table-title">{{ __("Liste des utilisateurs") }}</h2>
                     <p>{{ $users->total() }} {{ Str::plural('utilisateur', $users->total()) }}</p>
                 </div>
                 @if($hasFilters)
-                    <span class="resource-filter-indicator">Filtres actifs</span>
+                    <span class="resource-filter-indicator">{{ __("Filtres actifs") }}</span>
                 @endif
             </div>
 
@@ -69,7 +69,7 @@
                             <th scope="col">{{ __("E-mail") }}</th>
                             <th scope="col">{{ __("Rôle") }}</th>
                             <th scope="col">{{ __("Statut") }}</th>
-                            <th scope="col">Dernière connexion</th>
+                            <th scope="col">{{ __("Dernière connexion") }}</th>
                             <th scope="col" class="text-end">{{ __("Actions") }}</th>
                         </tr>
                     </thead>

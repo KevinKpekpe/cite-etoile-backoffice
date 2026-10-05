@@ -11,7 +11,7 @@
     <div class="receipt-page">
         <header class="resource-heading no-print">
             <div>
-                <p class="app-kicker">Justificatif d’encaissement</p>
+                <p class="app-kicker">{{ __("Justificatif d’encaissement") }}</p>
                 <h1 class="resource-heading__title">Reçu {{ $receipt->receipt_number }}</h1>
                 <p class="resource-heading__description">Émis le {{ $receipt->issued_at->format('d/m/Y à H:i') }} pour {{ $receipt->customer->first_name }} {{ $receipt->customer->last_name }}.</p>
             </div>
@@ -32,16 +32,16 @@
             </header>
 
             <div class="receipt-document__title">
-                <span>Reçu de paiement</span>
+                <span>{{ __("Reçu de paiement") }}</span>
                 <strong>{{ $receipt->receipt_number }}</strong>
             </div>
 
             @if($receipt->status !== 'valid')
-                <div class="receipt-document__cancelled">Reçu annulé</div>
+                <div class="receipt-document__cancelled">{{ __("Reçu annulé") }}</div>
             @endif
 
             <section class="receipt-document__section">
-                <h2>Informations générales</h2>
+                <h2>{{ __("Informations générales") }}</h2>
                 <dl class="receipt-document__list">
                     <div><dt>{{ __("Date d’émission") }}</dt><dd>{{ $receipt->issued_at->format('d/m/Y H:i') }}</dd></div>
                     <div><dt>{{ __("Client") }}</dt><dd>{{ $receipt->customer->last_name }} {{ $receipt->customer->first_name }}</dd></div>
@@ -53,14 +53,14 @@
             </section>
 
             <section class="receipt-document__section">
-                <h2>Opération</h2>
+                <h2>{{ __("Opération") }}</h2>
                 <dl class="receipt-document__list">
-                    <div><dt>Référence paiement</dt><dd>{{ $receipt->payment->payment_reference }}</dd></div>
+                    <div><dt>{{ __("Référence paiement") }}</dt><dd>{{ $receipt->payment->payment_reference }}</dd></div>
                     <div><dt>{{ __("Parcelle") }}</dt><dd>{{ $receipt->subscription->plot->reference }} · {{ $receipt->subscription->plot->avenue->neighborhood->name }}</dd></div>
                     <div><dt>{{ $receipt->payment->ancillaryFee ? 'Frais connexe' : 'Formule' }}</dt><dd>{{ $receipt->payment->ancillaryFee?->label() ?? $receipt->subscription->paymentPlan->name }}</dd></div>
-                    <div><dt>Mode de règlement</dt><dd>{{ __('payment_methods.'.$receipt->payment->payment_method) }}</dd></div>
+                    <div><dt>{{ __("Mode de règlement") }}</dt><dd>{{ __('payment_methods.'.$receipt->payment->payment_method) }}</dd></div>
                     @if($receipt->payment->transaction_reference)
-                        <div><dt>Référence externe</dt><dd>{{ $receipt->payment->transaction_reference }}</dd></div>
+                        <div><dt>{{ __("Référence externe") }}</dt><dd>{{ $receipt->payment->transaction_reference }}</dd></div>
                     @endif
                 </dl>
             </section>
@@ -73,21 +73,21 @@
             <section class="receipt-document__section">
                 <h2>{{ $receipt->payment->ancillaryFee ? 'Situation du frais' : 'Situation de la souscription' }}</h2>
                 <dl class="receipt-document__list">
-                    <div><dt>Cumul versé</dt><dd>{{ number_format((float) ($receipt->payment->ancillaryFee?->amount_paid ?? $receipt->subscription->amount_paid), 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
+                    <div><dt>{{ __("Cumul versé") }}</dt><dd>{{ number_format((float) ($receipt->payment->ancillaryFee?->amount_paid ?? $receipt->subscription->amount_paid), 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
                     <div><dt>{{ __("Solde restant") }}</dt><dd>{{ number_format((float) ($receipt->payment->ancillaryFee?->balance ?? $receipt->subscription->balance), 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
                     @if($nextInstallment && (float) $receipt->subscription->balance > 0)
                         <div><dt>Prochaine échéance</dt><dd>{{ $nextInstallment->due_date->format('d/m/Y') }} · {{ number_format((float) $nextInstallment->amount_due, 2, ',', ' ') }} {{ $branding['currency'] }}</dd></div>
                     @else
-                        <div><dt>Situation</dt><dd>{{ $receipt->payment->ancillaryFee ? str($receipt->payment->ancillaryFee->status)->replace('_', ' ')->title() : 'Souscription soldée' }}</dd></div>
+                        <div><dt>{{ __("Situation") }}</dt><dd>{{ $receipt->payment->ancillaryFee ? str($receipt->payment->ancillaryFee->status)->replace('_', ' ')->title() : 'Souscription soldée' }}</dd></div>
                     @endif
                 </dl>
             </section>
 
             <footer class="receipt-document__footer">
-                <p>Code de vérification</p>
+                <p>{{ __("Code de vérification") }}</p>
                 <strong>{{ $receipt->verification_code }}</strong>
                 <span>{{ route('receipts.verify', $receipt->verification_code) }}</span>
-                <small>Merci pour votre confiance.</small>
+                <small>{{ __("Merci pour votre confiance.") }}</small>
             </footer>
         </article>
     </div>

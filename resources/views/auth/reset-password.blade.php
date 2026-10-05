@@ -1,4 +1,4 @@
-<x-layouts.guest title="Nouveau mot de passe">
+<x-layouts.guest title="{{ __('Nouveau mot de passe') }}">
     <form method="POST" action="{{ route('password.update') }}" class="auth-form">
         @csrf
         <input type="hidden" name="token" value="{{ $request->route('token') }}">

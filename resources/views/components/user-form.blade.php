@@ -32,7 +32,7 @@
         </label>
 
         <div class="form-subsection form-grid__wide">
-            <div class="form-subsection__header"><h3>Réinitialisation du mot de passe</h3><p>Laissez ces champs vides pour conserver le mot de passe actuel.</p></div>
+            <div class="form-subsection__header"><h3>{{ __("Réinitialisation du mot de passe") }}</h3><p>Laissez ces champs vides pour conserver le mot de passe actuel.</p></div>
             <div class="form-grid">
                 <x-auth-input name="password" label="Nouveau mot de passe" type="password" autocomplete="new-password" />
                 <x-auth-input name="password_confirmation" label="Confirmation" type="password" autocomplete="new-password" />

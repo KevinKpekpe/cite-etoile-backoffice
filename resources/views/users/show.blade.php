@@ -8,7 +8,7 @@
             <div class="record-heading__identity">
                 <span class="record-heading__avatar" aria-hidden="true">{{ $initials }}</span>
                 <div>
-                    <p class="app-kicker">Fiche utilisateur</p>
+                    <p class="app-kicker">{{ __("Fiche utilisateur") }}</p>
                     <h1>{{ $user->first_name }} {{ $user->last_name }}</h1>
                     <p>{{ $user->email }} · {{ $user->phone ?: 'Sans téléphone' }}</p>
                 </div>
@@ -44,25 +44,25 @@
         </header>
 
         @if($user->trashed())
-            <div class="record-alert record-alert--danger"><div><strong>Compte placé en corbeille</strong><p>Supprimé le {{ $user->deleted_at->format('d/m/Y à H:i') }}.</p></div></div>
+            <div class="record-alert record-alert--danger"><div><strong>{{ __("Compte placé en corbeille") }}</strong><p>Supprimé le {{ $user->deleted_at->format('d/m/Y à H:i') }}.</p></div></div>
         @endif
 
         <x-user-credentials-markdown />
 
         <div class="detail-sheet">
             <section class="detail-section">
-                <div class="detail-section__heading"><p class="app-kicker">{{ __("Profil") }}</p><h2>Informations du compte</h2></div>
+                <div class="detail-section__heading"><p class="app-kicker">{{ __("Profil") }}</p><h2>{{ __("Informations du compte") }}</h2></div>
                 <dl class="detail-grid">
                     <div><dt>{{ __("Statut") }}</dt><dd><span class="status-badge status-badge--{{ $user->trashed() ? 'danger' : ($user->status === 'active' ? 'active' : 'suspended') }}">{{ $user->trashed() ? 'Supprimé' : ($user->status === 'active' ? 'Actif' : 'Suspendu') }}</span></dd></div>
                     <div><dt>{{ __("Rôle principal") }}</dt><dd>{{ __('roles.'.$roleName) }}</dd></div>
                     <div><dt>{{ __("Téléphone") }}</dt><dd>{{ $user->phone ?? 'Non renseigné' }}</dd></div>
-                    <div><dt>Authentification à deux facteurs</dt><dd>{{ $user->hasTwoFactorAuthenticationEnabled() ? 'Activée' : 'Désactivée' }}</dd></div>
-                    <div><dt>Dernière connexion</dt><dd>{{ $user->last_login_at?->format('d/m/Y H:i') ?? 'Jamais' }}</dd></div>
-                    <div><dt>Compte créé le</dt><dd>{{ $user->created_at->format('d/m/Y') }}</dd></div>
+                    <div><dt>{{ __("Authentification à deux facteurs") }}</dt><dd>{{ $user->hasTwoFactorAuthenticationEnabled() ? 'Activée' : 'Désactivée' }}</dd></div>
+                    <div><dt>{{ __("Dernière connexion") }}</dt><dd>{{ $user->last_login_at?->format('d/m/Y H:i') ?? 'Jamais' }}</dd></div>
+                    <div><dt>{{ __("Compte créé le") }}</dt><dd>{{ $user->created_at->format('d/m/Y') }}</dd></div>
                 </dl>
             </section>
             <section class="detail-section">
-                <div class="detail-section__heading"><p class="app-kicker">Traçabilité</p><h2>Historique d’activité</h2></div>
+                <div class="detail-section__heading"><p class="app-kicker">{{ __("Traçabilité") }}</p><h2>{{ __("Historique d’activité") }}</h2></div>
                 <div class="timeline-list">
                     @forelse($auditEntries as $entry)
                         <div class="timeline-list__item"><span class="timeline-list__marker"></span><span><strong>{{ ucfirst(str_replace(['.', '_'], ' ', $entry->action)) }}</strong><small>{{ $entry->created_at->format('d/m/Y H:i') }}</small></span></div>

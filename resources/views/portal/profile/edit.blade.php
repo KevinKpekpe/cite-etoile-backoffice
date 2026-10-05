@@ -30,7 +30,7 @@
                             @error('avatar')<span class="form-field__error d-block mb-2">{{ $message }}</span>@enderror
                             @if($customer->avatar_path)
                                 <label class="form-check-label text-danger small cursor-pointer">
-                                    <input type="checkbox" name="remove_avatar" value="1" class="form-check-input me-1"> Supprimer la photo actuelle
+                                    <input type="checkbox" name="remove_avatar" value="1" class="form-check-input me-1"> {{ __("Supprimer la photo actuelle") }}
                                 </label>
                             @endif
                         </div>

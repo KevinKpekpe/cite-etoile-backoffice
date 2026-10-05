@@ -1,20 +1,20 @@
-<x-layouts.app title="Corbeille formules">
+<x-layouts.app title="{{ __('Corbeille formules') }}">
     <div class="resource-page">
         <header class="resource-heading">
             <div>
-                <p class="app-kicker">Tarification</p>
-                <h1 class="resource-heading__title">Corbeille formules</h1>
+                <p class="app-kicker">{{ __("Tarification") }}</p>
+                <h1 class="resource-heading__title">{{ __("Corbeille formules") }}</h1>
                 <p class="resource-heading__description">Formules de paiement supprimées. Elles peuvent être restaurées ou retirées définitivement.</p>
             </div>
             <div class="resource-heading__actions">
-                <a href="{{ route('payment-plans.index') }}" class="btn btn-outline">Retour aux formules</a>
+                <a href="{{ route('payment-plans.index') }}" class="btn btn-outline">{{ __("Retour aux formules") }}</a>
             </div>
         </header>
 
         <section class="resource-table">
             <div class="resource-table__header">
                 <div>
-                    <h2>Formules supprimées</h2>
+                    <h2>{{ __("Formules supprimées") }}</h2>
                     <p>{{ $paymentPlans->count() }} {{ Str::plural('formule', $paymentPlans->count()) }}</p>
                 </div>
             </div>
@@ -22,11 +22,11 @@
                 <table class="table resource-data-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th scope="col">Code / Nom</th>
-                            <th scope="col" class="text-end">Prix total</th>
+                            <th scope="col">{{ __("Code / Nom") }}</th>
+                            <th scope="col" class="text-end">{{ __("Prix total") }}</th>
                             <th scope="col">Mensualité</th>
-                            <th scope="col">Durée</th>
-                            <th scope="col">Supprimée le</th>
+                            <th scope="col">{{ __("Durée") }}</th>
+                            <th scope="col">{{ __("Supprimée le") }}</th>
                             <th scope="col" class="text-end">{{ __("Actions") }}</th>
                         </tr>
                     </thead>

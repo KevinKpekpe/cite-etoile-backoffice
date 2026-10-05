@@ -1,6 +1,6 @@
-<x-layouts.app title="Tableau de bord">
+<x-layouts.app title="{{ __('Tableau de bord') }}">
     @php
-        $periodLabels = ['day' => 'Aujourd\'hui', 'week' => '7 jours', 'month' => 'Ce mois', 'year' => 'Cette année'];
+        $periodLabels = ['day' => __('Aujourd\'hui'), 'week' => __('7 jours'), 'month' => __('Ce mois'), 'year' => __('Cette année')];
         $totalPlots = array_sum($plots);
         $activeSubscriptions = $subscriptions['active'] ?? 0;
         $contractual = (float) $finances['contractual'];
@@ -85,9 +85,9 @@
 
     <div class="dashboard-page">
         <header class="dashboard-heading">
-            <div><p class="app-kicker">Vue d’ensemble</p><h1 class="dashboard-heading__title">Tableau de bord</h1></div>
+            <div><p class="app-kicker">Vue d’ensemble</p><h1 class="dashboard-heading__title">{{ __("Tableau de bord") }}</h1></div>
             <form method="GET" action="{{ route('dashboard') }}" class="dashboard-period">
-                <label for="dashboard-period" class="visually-hidden">Période analysée</label>
+                <label for="dashboard-period" class="visually-hidden">{{ __("Période analysée") }}</label>
                 <select id="dashboard-period" name="period" class="form-select dashboard-period__select" data-auto-submit>
                     @foreach($periodLabels as $value => $label)
                         <option value="{{ $value }}" @selected($period === $value)>{{ $label }}</option>
@@ -107,9 +107,9 @@
                     <div class="dashboard-kpi__label">{{ __("Clients") }}</div>
                     <div class="dashboard-kpi__value-row">
                         <span class="dashboard-kpi__value">{{ number_format($clients['total'], 0, ',', ' ') }}</span>
-                        <span class="dashboard-kpi__badge dashboard-kpi__badge--up">{{ number_format($clients['active'], 0, ',', ' ') }} actifs</span>
+                        <span class="dashboard-kpi__badge dashboard-kpi__badge--up">{{ number_format($clients['active'], 0, ',', ' ') }} {{ __('actifs') }}</span>
                     </div>
-                    <div class="dashboard-kpi__subtext">{{ number_format($clients['new_month'], 0, ',', ' ') }} nouveau(x) ce mois</div>
+                    <div class="dashboard-kpi__subtext">{{ number_format($clients['new_month'], 0, ',', ' ') }} {{ __('nouveau(x) ce mois') }}</div>
                 </div>
                 <div class="dashboard-kpi__spark" aria-hidden="true">
                     @foreach([35, 50, 42, 60, 55, 68, 62, 75, 70, 85] as $h)
@@ -124,11 +124,11 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6M9 13h4"/></svg>
                 </div>
                 <div class="dashboard-kpi__body">
-                    <div class="dashboard-kpi__label">Souscriptions actives</div>
+                    <div class="dashboard-kpi__label">{{ __("Souscriptions actives") }}</div>
                     <div class="dashboard-kpi__value-row">
                         <span class="dashboard-kpi__value">{{ number_format($activeSubscriptions, 0, ',', ' ') }}</span>
                     </div>
-                    <div class="dashboard-kpi__subtext">Dossiers en cours</div>
+                    <div class="dashboard-kpi__subtext">{{ __("Dossiers en cours") }}</div>
                 </div>
                 <div class="dashboard-kpi__spark" aria-hidden="true">
                     @foreach([40, 55, 48, 70, 60, 76, 68, 86, 80, 90] as $h)
@@ -143,12 +143,12 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 </div>
                 <div class="dashboard-kpi__body">
-                    <div class="dashboard-kpi__label">Parcelles disponibles</div>
+                    <div class="dashboard-kpi__label">{{ __("Parcelles disponibles") }}</div>
                     <div class="dashboard-kpi__value-row">
                         <span class="dashboard-kpi__value">{{ number_format($plots['available'] ?? 0, 0, ',', ' ') }}</span>
-                        <span class="dashboard-kpi__badge dashboard-kpi__badge--down">{{ number_format($totalPlots, 0, ',', ' ') }} total</span>
+                        <span class="dashboard-kpi__badge dashboard-kpi__badge--down">{{ number_format($totalPlots, 0, ',', ' ') }} {{ __('total') }}</span>
                     </div>
-                    <div class="dashboard-kpi__subtext">sur {{ number_format($totalPlots, 0, ',', ' ') }} parcelles</div>
+                    <div class="dashboard-kpi__subtext">{{ __('sur') }} {{ number_format($totalPlots, 0, ',', ' ') }} {{ __('parcelles') }}</div>
                 </div>
                 <div class="dashboard-kpi__spark" aria-hidden="true">
                     @foreach([86, 78, 72, 64, 60, 52, 48, 40, 36, 30] as $h)
@@ -163,12 +163,12 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
                 </div>
                 <div class="dashboard-kpi__body">
-                    <div class="dashboard-kpi__label">Valeur contractuelle</div>
+                    <div class="dashboard-kpi__label">{{ __("Valeur contractuelle") }}</div>
                     <div class="dashboard-kpi__value-row">
                         <span class="dashboard-kpi__value">{{ number_format($contractual, 0, ',', ' ') }} <em>USD</em></span>
                         <span class="dashboard-kpi__badge dashboard-kpi__badge--up">{{ number_format(min(100, $collectionRate), 0) }}%</span>
                     </div>
-                    <div class="dashboard-kpi__subtext">Portefeuille souscrit</div>
+                    <div class="dashboard-kpi__subtext">{{ __("Portefeuille souscrit") }}</div>
                 </div>
                 <div class="dashboard-kpi__progress-wrap">
                     <div class="dashboard-kpi__progress-bar" style="width:100%"></div>
@@ -199,14 +199,14 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </div>
                 <div class="dashboard-kpi__body">
-                    <div class="dashboard-kpi__label">Échéances en retard</div>
+                    <div class="dashboard-kpi__label">{{ __("Échéances en retard") }}</div>
                     <div class="dashboard-kpi__value-row">
                         <span class="dashboard-kpi__value">{{ number_format($installments['overdue'], 0, ',', ' ') }}</span>
                         @if($installments['overdue'] > 0)
                             <span class="dashboard-kpi__badge dashboard-kpi__badge--down">{{ $clients['overdue'] }} client(s)</span>
                         @endif
                     </div>
-                    <div class="dashboard-kpi__subtext">{{ number_format($clients['overdue'], 0, ',', ' ') }} client(s) concerné(s)</div>
+                    <div class="dashboard-kpi__subtext">{{ number_format($clients['overdue'], 0, ',', ' ') }} {{ __('client(s) concerné(s)') }}</div>
                 </div>
                 <div class="dashboard-kpi__progress-wrap">
                     <div class="dashboard-kpi__progress-bar" style="width:{{ min(100, $installments['overdue'] * 10) }}%"></div>
@@ -218,7 +218,7 @@
         <div class="dashboard-primary-grid">
             <section class="dashboard-card dashboard-card--chart">
                 <div class="dashboard-card__chart-header">
-                    <div><h2>Activité des encaissements</h2><strong>{{ number_format($chartPeriodTotal, 0, ',', ' ') }} <small>USD</small></strong><p>Total encaissé · {{ $periodLabels[$period] }}</p></div>
+                    <div><h2>{{ __("Activité des encaissements") }}</h2><strong>{{ number_format($chartPeriodTotal, 0, ',', ' ') }} <small>USD</small></strong><p>{{ __("Total encaissé") }} · {{ $periodLabels[$period] }}</p></div>
                     <span class="status-badge status-badge--active">{{ $periodLabels[$period] }}</span>
                 </div>
                 @if($hasChartData)
@@ -235,7 +235,7 @@
             </section>
 
             <section class="dashboard-card">
-                <div class="dashboard-card__header"><h2>Activité récente</h2><span>{{ $recent_activity->count() }}</span></div>
+                <div class="dashboard-card__header"><h2>{{ __("Activité récente") }}</h2><span>{{ $recent_activity->count() }}</span></div>
                 <div class="dashboard-activity">
                     @forelse($recent_activity->take(6) as $activity)
                         <div class="dashboard-activity__item">
@@ -252,7 +252,7 @@
         @can('reports.view')
             <div class="dashboard-secondary-grid">
                 <section class="dashboard-card">
-                    <div class="dashboard-card__header"><div><h2>Échéances en retard</h2><p>Dossiers nécessitant une action</p></div><a href="{{ route('subscriptions.index', ['status' => 'overdue']) }}">{{ __("Voir tout") }}</a></div>
+                    <div class="dashboard-card__header"><div><h2>{{ __("Échéances en retard") }}</h2><p>{{ __("Dossiers nécessitant une action") }}</p></div><a href="{{ route('subscriptions.index', ['status' => 'overdue']) }}">{{ __("Voir tout") }}</a></div>
                     <div class="dashboard-list">
                         @forelse($overdue_installments->take(5) as $item)
                             <a href="{{ route('subscriptions.installments.index', $item->subscription) }}" class="dashboard-list__item">
@@ -266,7 +266,7 @@
                 </section>
 
                 <section class="dashboard-card">
-                    <div class="dashboard-card__header"><div><h2>Échéances à venir</h2><p>Paiements attendus sous 7 jours</p></div></div>
+                    <div class="dashboard-card__header"><div><h2>{{ __("Échéances à venir") }}</h2><p>{{ __("Paiements attendus sous 7 jours") }}</p></div></div>
                     <div class="dashboard-list">
                         @forelse($due_soon->take(5) as $item)
                             <a href="{{ route('subscriptions.installments.index', $item->subscription) }}" class="dashboard-list__item">
@@ -280,12 +280,12 @@
                 </section>
 
                 <section class="dashboard-card">
-                    <div class="dashboard-card__header"><div><h2>Formules choisies</h2><p>Répartition des souscriptions</p></div></div>
+                    <div class="dashboard-card__header"><div><h2>{{ __("Formules choisies") }}</h2><p>{{ __("Répartition des souscriptions") }}</p></div></div>
                     <div class="plan-list">
                         @forelse($plan_distribution as $item)
                             <div class="plan-list__item"><div class="plan-list__header"><span>{{ $item->name }}</span><strong>{{ number_format($item->total, 0, ',', ' ') }}</strong></div><div class="plan-list__track"><span style="width: {{ ((int) $item->total / $maxPlanTotal) * 100 }}%"></span></div></div>
                         @empty
-                            <div class="dashboard-empty"><strong>{{ __("Aucune souscription") }}</strong><span>La répartition apparaîtra ici.</span></div>
+                            <div class="dashboard-empty"><strong>{{ __("Aucune souscription") }}</strong><span>{{ __("La répartition apparaîtra ici.") }}</span></div>
                         @endforelse
                     </div>
                 </section>

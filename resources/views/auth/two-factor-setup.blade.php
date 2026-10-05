@@ -1,4 +1,4 @@
-<x-layouts.guest title="Sécurité du compte">
+<x-layouts.guest title="{{ __('Sécurité du compte') }}">
     @if (session('recovery_codes'))
         <p class="auth-form-copy">{{ __('auth.store_recovery_codes') }}</p>
         <ul class="auth-recovery-codes">

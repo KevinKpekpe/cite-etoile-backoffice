@@ -1,4 +1,4 @@
-<x-layouts.app title="Rapports">
+<x-layouts.app title="{{ __('Rapports') }}">
     @php
         $hasFilters = filled($filters['from'] ?? null)
             || filled($filters['to'] ?? null)
@@ -14,9 +14,9 @@
     <div class="resource-page">
         <header class="resource-heading">
             <div>
-                <p class="app-kicker">Pilotage & Statistiques</p>
-                <h1 class="resource-heading__title">Rapports et exports</h1>
-                <p class="resource-heading__description">Analysez l’activité commerciale et financière selon vos critères de filtrage.</p>
+                <p class="app-kicker">{{ __("Pilotage & Statistiques") }}</p>
+                <h1 class="resource-heading__title">{{ __("Rapports et exports") }}</h1>
+                <p class="resource-heading__description">{{ __("Analysez l’activité commerciale et financière selon vos critères de filtrage.") }}</p>
             </div>
         </header>
 
@@ -58,7 +58,7 @@
                 </select>
             </div>
             <div>
-                <label for="report-agent" class="form-label">Agent commercial</label>
+                <label for="report-agent" class="form-label">{{ __("Agent commercial") }}</label>
                 <select id="report-agent" name="agent_id" class="form-select">
                     <option value="">{{ __("Tous les agents") }}</option>
                     @foreach($agents as $agent)
@@ -68,17 +68,17 @@
             </div>
             <div class="resource-filters__actions">
                 @if($hasFilters)
-                    <a href="{{ route('reports.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>
+                    <a href="{{ route('reports.index') }}" class="btn btn-link resource-filter-reset">{{ __("Réinitialiser") }}</a>
                 @endif
                 <button class="btn btn-app-primary resource-button" type="submit">{{ __("Appliquer") }}</button>
             </div>
         </form>
 
         <section class="report-metrics" aria-label="Synthèse des rapports">
-            <div><span>{{ __("Clients") }}</span><strong>{{ number_format($customers->count(), 0, ",", " ") }}</strong><small>Dossiers extraits</small></div>
+            <div><span>{{ __("Clients") }}</span><strong>{{ number_format($customers->count(), 0, ",", " ") }}</strong><small>{{ __("Dossiers extraits") }}</small></div>
             <div><span>{{ __("Parcelles") }}</span><strong>{{ number_format($plots->count(), 0, ",", " ") }}</strong><small>Biens extraits</small></div>
-            <div class="report-metric--success"><span>Paiements encaissés</span><strong>{{ number_format((float) $paymentTotal, 2, ",", " ") }} <em>USD</em></strong><small>Transactions validées</small></div>
-            <div class="report-metric--danger"><span>Total impayé</span><strong>{{ number_format((float) $overdueTotal, 2, ",", " ") }} <em>USD</em></strong><small>Solde en retard</small></div>
+            <div class="report-metric--success"><span>{{ __("Paiements encaissés") }}</span><strong>{{ number_format((float) $paymentTotal, 2, ",", " ") }} <em>USD</em></strong><small>{{ __("Transactions validées") }}</small></div>
+            <div class="report-metric--danger"><span>{{ __("Total impayé") }}</span><strong>{{ number_format((float) $overdueTotal, 2, ",", " ") }} <em>USD</em></strong><small>{{ __("Solde en retard") }}</small></div>
         </section>
 
         {{-- Sections Rapports --}}
@@ -136,7 +136,7 @@
                                     <td class="text-end">
                                         @if($type === 'customers')
                                             <a class="btn btn-sm btn-outline-primary py-1 px-2" href="{{ route('reports.customers.statement', $row) }}">
-                                                <i class="bi bi-file-earmark-pdf me-1"></i> Relevé PDF
+                                                <i class="bi bi-file-earmark-pdf me-1"></i> {{ __("Relevé PDF") }}
                                             </a>
                                         @elseif($type === 'plots')
                                             <span class="record-money">{{ $row->base_price ? number_format((float) $row->base_price, 2, ',', ' ').' USD' : '—' }}</span>

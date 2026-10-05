@@ -2,11 +2,11 @@
     <div class="form-page">
         <header class="resource-heading">
             <div>
-                <p class="app-kicker">Tarification & financement</p>
+                <p class="app-kicker">{{ __("Tarification & financement") }}</p>
                 <h1 class="resource-heading__title">{{ $paymentPlan->exists ? 'Modifier la formule' : 'Créer une formule' }}</h1>
-                <p class="resource-heading__description">Définissez les conditions commerciales proposées lors d’une nouvelle souscription.</p>
+                <p class="resource-heading__description">{{ __("Définissez les conditions commerciales proposées lors d’une nouvelle souscription.") }}</p>
             </div>
-            <a href="{{ route('payment-plans.index') }}" class="btn btn-outline">Retour aux formules</a>
+            <a href="{{ route('payment-plans.index') }}" class="btn btn-outline">{{ __("Retour aux formules") }}</a>
         </header>
 
         <form method="POST" action="{{ $paymentPlan->exists ? route('payment-plans.update', $paymentPlan) : route('payment-plans.store') }}" class="form-page__content">
@@ -19,8 +19,8 @@
                 <div class="form-section__header">
                     <span class="form-section__number">01</span>
                     <div>
-                        <h2>Identification</h2>
-                        <p>Nom interne, code de référence et description de la formule.</p>
+                        <h2>{{ __("Identification") }}</h2>
+                        <p>{{ __("Nom interne, code de référence et description de la formule.") }}</p>
                     </div>
                 </div>
                 <div class="form-section__body">
@@ -43,8 +43,8 @@
                 <div class="form-section__header">
                     <span class="form-section__number">02</span>
                     <div>
-                        <h2>Conditions financières</h2>
-                        <p>Montant contractuel, fréquence et durée du règlement.</p>
+                        <h2>{{ __("Conditions financières") }}</h2>
+                        <p>{{ __("Montant contractuel, fréquence et durée du règlement.") }}</p>
                     </div>
                 </div>
                 <div class="form-section__body">
@@ -54,7 +54,7 @@
                         <x-auth-input name="duration_months" label="Durée (mois)" type="number" min="0" :value="old('duration_months', $paymentPlan->duration_months ?? 0)" required />
 
                         <label class="form-field">
-                            <span class="form-field__label">Fréquence<span class="text-danger ms-1 fw-bold">*</span></span>
+                            <span class="form-field__label">{{ __("Fréquence") }}<span class="text-danger ms-1 fw-bold">*</span></span>
                             <select name="frequency" class="form-select" required>
                                 <option value="once" @selected(old('frequency', $paymentPlan->frequency) === 'once')>{{ __("Paiement unique") }}</option>
                                 <option value="monthly" @selected(old('frequency', $paymentPlan->frequency) === 'monthly')>{{ __("Paiement mensuel") }}</option>
@@ -69,8 +69,8 @@
                 <div class="form-section__header">
                     <span class="form-section__number">03</span>
                     <div>
-                        <h2>Validité et disponibilité</h2>
-                        <p>Déterminez la période pendant laquelle la formule peut être proposée.</p>
+                        <h2>{{ __("Validité et disponibilité") }}</h2>
+                        <p>{{ __("Déterminez la période pendant laquelle la formule peut être proposée.") }}</p>
                     </div>
                 </div>
                 <div class="form-section__body">
@@ -81,8 +81,8 @@
                         <label class="form-toggle form-grid__wide">
                             <input class="form-check-input" type="checkbox" name="active" value="1" @checked(old('active', $paymentPlan->active ?? true))>
                             <span>
-                                <strong>Formule active</strong>
-                                <small>La formule sera disponible lors de la création de nouvelles souscriptions.</small>
+                                <strong>{{ __("Formule active") }}</strong>
+                                <small>{{ __("La formule sera disponible lors de la création de nouvelles souscriptions.") }}</small>
                             </span>
                         </label>
                     </div>

@@ -32,7 +32,7 @@
         @if($customer->trashed())
             <div class="record-alert record-alert--danger">
                 <div>
-                    <strong>Client placé en corbeille</strong>
+                    <strong>{{ __("Client placé en corbeille") }}</strong>
                     <p>Supprimé le {{ $customer->deleted_at->format('d/m/Y à H:i') }}. Le dossier reste restaurable.</p>
                 </div>
                 <div class="resource-heading__actions">
@@ -76,7 +76,7 @@
                 @if(! $customer->trashed())
                     @can('reports.view')
                         <a href="{{ route('reports.customers.statement', $customer) }}" class="btn btn-outline-secondary resource-button">
-                            <i class="bi bi-file-earmark-text" aria-hidden="true"></i>Relevé client
+                            <i class="bi bi-file-earmark-text" aria-hidden="true"></i>{{ __("Relevé client") }}
                         </a>
                     @endcan
                     @can('customers.update')
@@ -86,19 +86,19 @@
                     @endcan
                     @can('subscriptions.create')
                         <a href="{{ route('subscriptions.create', ['customer_id' => $customer->id]) }}" class="btn btn-app-primary resource-button">
-                            <i class="bi bi-plus-lg" aria-hidden="true"></i>Réserver une parcelle
+                            <i class="bi bi-plus-lg" aria-hidden="true"></i>{{ __("Réserver une parcelle") }}
                         </a>
                     @endcan
                     @can('customers.delete')
                         @if($customer->status !== 'archived')
                             <form method="POST" action="{{ route('customers.archive', $customer) }}">
                                 @csrf @method('PATCH')
-                                <button class="btn btn-outline-secondary resource-button" type="submit">Archiver</button>
+                                <button class="btn btn-outline-secondary resource-button" type="submit">{{ __("Archiver") }}</button>
                             </form>
                         @endif
                         <form method="POST" action="{{ route('customers.destroy', $customer) }}" data-confirm="Placer ce client en corbeille ?">
                             @csrf @method('DELETE')
-                            <button class="btn btn-outline-danger resource-button" type="submit">Corbeille</button>
+                            <button class="btn btn-outline-danger resource-button" type="submit">{{ __("Corbeille") }}</button>
                         </form>
                     @endcan
                 @endif
@@ -110,12 +110,12 @@
             <div>
                 <span>{{ __("Souscriptions") }}</span>
                 <strong>{{ $customer->subscriptions->count() }}</strong>
-                <small>Dossiers enregistrés</small>
+                <small>{{ __("Dossiers enregistrés") }}</small>
             </div>
             <div class="record-metric--success">
-                <span>Total versé</span>
+                <span>{{ __("Total versé") }}</span>
                 <strong>{{ number_format((float) $validatedPayments, 2, ',', ' ') }} <small>USD</small></strong>
-                <small>Paiements validés</small>
+                <small>{{ __("Paiements validés") }}</small>
             </div>
             <div class="{{ $overdueCount > 0 ? 'record-metric--danger' : '' }}">
                 <span>{{ __("Solde restant") }}</span>
@@ -128,13 +128,13 @@
         <div class="detail-sheet">
             <section class="detail-section">
                 <div class="detail-section__heading">
-                    <p class="app-kicker">Dossier</p>
-                    <h2>Profil et coordonnées</h2>
+                    <p class="app-kicker">{{ __("Dossier") }}</p>
+                    <h2>{{ __("Profil et coordonnées") }}</h2>
                 </div>
                 <dl class="detail-grid">
-                    <div><dt>Téléphone principal</dt><dd>{{ $customer->phone }}</dd></div>
+                    <div><dt>{{ __("Téléphone principal") }}</dt><dd>{{ $customer->phone }}</dd></div>
                     @if($customer->secondary_phone)
-                        <div><dt>Téléphone secondaire</dt><dd>{{ $customer->secondary_phone }}</dd></div>
+                        <div><dt>{{ __("Téléphone secondaire") }}</dt><dd>{{ $customer->secondary_phone }}</dd></div>
                     @endif
                     @if($customer->whatsapp)
                         <div>
@@ -143,21 +143,21 @@
                         </div>
                     @endif
                     <div><dt>{{ __("E-mail") }}</dt><dd>{{ $customer->email ?: 'Non renseigné' }}</dd></div>
-                    <div><dt>Adresse résidentielle</dt><dd>{{ $customer->address ?: 'Non renseignée' }}</dd></div>
-                    <div><dt>Commune / Ville</dt><dd>{{ implode(', ', array_filter([$customer->commune, $customer->city])) ?: 'Non renseignée' }}</dd></div>
+                    <div><dt>{{ __("Adresse résidentielle") }}</dt><dd>{{ $customer->address ?: 'Non renseignée' }}</dd></div>
+                    <div><dt>{{ __("Commune / Ville") }}</dt><dd>{{ implode(', ', array_filter([$customer->commune, $customer->city])) ?: 'Non renseignée' }}</dd></div>
                     <div><dt>{{ __("Pays") }}</dt><dd>{{ $customer->country ?: 'Non renseigné' }}</dd></div>
                     <div><dt>{{ __("Nationalité") }}</dt><dd>{{ $customer->nationality ?: 'Non renseignée' }}</dd></div>
                     @if($customer->birth_date)
                         <div><dt>{{ __("Date de naissance") }}</dt><dd>{{ $customer->birth_date->format('d/m/Y') }}</dd></div>
                     @endif
                     @if($customer->gender)
-                        <div><dt>Genre</dt><dd>{{ ucfirst($customer->gender) }}</dd></div>
+                        <div><dt>{{ __("Genre") }}</dt><dd>{{ ucfirst($customer->gender) }}</dd></div>
                     @endif
-                    <div><dt>Agent responsable</dt><dd>{{ $customer->assignedAgent ? $customer->assignedAgent->first_name.' '.$customer->assignedAgent->last_name : 'Non attribué' }}</dd></div>
+                    <div><dt>{{ __("Agent responsable") }}</dt><dd>{{ $customer->assignedAgent ? $customer->assignedAgent->first_name.' '.$customer->assignedAgent->last_name : 'Non attribué' }}</dd></div>
                 </dl>
                 @if($customer->internal_notes)
                     <div>
-                        <p style="font-size:0.66rem;font-weight:600;color:var(--app-text-muted);margin-bottom:0.25rem;">Observations</p>
+                        <p style="font-size:0.66rem;font-weight:600;color:var(--app-text-muted);margin-bottom:0.25rem;">{{ __("Observations") }}</p>
                         <p style="font-size:0.78rem;white-space:pre-line;margin:0;">{{ $customer->internal_notes }}</p>
                     </div>
                 @endif
@@ -168,7 +168,7 @@
         <section class="resource-table" aria-labelledby="customer-subs-title">
             <div class="resource-table__header">
                 <div>
-                    <h2 id="customer-subs-title">Parcelles et souscriptions</h2>
+                    <h2 id="customer-subs-title">{{ __("Parcelles et souscriptions") }}</h2>
                     <p>{{ $customer->subscriptions->count() }} {{ Str::plural('souscription', $customer->subscriptions->count()) }}</p>
                 </div>
                 @can('subscriptions.create')
@@ -179,7 +179,7 @@
                 <table class="table resource-data-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th>Souscription</th>
+                            <th>{{ __("Souscription") }}</th>
                             <th>{{ __("Parcelle") }}</th>
                             <th>{{ __("Formule") }}</th>
                             <th>{{ __("Échéances") }}</th>
@@ -209,7 +209,7 @@
                                     @if($subOverdueCount > 0)
                                         <span class="status-badge status-badge--danger">{{ $subOverdueCount }} en retard</span>
                                     @elseif($subscription->financial_status === 'paid')
-                                        <span class="status-badge status-badge--settled">Soldée</span>
+                                        <span class="status-badge status-badge--settled">{{ __("Soldée") }}</span>
                                     @else
                                         <span class="status-badge status-badge--neutral">{{ __("À jour") }}</span>
                                     @endif
@@ -218,7 +218,7 @@
                                 <td class="record-money text-end">{{ number_format((float) $subscription->balance, 2, ',', ' ') }} USD</td>
                                 <td class="text-end">
                                     <div class="record-table-actions">
-                                        <a href="{{ route('subscriptions.show', $subscription) }}" class="resource-row-action">Détails</a>
+                                        <a href="{{ route('subscriptions.show', $subscription) }}" class="resource-row-action">{{ __("Détails") }}</a>
                                         @if($canPay)
                                             @can('payments.create')
                                                 <a href="{{ route('payments.create', ['subscription' => $subscription->id]) }}" class="resource-row-action {{ $subOverdueCount > 0 ? 'resource-row-action--danger' : '' }}">{{ __("Encaisser") }}</a>
@@ -232,7 +232,7 @@
                                 <td colspan="7">
                                     <div class="resource-empty">
                                         <strong>{{ __("Aucune souscription") }}</strong>
-                                        <span>Ce client ne possède encore aucune parcelle réservée.</span>
+                                        <span>{{ __("Ce client ne possède encore aucune parcelle réservée.") }}</span>
                                     </div>
                                 </td>
                             </tr>
@@ -246,7 +246,7 @@
         <section class="resource-table" aria-labelledby="customer-payments-title">
             <div class="resource-table__header">
                 <div>
-                    <h2 id="customer-payments-title">Paiements et reçus</h2>
+                    <h2 id="customer-payments-title">{{ __("Paiements et reçus") }}</h2>
                     <p>{{ $customer->payments->count() }} versement(s) enregistré(s)</p>
                 </div>
             </div>
@@ -256,9 +256,9 @@
                         <tr>
                             <th>{{ __("Référence") }}</th>
                             <th>{{ __("Date") }}</th>
-                            <th>Mode</th>
+                            <th>{{ __("Mode") }}</th>
                             <th class="text-end">{{ __("Montant") }}</th>
-                            <th class="text-end">Reçu</th>
+                            <th class="text-end">{{ __("Reçu") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -297,7 +297,7 @@
         <section class="resource-table" aria-labelledby="customer-docs-title">
             <div class="resource-table__header">
                 <div>
-                    <h2 id="customer-docs-title">Documents privés</h2>
+                    <h2 id="customer-docs-title">{{ __("Documents privés") }}</h2>
                     <p>{{ $customer->documents->count() }} document(s) importé(s)</p>
                 </div>
             </div>
@@ -306,7 +306,7 @@
                     <thead>
                         <tr>
                             <th>{{ __("Nom") }}</th>
-                            <th>Type</th>
+                            <th>{{ __("Type") }}</th>
                             <th class="text-end">{{ __("Action") }}</th>
                         </tr>
                     </thead>
@@ -341,7 +341,7 @@
                     <form method="POST" enctype="multipart/form-data" action="{{ route('customers.documents.store', $customer) }}" class="d-flex gap-2 flex-wrap align-items-end w-100">
                         @csrf
                         <div>
-                            <label class="form-label" style="font-size:0.72rem;font-weight:600;">Type</label>
+                            <label class="form-label" style="font-size:0.72rem;font-weight:600;">{{ __("Type") }}</label>
                             <select name="document_type" class="form-select form-select-sm">
                                 @foreach(['identity' => 'Identité', 'photo' => 'Photo', 'contract' => 'Contrat', 'payment_proof' => 'Preuve de paiement', 'subscription_document' => 'Souscription', 'other' => 'Autre'] as $value => $label)
                                     <option value="{{ $value }}">{{ $label }}</option>
@@ -349,7 +349,7 @@
                             </select>
                         </div>
                         <div class="flex-grow-1">
-                            <label class="form-label" style="font-size:0.72rem;font-weight:600;">Fichier</label>
+                            <label class="form-label" style="font-size:0.72rem;font-weight:600;">{{ __("Fichier") }}</label>
                             <input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png,.webp" required class="form-control form-control-sm">
                         </div>
                         <button class="btn btn-sm btn-app-primary resource-button" type="submit">
@@ -367,7 +367,7 @@
                 <div class="detail-section">
                     <div class="detail-section__heading">
                         <p class="app-kicker">{{ __("Sécurité") }}</p>
-                        <h2 id="customer-portal-title">Accès au portail client</h2>
+                        <h2 id="customer-portal-title">{{ __("Accès au portail client") }}</h2>
                     </div>
 
                     @if($customer->user)
@@ -382,20 +382,20 @@
                                 </dd>
                             </div>
                             <div>
-                                <dt>E-mail de connexion</dt>
+                                <dt>{{ __("E-mail de connexion") }}</dt>
                                 <dd>{{ $portalUser->email }}</dd>
                             </div>
                             <div>
-                                <dt>Dernière connexion</dt>
+                                <dt>{{ __("Dernière connexion") }}</dt>
                                 <dd>{{ $portalUser->last_login_at?->translatedFormat('d F Y à H:i') ?? 'Jamais connecté' }}</dd>
                             </div>
                             <div>
                                 <dt>{{ __("Mot de passe") }}</dt>
                                 <dd>
                                     @if($portalUser->must_change_password)
-                                        <span class="status-badge status-badge--warning">Changement requis</span>
+                                        <span class="status-badge status-badge--warning">{{ __("Changement requis") }}</span>
                                     @else
-                                        <span class="status-badge status-badge--neutral">Défini</span>
+                                        <span class="status-badge status-badge--neutral">{{ __("Défini") }}</span>
                                     @endif
                                 </dd>
                             </div>
@@ -407,13 +407,13 @@
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-outline-secondary resource-button"
                                             data-confirm="Réinitialiser le mot de passe de ce client et lui envoyer de nouveaux identifiants ?">
-                                        <i class="bi bi-key me-1" aria-hidden="true"></i>Réinitialiser le mot de passe
+                                        <i class="bi bi-key me-1" aria-hidden="true"></i>{{ __("Réinitialiser le mot de passe") }}
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('customers.portal.resend-credentials', $customer) }}">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-outline-secondary resource-button">
-                                        <i class="bi bi-envelope me-1" aria-hidden="true"></i>Renvoyer les identifiants
+                                        <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ __("Renvoyer les identifiants") }}
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('customers.portal.toggle-status', $customer) }}">
@@ -429,7 +429,7 @@
                             </div>
                         </div>
                     @else
-                        <p class="record-empty-copy">Ce client n'a pas encore d'accès au portail client.</p>
+                        <p class="record-empty-copy">{{ __("Ce client n'a pas encore d'accès au portail client.") }}</p>
                         <div style="margin-top: 1rem;">
                             <form method="POST" action="{{ route('customers.portal.create-access', $customer) }}">
                                 @csrf

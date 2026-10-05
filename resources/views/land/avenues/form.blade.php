@@ -1,14 +1,14 @@
 <x-layouts.app :title="$avenue->exists ? 'Modifier l’avenue' : 'Nouvelle avenue'">
     <div class="form-page">
         <header class="resource-heading">
-            <div><p class="app-kicker">Gestion foncière</p><h1 class="resource-heading__title">{{ $avenue->exists ? 'Modifier l’avenue' : 'Créer une avenue' }}</h1><p class="resource-heading__description">Rattachez l’avenue à son quartier et renseignez son état opérationnel.</p></div>
-            <a href="{{ route('avenues.index') }}" class="btn btn-outline">Retour aux avenues</a>
+            <div><p class="app-kicker">{{ __("Gestion foncière") }}</p><h1 class="resource-heading__title">{{ $avenue->exists ? 'Modifier l’avenue' : 'Créer une avenue' }}</h1><p class="resource-heading__description">{{ __("Rattachez l’avenue à son quartier et renseignez son état opérationnel.") }}</p></div>
+            <a href="{{ route('avenues.index') }}" class="btn btn-outline">{{ __("Retour aux avenues") }}</a>
         </header>
         <form method="POST" action="{{ $avenue->exists ? route('avenues.update', $avenue) : route('avenues.store') }}" class="form-page__content">
             @csrf
             @if($avenue->exists) @method('PUT') @endif
             <section class="form-section">
-                <div class="form-section__header"><span class="form-section__number">01</span><div><h2>Informations de l’avenue</h2><p>Le rattachement au quartier détermine l’organisation des parcelles.</p></div></div>
+                <div class="form-section__header"><span class="form-section__number">01</span><div><h2>{{ __("Informations de l’avenue") }}</h2><p>{{ __("Le rattachement au quartier détermine l’organisation des parcelles.") }}</p></div></div>
                 <div class="form-section__body">
                     <div class="form-grid">
                         <label class="form-field"><span class="form-field__label">{{ __("Quartier") }} <span class="form-required">*</span></span><select name="neighborhood_id" class="form-select">@foreach($neighborhoods as $item)<option value="{{ $item->id }}" @selected((string) old('neighborhood_id', $avenue->neighborhood_id) === (string) $item->id)>{{ $item->name }}</option>@endforeach</select>@error('neighborhood_id')<span class="form-field__error">{{ $message }}</span>@enderror</label>

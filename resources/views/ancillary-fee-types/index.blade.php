@@ -1,25 +1,25 @@
-<x-layouts.app title="Types de frais connexes">
+<x-layouts.app title="{{ __('Types de frais connexes') }}">
     <div class="resource-page">
         <header class="resource-heading">
             <div>
-                <p class="app-kicker">Gestion financière</p>
-                <h1 class="resource-heading__title">Types de frais connexes</h1>
-                <p class="resource-heading__description">Catalogue des catégories utilisées pour les frais générés et leur affichage.</p>
+                <p class="app-kicker">{{ __("Gestion financière") }}</p>
+                <h1 class="resource-heading__title">{{ __("Types de frais connexes") }}</h1>
+                <p class="resource-heading__description">{{ __("Catalogue des catégories utilisées pour les frais générés et leur affichage.") }}</p>
             </div>
             @can('payments.create')
-                <a href="{{ route('ancillary-fee-types.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nouveau type</a>
+                <a href="{{ route('ancillary-fee-types.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ __("Nouveau type") }}</a>
             @endcan
         </header>
 
         <section class="resource-table">
-            <div class="resource-table__header"><div><h2>Catalogue des types</h2><p>{{ $feeTypes->total() }} type(s) enregistré(s)</p></div></div>
+            <div class="resource-table__header"><div><h2>{{ __("Catalogue des types") }}</h2><p>{{ $feeTypes->total() }} type(s) enregistré(s)</p></div></div>
             <div class="table-responsive">
                 <table class="table resource-data-table align-middle mb-0">
-                    <thead><tr><th>{{ __("Type de frais") }}</th><th>Montant par défaut</th><th>Frais existants</th><th class="text-end">{{ __("Actions") }}</th></tr></thead>
+                    <thead><tr><th>{{ __("Type de frais") }}</th><th>{{ __("Montant par défaut") }}</th><th>{{ __("Frais existants") }}</th><th class="text-end">{{ __("Actions") }}</th></tr></thead>
                 <tbody>
                     @forelse($feeTypes as $feeType)
                         <tr>
-                            <td><strong>{{ $feeType->name }}</strong>@if($feeType->is_system)<small class="d-block text-muted">Type métier requis</small>@endif</td>
+                            <td><strong>{{ $feeType->name }}</strong>@if($feeType->is_system)<small class="d-block text-muted">{{ __("Type métier requis") }}</small>@endif</td>
                             <td>
                                 @if($feeType->code === 'development')
                                     @foreach(['cash' => 'Comptant', 'one_year' => '1 an', 'three_years' => '3 ans', 'five_years' => '5 ans', 'ten_years' => '10 ans'] as $option => $label)
@@ -44,7 +44,7 @@
                             </div></td>
                         </tr>
                     @empty
-                        <tr><td colspan="5"><div class="resource-empty"><strong>{{ __("Aucun type de frais") }}</strong><span>Créez le premier type de frais connexe.</span></div></td></tr>
+                        <tr><td colspan="5"><div class="resource-empty"><strong>{{ __("Aucun type de frais") }}</strong><span>{{ __("Créez le premier type de frais connexe.") }}</span></div></td></tr>
                     @endforelse
                     </tbody>
                 </table>

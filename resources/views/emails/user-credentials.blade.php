@@ -48,7 +48,7 @@
                 <div class="credentials-box">
                     <table>
                         <tr>
-                            <td>Identifiant</td>
+                            <td>{{ __("Identifiant") }}</td>
                             <td>{{ $user->email }}</td>
                         </tr>
                         <tr>
@@ -63,13 +63,13 @@
                 </div>
 
                 <div class="notice">
-                    <strong>Mot de passe temporaire</strong>
+                    <strong>{{ __("Mot de passe temporaire") }}</strong>
                     Lors de votre première connexion, le système vous demandera de définir un nouveau mot de passe personnel.
                     Ce mot de passe temporaire ne sera valable qu'une seule fois.
                 </div>
 
                 <div class="cta">
-                    <a href="{{ $loginUrl }}" class="btn">Accéder à la plateforme</a>
+                    <a href="{{ $loginUrl }}" class="btn">{{ __("Accéder à la plateforme") }}</a>
                 </div>
 
                 <hr class="divider">
@@ -82,7 +82,7 @@
 
             <div class="footer">
                 &copy; {{ date('Y') }} Cité Étoile du Monde &mdash; Tous droits réservés.<br>
-                Ce message est généré automatiquement. Merci de ne pas y répondre directement.
+                {{ __("Ce message est généré automatiquement. Merci de ne pas y répondre directement.") }}
             </div>
         </div>
     </div>

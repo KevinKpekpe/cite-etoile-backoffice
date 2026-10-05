@@ -1,4 +1,4 @@
-<x-layouts.guest title="Connexion">
+<x-layouts.guest title="{{ __('Connexion') }}">
     <form method="POST" action="{{ route('login.store') }}" class="auth-form">
         @csrf
         <x-auth-input name="email" :label="__('auth.email_address')" type="email" :value="old('email')" autocomplete="username" required autofocus />

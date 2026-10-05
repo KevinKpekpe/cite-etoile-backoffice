@@ -138,31 +138,31 @@
 {{-- ══════════════ META ══════════════ --}}
 <table class="meta-table">
     <tr>
-        <td>REÇU</td>
+        <td>{{ __("REÇU") }}</td>
         <td class="right">:{{ $receipt->receipt_number }}</td>
     </tr>
     <tr>
-        <td>DATE</td>
+        <td>{{ __("DATE") }}</td>
         <td class="right">:{{ $receipt->issued_at->format('d/m/Y H:i') }}</td>
     </tr>
     <tr>
-        <td>CLIENT</td>
+        <td>{{ __("CLIENT") }}</td>
         <td class="right">:{{ strtoupper($receipt->customer->last_name) }} {{ $receipt->customer->first_name }}</td>
     </tr>
     <tr>
-        <td>RÉF. CLIENT</td>
+        <td>{{ __("RÉF. CLIENT") }}</td>
         <td class="right">:{{ $receipt->customer->customer_number }}</td>
     </tr>
     @if($receipt->issuedBy)
     <tr>
-        <td>AGENT</td>
+        <td>{{ __("AGENT") }}</td>
         <td class="right">:{{ strtoupper($receipt->issuedBy->last_name) }} {{ $receipt->issuedBy->first_name }}</td>
     </tr>
     @endif
 </table>
 
 @if($receipt->status !== 'valid')
-<div class="cancelled-stamp">*** REÇU ANNULÉ ***</div>
+<div class="cancelled-stamp">{{ __("*** REÇU ANNULÉ ***") }}</div>
 @endif
 
 <div class="sep-dash center">--------------------------------</div>
@@ -170,7 +170,7 @@
 {{-- ══════════════ ITEMS ══════════════ --}}
 <table class="item-table">
     <tr>
-        <td class="item-name bold upper">Désignation</td>
+        <td class="item-name bold upper">{{ __("Désignation") }}</td>
         <td class="item-price bold upper">{{ __("Montant") }}</td>
     </tr>
 </table>
@@ -201,7 +201,7 @@
 {{-- ══════════════ TOTAUX ══════════════ --}}
 <table class="total-table">
     <tr>
-        <td>Cumul versé</td>
+        <td>{{ __("Cumul versé") }}</td>
         <td class="right">{{ number_format((float)($receipt->payment->ancillaryFee?->amount_paid ?? $receipt->subscription->amount_paid), 2) }} {{ $branding['currency'] }}</td>
     </tr>
     <tr>
@@ -209,7 +209,7 @@
         <td class="right">{{ number_format((float)($receipt->payment->ancillaryFee?->balance ?? $receipt->subscription->balance), 2) }} {{ $branding['currency'] }}</td>
     </tr>
     <tr class="total-row">
-        <td>TOTAL ENCAISSÉ</td>
+        <td>{{ __("TOTAL ENCAISSÉ") }}</td>
         <td class="right">{{ number_format((float)$receipt->amount, 2) }} {{ $branding['currency'] }}</td>
     </tr>
 </table>
@@ -224,7 +224,7 @@
     </tr>
     @if($receipt->payment->transaction_reference)
     <tr>
-        <td class="small" style="color:#333;">Réf. Trans.</td>
+        <td class="small" style="color:#333;">{{ __("Réf. Trans.") }}</td>
         <td class="right small" style="color:#333;">{{ $receipt->payment->transaction_reference }}</td>
     </tr>
     @endif
@@ -236,7 +236,7 @@
 @if($nextInstallment)
 <table class="total-table">
     <tr>
-        <td class="bold">PROCHAIN PAIEMENT :</td>
+        <td class="bold">{{ __("PROCHAIN PAIEMENT :") }}</td>
     </tr>
     <tr>
         <td>Échéance : {{ \Carbon\Carbon::parse($nextInstallment->due_date)->format('d/m/Y') }}</td>
@@ -244,7 +244,7 @@
     </tr>
 </table>
 @else
-<div class="center bold mt4">*** SOUSCRIPTION SOLDÉE ***</div>
+<div class="center bold mt4">{{ __("*** SOUSCRIPTION SOLDÉE ***") }}</div>
 @endif
 
 <div class="sep-eq center">================================</div>

@@ -1,20 +1,20 @@
-<x-layouts.app title="Corbeille clients">
+<x-layouts.app title="{{ __('Corbeille clients') }}">
     <div class="resource-page">
         <header class="resource-heading">
             <div>
-                <p class="app-kicker">Archivage</p>
-                <h1 class="resource-heading__title">Corbeille clients</h1>
-                <p class="resource-heading__description">Restaurez les dossiers supprimés ou retirez-les définitivement selon vos permissions.</p>
+                <p class="app-kicker">{{ __("Archivage") }}</p>
+                <h1 class="resource-heading__title">{{ __("Corbeille clients") }}</h1>
+                <p class="resource-heading__description">{{ __("Restaurez les dossiers supprimés ou retirez-les définitivement selon vos permissions.") }}</p>
             </div>
             <div class="resource-heading__actions">
-                <a href="{{ route('customers.index') }}" class="btn btn-outline-secondary resource-button">Retour aux clients</a>
+                <a href="{{ route('customers.index') }}" class="btn btn-outline-secondary resource-button">{{ __("Retour aux clients") }}</a>
             </div>
         </header>
 
         <section class="resource-table">
             <div class="resource-table__header">
                 <div>
-                    <h2>Dossiers clients supprimés</h2>
+                    <h2>{{ __("Dossiers clients supprimés") }}</h2>
                     <p>{{ $customers->total() }} {{ Str::plural('dossier', $customers->total()) }}</p>
                 </div>
             </div>
@@ -22,11 +22,11 @@
                 <table class="table resource-data-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th scope="col">Numéro</th>
+                            <th scope="col">{{ __("Numéro") }}</th>
                             <th scope="col">{{ __("Client") }}</th>
-                            <th scope="col">Coordonnées</th>
-                            <th scope="col">Responsable</th>
-                            <th scope="col">Suppression</th>
+                            <th scope="col">{{ __("Coordonnées") }}</th>
+                            <th scope="col">{{ __("Responsable") }}</th>
+                            <th scope="col">{{ __("Suppression") }}</th>
                             <th scope="col" class="text-end">{{ __("Actions") }}</th>
                         </tr>
                     </thead>

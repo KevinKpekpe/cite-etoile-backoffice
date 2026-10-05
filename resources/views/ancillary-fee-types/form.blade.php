@@ -1,7 +1,7 @@
 <x-layouts.app :title="$feeType->exists ? 'Modifier un type de frais' : 'Nouveau type de frais'">
     <div class="form-page">
         <header class="resource-heading">
-            <div><p class="app-kicker">Gestion financière</p><h1 class="resource-heading__title">{{ $feeType->exists ? 'Modifier un type de frais' : 'Créer un type de frais' }}</h1><p class="resource-heading__description">Le code identifie le type dans les frais générés et ne peut pas être modifié après sa création.</p></div>
+            <div><p class="app-kicker">{{ __("Gestion financière") }}</p><h1 class="resource-heading__title">{{ $feeType->exists ? 'Modifier un type de frais' : 'Créer un type de frais' }}</h1><p class="resource-heading__description">{{ __("Le code identifie le type dans les frais générés et ne peut pas être modifié après sa création.") }}</p></div>
             <a href="{{ route('ancillary-fee-types.index') }}" class="btn btn-outline">{{ __("Retour au catalogue") }}</a>
         </header>
         @if($errors->has('fee_type'))<div class="alert alert-danger">{{ $errors->first('fee_type') }}</div>@endif
@@ -9,7 +9,7 @@
             @csrf
             @if($feeType->exists) @method('PUT') @endif
             <section class="form-section">
-                <div class="form-section__header"><span class="form-section__number">01</span><div><h2>{{ __("Type de frais") }}</h2><p>Définissez son nom et ses montants de référence ou ses tarifs par formule.</p></div></div>
+                <div class="form-section__header"><span class="form-section__number">01</span><div><h2>{{ __("Type de frais") }}</h2><p>{{ __("Définissez son nom et ses montants de référence ou ses tarifs par formule.") }}</p></div></div>
                 <div class="form-section__body"><div class="form-grid">
                     @if($feeType->exists)
                         <x-auth-input name="code_display" label="Code" :value="$feeType->code" readonly />
@@ -29,12 +29,12 @@
                             ];
                         @endphp
                         <div class="form-grid__wide">
-                            <h3>Tarifs d’aménagement par formule</h3>
-                            <p class="resource-heading__description">Ces montants seront appliqués aux nouveaux contrats signés. Les frais déjà générés garderont leurs montants.</p>
+                            <h3>{{ __("Tarifs d’aménagement par formule") }}</h3>
+                            <p class="resource-heading__description">{{ __("Ces montants seront appliqués aux nouveaux contrats signés. Les frais déjà générés garderont leurs montants.") }}</p>
                             @foreach($developmentOptions as $option => $label)
                                 @php($optionPricing = $feeType->pricing_options[$option] ?? [])
                                 <section class="form-section mt-3">
-                                    <div class="form-section__header"><span class="form-section__number">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><div><h4>{{ $label }}</h4><p>Le client peut choisir l’une de ces deux modalités.</p></div></div>
+                                    <div class="form-section__header"><span class="form-section__number">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><div><h4>{{ $label }}</h4><p>{{ __("Le client peut choisir l’une de ces deux modalités.") }}</p></div></div>
                                     <div class="form-section__body"><div class="form-grid">
                                         <x-auth-input name="pricing_options[{{ $option }}][total]" label="Montant total (USD)" type="number" min="0.01" step="0.01" :value="old('pricing_options.'.$option.'.total', $optionPricing['total'] ?? '')" required />
                                         <x-auth-input name="pricing_options[{{ $option }}][monthly]" label="Montant mensuel (USD)" type="number" min="0.01" step="0.01" :value="old('pricing_options.'.$option.'.monthly', $optionPricing['monthly'] ?? '')" required />

@@ -1,4 +1,4 @@
-<x-layouts.guest title="Mot de passe oublié">
+<x-layouts.guest title="{{ __('Mot de passe oublié') }}">
     <p class="auth-form-copy">{{ __('auth.forgot_password_description') }}</p>
 
     @if($errors->has('email'))

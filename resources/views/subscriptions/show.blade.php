@@ -16,7 +16,7 @@
 
         @if($subscription->financial_status === 'paid' || $subscription->commercial_status === 'completed')
             <div class="record-alert record-alert--success">
-                <div><strong>Souscription soldée</strong><p>{{ __("Tous les paiements ont été reçus. Aucun encaissement supplémentaire n’est possible.") }}</p></div>
+                <div><strong>{{ __("Souscription soldée") }}</strong><p>{{ __("Tous les paiements ont été reçus. Aucun encaissement supplémentaire n’est possible.") }}</p></div>
             </div>
         @elseif(in_array($subscription->commercial_status, ['cancelled', 'terminated'], true))
             <div class="record-alert record-alert--danger">
@@ -24,7 +24,7 @@
             </div>
         @elseif($subscription->commercial_status === 'pending')
             <div class="record-alert record-alert--warning">
-                <div><strong>{{ __("En attente du premier versement") }}</strong><p>La parcelle est réservée. La souscription sera activée dès réception de l’acompte.</p></div>
+                <div><strong>{{ __("En attente du premier versement") }}</strong><p>{{ __("La parcelle est réservée. La souscription sera activée dès réception de l’acompte.") }}</p></div>
                 @can('payments.create')
                     <a href="{{ route('payments.create', $subscription) }}" class="btn btn-app-primary resource-button">{{ __("Encaisser l’acompte") }}</a>
                 @endcan
@@ -53,7 +53,7 @@
             <div class="resource-heading__actions">
                 @if($subscription->customer)
                     @can('customers.view')
-                        <a href="{{ route('customers.show', $subscription->customer) }}" class="btn btn-outline-secondary resource-button">Fiche client</a>
+                        <a href="{{ route('customers.show', $subscription->customer) }}" class="btn btn-outline-secondary resource-button">{{ __("Fiche client") }}</a>
                     @endcan
                 @endif
                 @can('installments.view')
@@ -87,24 +87,24 @@
 
         <div class="detail-sheet">
             <section class="detail-section">
-                <div class="detail-section__heading"><p class="app-kicker">Contrat</p><h2>Conditions figées</h2></div>
+                <div class="detail-section__heading"><p class="app-kicker">{{ __("Contrat") }}</p><h2>{{ __("Conditions figées") }}</h2></div>
                 <dl class="detail-grid">
                     <div><dt>{{ __("Formule") }}</dt><dd>{{ $subscription->paymentPlan->name }}</dd></div>
                     <div><dt>{{ __("Type de règlement") }}</dt><dd>{{ $subscription->duration_months > 0 ? 'Paiement échelonné' : 'Paiement comptant' }}</dd></div>
                     <div><dt>Mensualité</dt><dd>{{ $subscription->duration_months > 0 ? number_format((float) $subscription->monthly_amount, 2, ',', ' ').' USD' : 'Non applicable' }}</dd></div>
-                    <div><dt>Durée</dt><dd>{{ $subscription->duration_months > 0 ? $subscription->duration_months.' mois' : 'Comptant' }}</dd></div>
+                    <div><dt>{{ __("Durée") }}</dt><dd>{{ $subscription->duration_months > 0 ? $subscription->duration_months.' mois' : 'Comptant' }}</dd></div>
                     <div><dt>{{ __("Date de souscription") }}</dt><dd>{{ $subscription->subscription_date?->format('d/m/Y') }}</dd></div>
-                    <div><dt>Début de l’échéancier</dt><dd>{{ $subscription->start_date?->format('d/m/Y') }}</dd></div>
+                    <div><dt>{{ __("Début de l’échéancier") }}</dt><dd>{{ $subscription->start_date?->format('d/m/Y') }}</dd></div>
                 </dl>
             </section>
 
             <section class="detail-section">
-                <div class="detail-section__heading"><p class="app-kicker">Suivi</p><h2>Statuts du dossier</h2></div>
+                <div class="detail-section__heading"><p class="app-kicker">{{ __("Suivi") }}</p><h2>{{ __("Statuts du dossier") }}</h2></div>
                 <div>
                     <dl class="detail-grid">
-                        <div><dt>Commercial</dt><dd><span class="status-badge status-badge--{{ $subscription->commercial_status }}">{{ __('statuses.'.$subscription->commercial_status) }}</span></dd></div>
-                        <div><dt>Financier</dt><dd>{{ __('statuses.'.$subscription->financial_status) }}</dd></div>
-                        <div><dt>Administratif</dt><dd>{{ __('statuses.'.$subscription->administrative_status) }}</dd></div>
+                        <div><dt>{{ __("Commercial") }}</dt><dd><span class="status-badge status-badge--{{ $subscription->commercial_status }}">{{ __('statuses.'.$subscription->commercial_status) }}</span></dd></div>
+                        <div><dt>{{ __("Financier") }}</dt><dd>{{ __('statuses.'.$subscription->financial_status) }}</dd></div>
+                        <div><dt>{{ __("Administratif") }}</dt><dd>{{ __('statuses.'.$subscription->administrative_status) }}</dd></div>
                     </dl>
                     @if(auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('super_admin'))
                         @can('subscriptions.update')
@@ -127,17 +127,17 @@
             </section>
 
             <section class="detail-section">
-                <div class="detail-section__heading"><p class="app-kicker">Document</p><h2>Dossier contrat</h2></div>
+                <div class="detail-section__heading"><p class="app-kicker">{{ __("Document") }}</p><h2>{{ __("Dossier contrat") }}</h2></div>
                 <div>
                     @if($subscription->contract)
                         <dl class="detail-grid mb-3">
-                            <div><dt>Numéro</dt><dd class="font-monospace">{{ $subscription->contract->contract_number }}</dd></div>
+                            <div><dt>{{ __("Numéro") }}</dt><dd class="font-monospace">{{ $subscription->contract->contract_number }}</dd></div>
                             <div><dt>{{ __("Statut") }}</dt><dd>{{ __('statuses.'.$subscription->contract->status) }}</dd></div>
                             <div><dt>{{ __("Date de signature") }}</dt><dd>{{ $subscription->contract->signed_at?->format('d/m/Y') ?? 'Non signée' }}</dd></div>
                         </dl>
                         @if($subscription->contract->document_path)
                             @can('documents.download')
-                                <a href="{{ route('subscriptions.contract.download', [$subscription, $subscription->contract]) }}" class="resource-reference">Télécharger le contrat</a>
+                                <a href="{{ route('subscriptions.contract.download', [$subscription, $subscription->contract]) }}" class="resource-reference">{{ __("Télécharger le contrat") }}</a>
                             @endcan
                         @endif
                     @else
@@ -168,14 +168,14 @@
                     @can('subscriptions.update')
                         <form method="POST" action="{{ route('subscriptions.bornage.realize', $subscription) }}">
                             @csrf
-                            <button class="btn btn-outline-secondary resource-button" type="submit">Marquer le bornage réalisé</button>
+                            <button class="btn btn-outline-secondary resource-button" type="submit">{{ __("Marquer le bornage réalisé") }}</button>
                         </form>
                     @endcan
                 @endif
             </div>
             <div class="table-responsive">
                 <table class="table resource-data-table align-middle mb-0">
-                    <thead><tr><th>Frais</th><th>{{ __("Échéance") }}</th><th class="text-end">{{ __("Montant") }}</th><th class="text-end">{{ __("Payé") }}</th><th class="text-end">{{ __("Solde") }}</th><th>{{ __("Statut") }}</th><th class="text-end">{{ __("Action / reçu") }}</th></tr></thead>
+                    <thead><tr><th>{{ __("Frais") }}</th><th>{{ __("Échéance") }}</th><th class="text-end">{{ __("Montant") }}</th><th class="text-end">{{ __("Payé") }}</th><th class="text-end">{{ __("Solde") }}</th><th>{{ __("Statut") }}</th><th class="text-end">{{ __("Action / reçu") }}</th></tr></thead>
                     <tbody>
                         @forelse($subscription->ancillaryFees as $fee)
                             <tr>
@@ -197,7 +197,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7"><div class="resource-empty"><strong>{{ __("Aucun frais connexe généré") }}</strong><span>Les frais cadastraux et d’aménagement apparaîtront à la signature du contrat. Le bornage sera ajouté quand sa réalisation sera enregistrée.</span></div></td></tr>
+                            <tr><td colspan="7"><div class="resource-empty"><strong>{{ __("Aucun frais connexe généré") }}</strong><span>{{ __("Les frais cadastraux et d’aménagement apparaîtront à la signature du contrat. Le bornage sera ajouté quand sa réalisation sera enregistrée.") }}</span></div></td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -206,11 +206,11 @@
 
         <section class="resource-table" aria-labelledby="subscription-payments-title">
             <div class="resource-table__header">
-                <div><h2 id="subscription-payments-title">Paiements et reçus</h2><p>{{ $subscription->payments->count() }} versement(s) enregistré(s)</p></div>
+                <div><h2 id="subscription-payments-title">{{ __("Paiements et reçus") }}</h2><p>{{ $subscription->payments->count() }} versement(s) enregistré(s)</p></div>
             </div>
             <div class="table-responsive">
                 <table class="table resource-data-table align-middle mb-0">
-                    <thead><tr><th>{{ __("Référence") }}</th><th>{{ __("Date") }}</th><th>Mode</th><th class="text-end">{{ __("Montant") }}</th><th class="text-end">Reçu</th></tr></thead>
+                    <thead><tr><th>{{ __("Référence") }}</th><th>{{ __("Date") }}</th><th>{{ __("Mode") }}</th><th class="text-end">{{ __("Montant") }}</th><th class="text-end">{{ __("Reçu") }}</th></tr></thead>
                     <tbody>
                         @forelse($subscription->payments as $payment)
                             <tr>

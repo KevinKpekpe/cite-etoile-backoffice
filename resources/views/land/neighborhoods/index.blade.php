@@ -1,16 +1,16 @@
-<x-layouts.app title="Quartiers">
+<x-layouts.app title="{{ __('Quartiers') }}">
     @php($statusLabels = ['planned' => 'Planifié', 'active' => 'Actif', 'commercializable' => 'Commercialisable', 'completed' => 'Achevé', 'suspended' => 'Suspendu'])
     <div class="resource-page">
         <header class="resource-heading">
-            <div><p class="app-kicker">Gestion foncière</p><h1 class="resource-heading__title">{{ __("Quartiers") }}</h1><p class="resource-heading__description">Structurez les zones du projet et suivez leur niveau de développement.</p></div>
+            <div><p class="app-kicker">{{ __("Gestion foncière") }}</p><h1 class="resource-heading__title">{{ __("Quartiers") }}</h1><p class="resource-heading__description">{{ __("Structurez les zones du projet et suivez leur niveau de développement.") }}</p></div>
             <a href="{{ route('neighborhoods.create') }}" class="btn btn-primary">{{ __("Nouveau quartier") }}</a>
         </header>
 
         <section class="resource-table">
-            <div class="resource-table__header"><div><h2>Répertoire des quartiers</h2><p>{{ $neighborhoods->total() }} {{ Str::plural('quartier', $neighborhoods->total()) }}</p></div></div>
+            <div class="resource-table__header"><div><h2>{{ __("Répertoire des quartiers") }}</h2><p>{{ $neighborhoods->total() }} {{ Str::plural('quartier', $neighborhoods->total()) }}</p></div></div>
             <div class="table-responsive">
                 <table class="table resource-data-table align-middle mb-0">
-                    <thead><tr><th>Code</th><th>{{ __("Quartier") }}</th><th>{{ __("Statut") }}</th><th class="text-end">{{ __("Avenues") }}</th><th class="text-end">{{ __("Parcelles") }}</th><th class="text-end">{{ __("Action") }}</th></tr></thead>
+                    <thead><tr><th>{{ __("Code") }}</th><th>{{ __("Quartier") }}</th><th>{{ __("Statut") }}</th><th class="text-end">{{ __("Avenues") }}</th><th class="text-end">{{ __("Parcelles") }}</th><th class="text-end">{{ __("Action") }}</th></tr></thead>
                     <tbody>
                         @forelse($neighborhoods as $item)
                             <tr>
@@ -37,7 +37,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6"><div class="resource-empty"><strong>{{ __("Aucun quartier") }}</strong><span>Créez le premier quartier pour structurer le lotissement.</span></div></td></tr>
+                            <tr><td colspan="6"><div class="resource-empty"><strong>{{ __("Aucun quartier") }}</strong><span>{{ __("Créez le premier quartier pour structurer le lotissement.") }}</span></div></td></tr>
                         @endforelse
                     </tbody>
                 </table>

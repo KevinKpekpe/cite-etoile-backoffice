@@ -1,10 +1,10 @@
-<x-layouts.app title="Souscriptions">
+<x-layouts.app title="{{ __('Souscriptions') }}">
     <div class="resource-page">
         <header class="resource-heading">
             <div>
-                <p class="app-kicker">Gestion commerciale</p>
+                <p class="app-kicker">{{ __("Gestion commerciale") }}</p>
                 <h1 class="resource-heading__title">{{ __("Souscriptions") }}</h1>
-                <p class="resource-heading__description">Gestion des contrats de réservation et suivi des paiements.</p>
+                <p class="resource-heading__description">{{ __("Gestion des contrats de réservation et suivi des paiements.") }}</p>
             </div>
             <div class="resource-heading__actions">
                 @can('subscriptions.create')
@@ -32,11 +32,11 @@
                 </a>
                 <a href="{{ route('subscriptions.index', ['status' => 'paid']) }}"
                    class="chart-tab {{ $statusFilter === 'paid' ? 'active' : '' }}">
-                    Soldées <span class="filter-count">{{ $counts['paid'] }}</span>
+                    {{ __("Soldées") }} <span class="filter-count">{{ $counts['paid'] }}</span>
                 </a>
                 <a href="{{ route('subscriptions.index', ['status' => 'cancelled']) }}"
                    class="chart-tab {{ $statusFilter === 'cancelled' ? 'active' : '' }}">
-                    Clôturées <span class="filter-count">{{ $counts['cancelled'] }}</span>
+                    {{ __("Clôturées") }} <span class="filter-count">{{ $counts['cancelled'] }}</span>
                 </a>
             </div>
         </div>
@@ -45,11 +45,11 @@
         <section class="resource-table" aria-labelledby="subscription-table-title">
             <div class="resource-table__header">
                 <div>
-                    <h2 id="subscription-table-title">Dossiers souscriptions</h2>
-                    <p>{{ $subscriptions->total() }} {{ Str::plural('dossier', $subscriptions->total()) }}</p>
+                    <h2 id="subscription-table-title">{{ __("Dossiers souscriptions") }}</h2>
+                    <p>{{ $subscriptions->total() }} {{ Str::plural(__('dossier'), $subscriptions->total()) }}</p>
                 </div>
                 @if($statusFilter !== 'all')
-                    <span class="resource-filter-indicator">Filtre actif : {{ ucfirst($statusFilter) }}</span>
+                    <span class="resource-filter-indicator">{{ __("Filtre actif") }} : {{ ucfirst($statusFilter) }}</span>
                 @endif
             </div>
 
@@ -57,11 +57,11 @@
                 <table class="table resource-data-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th scope="col">Numéro</th>
+                            <th scope="col">{{ __("Numéro") }}</th>
                             <th scope="col">{{ __("Client") }}</th>
                             <th scope="col">{{ __("Parcelle") }}</th>
                             <th scope="col">{{ __("Formule") }}</th>
-                            <th scope="col">Échéances / Retards</th>
+                            <th scope="col">{{ __("Échéances / Retards") }}</th>
                             <th scope="col">{{ __("Statut") }}</th>
                             <th scope="col" class="text-end">{{ __("Solde restant") }}</th>
                             <th scope="col" class="text-end">{{ __("Actions") }}</th>
@@ -104,11 +104,11 @@
                                 <td>
                                     @if($isOverdue)
                                         <div>
-                                            <span class="status-badge status-badge--danger"><i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $overdueCount }} retard(s)</span>
-                                            <small class="d-block text-danger font-semibold mt-1">{{ number_format((float) $overdueTotal, 2, ',', ' ') }} USD impayés</small>
+                                            <span class="status-badge status-badge--danger"><i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $overdueCount }} {{ __('retard(s)') }}</span>
+                                            <small class="d-block text-danger font-semibold mt-1">{{ number_format((float) $overdueTotal, 2, ',', ' ') }} USD {{ __('impayés') }}</small>
                                         </div>
                                     @elseif($item->financial_status === 'paid')
-                                        <span class="status-badge status-badge--active"><i class="bi bi-check-circle-fill me-1"></i> Soldée</span>
+                                        <span class="status-badge status-badge--active"><i class="bi bi-check-circle-fill me-1"></i> {{ __("Soldée") }}</span>
                                     @else
                                         <span class="status-badge status-badge--neutral">{{ __("À jour") }}</span>
                                     @endif
@@ -119,7 +119,7 @@
                                     @elseif($item->commercial_status === 'pending')
                                         <span class="status-badge status-badge--pending">{{ __("En attente") }}</span>
                                     @elseif($item->commercial_status === 'completed')
-                                        <span class="status-badge status-badge--completed">Terminée</span>
+                                        <span class="status-badge status-badge--completed">{{ __("Terminée") }}</span>
                                     @else
                                         <span class="status-badge status-badge--neutral">{{ ucfirst($item->commercial_status) }}</span>
                                     @endif
@@ -129,7 +129,7 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="d-inline-flex gap-2 align-items-center justify-content-end">
-                                        <a href="{{ route('subscriptions.show', $item) }}" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Voir les détails">
+                                        <a href="{{ route('subscriptions.show', $item) }}" class="btn btn-sm btn-outline-secondary py-1 px-2" title="{{ __('Voir') }}">
                                             {{ __("Voir") }}
                                         </a>
                                         @if($canPay)
@@ -148,9 +148,9 @@
                                 <td colspan="8">
                                     <div class="resource-empty">
                                         <strong>{{ __("Aucune souscription trouvée") }}</strong>
-                                        <span>Modifiez vos filtres ou créez une nouvelle souscription.</span>
+                                        <span>{{ __("Modifiez vos filtres ou créez une nouvelle souscription.") }}</span>
                                         @if($statusFilter !== 'all')
-                                            <a href="{{ route('subscriptions.index') }}">Afficher toutes les souscriptions</a>
+                                            <a href="{{ route('subscriptions.index') }}">{{ __("Afficher toutes les souscriptions") }}</a>
                                         @endif
                                     </div>
                                 </td>

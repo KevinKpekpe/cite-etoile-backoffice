@@ -1,4 +1,4 @@
-<x-layouts.guest title="Changement de mot de passe">
+<x-layouts.guest title="{{ __('Changement de mot de passe') }}">
     <p class="auth-form-copy">{{ __('auth.change_password_description') }}</p>
 
     @if ($errors->any())

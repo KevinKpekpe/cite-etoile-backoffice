@@ -1,14 +1,14 @@
-<x-layouts.app title="Formules">
+<x-layouts.app title="{{ __('Formules') }}">
     <div class="resource-page pricing-page">
         <header class="resource-heading">
             <div>
-                <p class="app-kicker">Tarification & Financement</p>
-                <h1 class="resource-heading__title">Formules d’acquisition</h1>
-                <p class="resource-heading__description">Catalogue des conditions de paiement proposées aux souscripteurs.</p>
+                <p class="app-kicker">{{ __("Tarification & Financement") }}</p>
+                <h1 class="resource-heading__title">{{ __("Formules d’acquisition") }}</h1>
+                <p class="resource-heading__description">{{ __("Catalogue des conditions de paiement proposées aux souscripteurs.") }}</p>
             </div>
             <div class="resource-heading__actions">
                 @can('payment_plans.manage')
-                    <a href="{{ route('payment-plans.trashed') }}" class="btn btn-outline">Corbeille</a>
+                    <a href="{{ route('payment-plans.trashed') }}" class="btn btn-outline">{{ __("Corbeille") }}</a>
                     <a href="{{ route('payment-plans.create') }}" class="btn btn-primary">
                         <i class="bi bi-plus-lg" aria-hidden="true"></i>
                         {{ __("Nouvelle formule") }}
@@ -27,7 +27,7 @@
 
                     <div class="pricing-tier__price">
                         <span class="price">{{ number_format((float) $plan->total_price, 0, ',', ' ') }}</span>
-                        <small>USD au total</small>
+                        <small>{{ __("USD au total") }}</small>
                     </div>
 
                     <div class="desc">{{ $plan->description ?: 'Formule de financement pour l’acquisition d’une parcelle.' }}</div>
@@ -38,7 +38,7 @@
                             <li><i class="bi bi-check-lg" aria-hidden="true"></i> {{ number_format((float) $plan->monthly_amount, 2, ',', ' ') }} USD par mois</li>
                             <li><i class="bi bi-check-lg" aria-hidden="true"></i> Durée de {{ $plan->duration_months }} mois</li>
                         @else
-                            <li><i class="bi bi-check-lg" aria-hidden="true"></i> Paiement unique au comptant</li>
+                            <li><i class="bi bi-check-lg" aria-hidden="true"></i> {{ __("Paiement unique au comptant") }}</li>
                         @endif
                         <li><i class="bi bi-check-lg" aria-hidden="true"></i> Du {{ $plan->valid_from?->format('d/m/Y') ?? 'sans date de début' }}</li>
                         <li><i class="bi bi-check-lg" aria-hidden="true"></i> Au {{ $plan->valid_until?->format('d/m/Y') ?? 'sans date de fin' }}</li>
@@ -61,7 +61,7 @@
             @empty
                 <div class="resource-empty resource-empty--standalone pricing-grid__empty">
                     <strong>{{ __("Aucune formule enregistrée") }}</strong>
-                    <span>Créez la première formule tarifaire pour permettre les souscriptions.</span>
+                    <span>{{ __("Créez la première formule tarifaire pour permettre les souscriptions.") }}</span>
                 </div>
             @endforelse
         </div>

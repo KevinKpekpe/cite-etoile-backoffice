@@ -2,7 +2,7 @@
     <div class="customer-record portal-page">
         <header class="record-heading">
             <div><p class="app-kicker">{{ __('portal.contract_file') }}</p><h1>{{ $subscription->subscription_number }}</h1><p>{{ $subscription->plot->reference }} · {{ $subscription->plot->avenue->neighborhood->name }}</p></div>
-            <div class="resource-heading__actions"><a href="{{ route('portal.subscriptions.index') }}" class="btn btn-outline"><i class="bi bi-arrow-left" aria-hidden="true"></i>Mes souscriptions</a><span class="status-badge status-badge--{{ $subscription->commercial_status === 'active' ? 'active' : 'neutral' }}">{{ __('statuses.'.$subscription->commercial_status) }}</span></div>
+            <div class="resource-heading__actions"><a href="{{ route('portal.subscriptions.index') }}" class="btn btn-outline"><i class="bi bi-arrow-left" aria-hidden="true"></i>{{ __("Mes souscriptions") }}</a><span class="status-badge status-badge--{{ $subscription->commercial_status === 'active' ? 'active' : 'neutral' }}">{{ __('statuses.'.$subscription->commercial_status) }}</span></div>
         </header>
 
         <section class="detail-sheet"><div class="detail-sheet__section"><div class="detail-sheet__header"><h2>{{ __('portal.contract_information') }}</h2><span>{{ __('portal.reference') }} {{ $subscription->subscription_number }}</span></div><dl class="detail-grid">

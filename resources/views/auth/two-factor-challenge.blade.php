@@ -1,4 +1,4 @@
-<x-layouts.guest title="Vérification en deux étapes">
+<x-layouts.guest title="{{ __('Vérification en deux étapes') }}">
     <p class="auth-form-copy">{{ __('auth.two_factor_description') }}</p>
     <form method="POST" action="{{ route('two-factor.verify') }}" class="auth-form">
         @csrf

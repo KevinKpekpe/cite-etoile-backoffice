@@ -1,4 +1,4 @@
-<x-layouts.app title="Clients">
+<x-layouts.app title="{{ __('Clients') }}">
     @php
         $statusLabels = [
             'prospect' => 'Prospect',
@@ -13,13 +13,13 @@
     <div class="resource-page">
         <header class="resource-heading">
             <div>
-                <p class="app-kicker">Gestion commerciale</p>
-                <h1 class="resource-heading__title">Portefeuille clients</h1>
-                <p class="resource-heading__description">Recherchez les dossiers souscripteurs et suivez leur situation de paiement.</p>
+                <p class="app-kicker">{{ __("Gestion commerciale") }}</p>
+                <h1 class="resource-heading__title">{{ __("Portefeuille clients") }}</h1>
+                <p class="resource-heading__description">{{ __("Recherchez les dossiers souscripteurs et suivez leur situation de paiement.") }}</p>
             </div>
             <div class="resource-heading__actions">
                 @can('customers.delete')
-                    <a href="{{ route('customers.trashed') }}" class="btn btn-outline-secondary resource-button">Corbeille</a>
+                    <a href="{{ route('customers.trashed') }}" class="btn btn-outline-secondary resource-button">{{ __("Corbeille") }}</a>
                 @endcan
                 @can('customers.create')
                     <a href="{{ route('customers.create') }}" class="btn btn-app-primary resource-button">{{ __("Nouveau client") }}</a>
@@ -33,10 +33,10 @@
                 <input id="customer-search" name="search" value="{{ $filters['search'] ?? '' }}" class="form-control" placeholder="Nom, téléphone ou numéro client">
             </div>
             <div>
-                <label for="customer-status" class="form-label">Situation</label>
+                <label for="customer-status" class="form-label">{{ __("Situation") }}</label>
                 <select id="customer-status" name="status" class="form-select">
                     <option value="">{{ __("Tous les statuts") }}</option>
-                    <option value="overdue" @selected(($filters['status'] ?? '') === 'overdue')>En retard de paiement</option>
+                    <option value="overdue" @selected(($filters['status'] ?? '') === 'overdue')>{{ __("En retard de paiement") }}</option>
                     @foreach($statusLabels as $statusKey => $statusLabel)
                         <option value="{{ $statusKey }}" @selected(($filters['status'] ?? '') === $statusKey)>{{ $statusLabel }}</option>
                     @endforeach
@@ -44,7 +44,7 @@
             </div>
             <div class="resource-filters__actions">
                 @if($hasFilters)
-                    <a href="{{ route('customers.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>
+                    <a href="{{ route('customers.index') }}" class="btn btn-link resource-filter-reset">{{ __("Réinitialiser") }}</a>
                 @endif
                 <button class="btn btn-app-primary resource-button" type="submit">{{ __("Appliquer") }}</button>
             </div>
@@ -53,11 +53,11 @@
         <section class="resource-table" aria-labelledby="customer-table-title">
             <div class="resource-table__header">
                 <div>
-                    <h2 id="customer-table-title">Dossiers clients</h2>
+                    <h2 id="customer-table-title">{{ __("Dossiers clients") }}</h2>
                     <p>{{ $customers->total() }} {{ Str::plural('dossier', $customers->total()) }}</p>
                 </div>
                 @if($hasFilters)
-                    <span class="resource-filter-indicator">Filtres actifs</span>
+                    <span class="resource-filter-indicator">{{ __("Filtres actifs") }}</span>
                 @endif
             </div>
 
@@ -65,14 +65,14 @@
                 <table class="table resource-data-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th scope="col">Numéro</th>
+                            <th scope="col">{{ __("Numéro") }}</th>
                             <th scope="col">{{ __("Client") }}</th>
-                            <th scope="col">Parcelle(s)</th>
-                            <th scope="col">Formule(s)</th>
+                            <th scope="col">{{ __("Parcelle(s)") }}</th>
+                            <th scope="col">{{ __("Formule(s)") }}</th>
                             <th scope="col">{{ __("Téléphone") }}</th>
                             <th scope="col">{{ __("Statut") }}</th>
-                            <th scope="col">Situation</th>
-                            <th scope="col">Responsable</th>
+                            <th scope="col">{{ __("Situation") }}</th>
+                            <th scope="col">{{ __("Responsable") }}</th>
                             <th scope="col" class="text-end">{{ __("Actions") }}</th>
                         </tr>
                     </thead>
@@ -137,7 +137,7 @@
                                             {{ __("Voir") }}
                                         </a>
                                         @can('customers.manage')
-                                            <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Modifier le client">
+                                            <a href="{{ route('customers.edit', $customer) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="{{ __('Modifier le client') }}">
                                                 {{ __("Modifier") }}
                                             </a>
                                         @endcan

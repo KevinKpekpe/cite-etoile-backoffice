@@ -1,12 +1,12 @@
-<x-layouts.app title="Nouvelle souscription">
+<x-layouts.app title="{{ __('Nouvelle souscription') }}">
     <div class="form-page">
         <header class="resource-heading">
             <div>
-                <p class="app-kicker">Gestion commerciale</p>
+                <p class="app-kicker">{{ __("Gestion commerciale") }}</p>
                 <h1 class="resource-heading__title">{{ __("Nouvelle souscription") }}</h1>
-                <p class="resource-heading__description">Associez un client, une parcelle et une formule d’acquisition.</p>
+                <p class="resource-heading__description">{{ __("Associez un client, une parcelle et une formule d’acquisition.") }}</p>
             </div>
-            <a href="{{ route('subscriptions.index') }}" class="btn btn-outline-secondary resource-button">Retour aux souscriptions</a>
+            <a href="{{ route('subscriptions.index') }}" class="btn btn-outline-secondary resource-button">{{ __("Retour aux souscriptions") }}</a>
         </header>
 
         <form method="POST" action="{{ route('subscriptions.store') }}" class="form-page__content">
@@ -15,13 +15,13 @@
             <section class="form-section">
                 <div class="form-section__header">
                     <span class="form-section__number">01</span>
-                    <div><h2>Dossier client</h2><p>Sélectionnez le souscripteur concerné par l’opération.</p></div>
+                    <div><h2>{{ __("Dossier client") }}</h2><p>{{ __("Sélectionnez le souscripteur concerné par l’opération.") }}</p></div>
                 </div>
                 <div class="form-section__body">
                     @if($preselectedCustomer)
                         <input type="hidden" name="customer_id" value="{{ $preselectedCustomer->id }}">
                         <div class="form-selection">
-                            <span class="form-selection__label">Client présélectionné</span>
+                            <span class="form-selection__label">{{ __("Client présélectionné") }}</span>
                             <strong>{{ $preselectedCustomer->customer_number }} · {{ $preselectedCustomer->first_name }} {{ $preselectedCustomer->last_name }}</strong>
                         </div>
                     @else
@@ -43,19 +43,19 @@
             <section class="form-section">
                 <div class="form-section__header">
                     <span class="form-section__number">02</span>
-                    <div><h2>Parcelle et conditions</h2><p>Définissez le bien réservé et les conditions financières contractuelles.</p></div>
+                    <div><h2>{{ __("Parcelle et conditions") }}</h2><p>{{ __("Définissez le bien réservé et les conditions financières contractuelles.") }}</p></div>
                 </div>
                 <div class="form-section__body">
                     <div class="form-grid">
                         @if($preselectedPlot)
                             <input type="hidden" name="plot_id" value="{{ $preselectedPlot->id }}">
                             <div class="form-selection">
-                                <span class="form-selection__label">Parcelle présélectionnée</span>
+                                <span class="form-selection__label">{{ __("Parcelle présélectionnée") }}</span>
                                 <strong>{{ $preselectedPlot->reference }} · {{ $preselectedPlot->avenue->neighborhood->name }}</strong>
                             </div>
                         @else
                             <label class="form-field">
-                                <span class="form-field__label">Parcelle disponible<span class="text-danger ms-1 fw-bold">*</span></span>
+                                <span class="form-field__label">{{ __("Parcelle disponible") }}<span class="text-danger ms-1 fw-bold">*</span></span>
                                 <select name="plot_id" class="form-select" required>
                                     @foreach($plots as $plot)
                                         <option value="{{ $plot->id }}" @selected(old('plot_id') == $plot->id)>
@@ -68,7 +68,7 @@
                         @endif
 
                         <label class="form-field">
-                            <span class="form-field__label">Formule d’acquisition<span class="text-danger ms-1 fw-bold">*</span></span>
+                            <span class="form-field__label">{{ __("Formule d’acquisition") }}<span class="text-danger ms-1 fw-bold">*</span></span>
                             <select name="payment_plan_id" id="payment_plan_id" class="form-select" data-plan-select required>
                                 @foreach($paymentPlans as $plan)
                                     @php
@@ -91,12 +91,12 @@
                         </label>
 
                         <label class="form-field">
-                            <span class="form-field__label">Paiement de l’aménagement<span class="text-danger ms-1 fw-bold">*</span></span>
+                            <span class="form-field__label">{{ __("Paiement de l’aménagement") }}<span class="text-danger ms-1 fw-bold">*</span></span>
                             <select name="development_payment_mode" class="form-select" required>
                                 <option value="monthly" data-label="Mensualités" @selected(old('development_payment_mode', 'monthly') === 'monthly')>Mensualités — {{ number_format((float) ($developmentPricingOptions['three_years']['monthly'] ?? 0), 2, ',', ' ') }} USD pendant 36 mois</option>
                                 <option value="total" data-label="Montant total" @selected(old('development_payment_mode') === 'total')>Montant total — {{ number_format((float) ($developmentPricingOptions['three_years']['total'] ?? 0), 2, ',', ' ') }} USD</option>
                             </select>
-                            <small class="text-muted">Première échéance un mois après la signature du contrat.</small>
+                            <small class="text-muted">{{ __("Première échéance un mois après la signature du contrat.") }}</small>
                             @error('development_payment_mode')<span class="form-field__error">{{ $message }}</span>@enderror
                         </label>
 
@@ -110,7 +110,7 @@
             <section class="form-section">
                 <div class="form-section__header">
                     <span class="form-section__number">03</span>
-                    <div><h2>Premier versement</h2><p>Facultatif. La souscription sera activée immédiatement si un acompte est enregistré.</p></div>
+                    <div><h2>{{ __("Premier versement") }}</h2><p>{{ __("Facultatif. La souscription sera activée immédiatement si un acompte est enregistré.") }}</p></div>
                 </div>
                 <div class="form-section__body">
                     <div class="form-grid">

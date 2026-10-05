@@ -1,15 +1,15 @@
-<x-layouts.app title="Mon profil">
+<x-layouts.app title="{{ __('Mon profil') }}">
     <div class="form-page profile-page">
         <header class="resource-heading">
             <div>
                 <p class="app-kicker">{{ __("Compte personnel") }}</p>
-                <h1 class="resource-heading__title">Mon profil</h1>
-                <p class="resource-heading__description">Mettez à jour vos coordonnées sans modifier vos droits d’accès.</p>
+                <h1 class="resource-heading__title">{{ __("Mon profil") }}</h1>
+                <p class="resource-heading__description">{{ __("Mettez à jour vos coordonnées sans modifier vos droits d’accès.") }}</p>
             </div>
             <div class="resource-heading__actions">
                 <a href="{{ route('two-factor.setup') }}" class="btn btn-outline">
                     <i class="bi bi-shield-check" aria-hidden="true"></i>
-                    Sécurité du compte
+                    {{ __("Sécurité du compte") }}
                 </a>
             </div>
         </header>
@@ -36,17 +36,17 @@
             <section class="form-section">
                 <div class="form-section__header">
                     <span class="form-section__number">01</span>
-                    <div><h2>Photo de profil</h2><p>Personnalisez l'avatar de votre compte utilisateur.</p></div>
+                    <div><h2>{{ __("Photo de profil") }}</h2><p>Personnalisez l'avatar de votre compte utilisateur.</p></div>
                 </div>
                 <div class="form-section__body">
                     <div class="d-flex align-items-center gap-4">
                         <div>
-                            <label class="form-label mb-1">Choisir une image</label>
+                            <label class="form-label mb-1">{{ __("Choisir une image") }}</label>
                             <input type="file" name="avatar" accept="image/png,image/jpeg,image/jpg,image/webp" class="form-control mb-2 @error('avatar') is-invalid @enderror">
                             @error('avatar')<span class="form-field__error d-block mb-2">{{ $message }}</span>@enderror
                             @if($user->avatar_path)
                                 <label class="form-check-label text-danger small cursor-pointer">
-                                    <input type="checkbox" name="remove_avatar" value="1" class="form-check-input me-1"> Supprimer la photo actuelle
+                                    <input type="checkbox" name="remove_avatar" value="1" class="form-check-input me-1"> {{ __("Supprimer la photo actuelle") }}
                                 </label>
                             @endif
                         </div>
@@ -57,7 +57,7 @@
             <section class="form-section">
                 <div class="form-section__header">
                     <span class="form-section__number">02</span>
-                    <div><h2>{{ __("Informations personnelles") }}</h2><p>Ces informations sont utilisées dans votre session et les traces d’audit.</p></div>
+                    <div><h2>{{ __("Informations personnelles") }}</h2><p>{{ __("Ces informations sont utilisées dans votre session et les traces d’audit.") }}</p></div>
                 </div>
                 <div class="form-section__body">
                     <div class="form-grid">

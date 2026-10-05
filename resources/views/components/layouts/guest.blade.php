@@ -26,7 +26,7 @@
             </form>
             <div class="auth-brand">
                 <span class="brand-icon">CE</span>
-                <span class="brand-name">Cité Étoile <small>Backoffice</small></span>
+                <span class="brand-name">Cité Étoile <small>{{ __("Backoffice") }}</small></span>
             </div>
 
             <h1 class="auth-title">{{ __($title ?? 'Connexion') }}</h1>
@@ -42,7 +42,7 @@
             {{ $slot }}
 
             <footer class="auth-footer">
-                Cité Étoile du Monde · MJIC Immobilier SARL
+                {{ __("Cité Étoile du Monde · MJIC Immobilier SARL") }}
             </footer>
         </div>
     </main>

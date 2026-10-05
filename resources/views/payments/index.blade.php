@@ -1,26 +1,26 @@
-<x-layouts.app title="Encaissements">
+<x-layouts.app title="{{ __('Encaissements') }}">
     <div class="resource-page">
         <header class="resource-heading">
             <div>
-                <p class="app-kicker">Gestion financière</p>
+                <p class="app-kicker">{{ __("Gestion financière") }}</p>
                 <h1 class="resource-heading__title">{{ __("Encaissements") }}</h1>
-                <p class="resource-heading__description">Sélectionnez ou recherchez un dossier pour enregistrer un versement et émettre les reçus.</p>
+                <p class="resource-heading__description">{{ __("Sélectionnez ou recherchez un dossier pour enregistrer un versement et émettre les reçus.") }}</p>
             </div>
             <div class="resource-heading__actions">
                 <a href="{{ route('subscriptions.index', ['status' => 'overdue']) }}" class="btn btn-outline-danger resource-button">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Retards ({{ $overdueCount }})
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ __("Retards") }} ({{ $overdueCount }})
                 </a>
             </div>
         </header>
 
         <form method="GET" action="{{ route('payments.index') }}" class="resource-filters">
             <div class="resource-filters__search">
-                <label for="payment-search" class="form-label">Rechercher un dossier</label>
-                <input id="payment-search" name="search" value="{{ $search }}" class="form-control" placeholder="Nom client, téléphone, n° souscription, contrat ou parcelle...">
+                <label for="payment-search" class="form-label">{{ __("Rechercher un dossier") }}</label>
+                <input id="payment-search" name="search" value="{{ $search }}" class="form-control" placeholder="{{ __('Nom client, téléphone, n° souscription, contrat ou parcelle...') }}">
             </div>
             <div class="resource-filters__actions">
                 @if(filled($search))
-                    <a href="{{ route('payments.index') }}" class="btn btn-link resource-filter-reset">Réinitialiser</a>
+                    <a href="{{ route('payments.index') }}" class="btn btn-link resource-filter-reset">{{ __("Réinitialiser") }}</a>
                 @endif
                 <button class="btn btn-app-primary resource-button" type="submit">{{ __("Rechercher") }}</button>
             </div>
@@ -30,8 +30,8 @@
         <section class="resource-table" aria-labelledby="payment-table-title">
             <div class="resource-table__header">
                 <div>
-                    <h2 id="payment-table-title">Dossiers éligibles aux encaissements</h2>
-                    <p>{{ $subscriptions->total() }} {{ Str::plural('dossier', $subscriptions->total()) }}</p>
+                    <h2 id="payment-table-title">{{ __("Dossiers éligibles aux encaissements") }}</h2>
+                    <p>{{ $subscriptions->total() }} {{ Str::plural(__('dossier'), $subscriptions->total()) }}</p>
                 </div>
             </div>
 
@@ -39,12 +39,12 @@
                 <table class="table resource-data-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th scope="col">Souscription</th>
+                            <th scope="col">{{ __("Souscription") }}</th>
                             <th scope="col">{{ __("Client") }}</th>
                             <th scope="col">{{ __("Parcelle") }}</th>
-                            <th scope="col">Échéance / Retard</th>
-                            <th scope="col" class="text-end">Contractuel</th>
-                            <th scope="col" class="text-end">Total Payé</th>
+                            <th scope="col">{{ __("Échéance / Retard") }}</th>
+                            <th scope="col" class="text-end">{{ __("Contractuel") }}</th>
+                            <th scope="col" class="text-end">{{ __("Total Payé") }}</th>
                             <th scope="col" class="text-end">{{ __("Solde restant") }}</th>
                             <th scope="col" class="text-end">{{ __("Action") }}</th>
                         </tr>
@@ -84,11 +84,11 @@
                                 <td>
                                     @if($subOverdueCount > 0)
                                         <div>
-                                            <span class="status-badge status-badge--danger"><i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $subOverdueCount }} retard(s)</span>
+                                            <span class="status-badge status-badge--danger"><i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $subOverdueCount }} {{ __('retard(s)') }}</span>
                                             <small class="d-block text-danger font-semibold mt-1">{{ number_format((float) $subOverdueTotal, 2, ',', ' ') }} USD</small>
                                         </div>
                                     @elseif($subscription->financial_status === 'paid')
-                                        <span class="status-badge status-badge--active"><i class="bi bi-check-circle-fill me-1"></i> Soldée</span>
+                                        <span class="status-badge status-badge--active"><i class="bi bi-check-circle-fill me-1"></i> {{ __("Soldée") }}</span>
                                     @else
                                         <span class="status-badge status-badge--neutral">{{ __("À jour") }}</span>
                                     @endif
@@ -104,12 +104,12 @@
                                         @if($canPay)
                                             @can('payments.create')
                                                 <a href="{{ route('payments.create', $subscription) }}"
-                                                   class="btn btn-sm {{ $subOverdueCount > 0 ? 'btn-outline-danger' : 'btn-outline-success' }} py-1 px-2" title="Encaisser">
+                                                   class="btn btn-sm {{ $subOverdueCount > 0 ? 'btn-outline-danger' : 'btn-outline-success' }} py-1 px-2" title="{{ __('Encaisser') }}">
                                                     {{ __("Encaisser") }}
                                                 </a>
                                             @endcan
                                         @else
-                                            <span class="text-muted small">Clôturé</span>
+                                            <span class="text-muted small">{{ __("Clôturé") }}</span>
                                         @endif
                                     </div>
                                 </td>
@@ -119,7 +119,7 @@
                                 <td colspan="8">
                                     <div class="resource-empty">
                                         <strong>{{ __("Aucun dossier trouvé") }}</strong>
-                                        <span>Recherchez un autre dossier souscripteur.</span>
+                                        <span>{{ __("Recherchez un autre dossier souscripteur.") }}</span>
                                     </div>
                                 </td>
                             </tr>
@@ -137,8 +137,8 @@
         <section class="resource-table mt-4" aria-labelledby="recent-payments-title">
             <div class="resource-table__header">
                 <div>
-                    <h2 id="recent-payments-title"><i class="bi bi-receipt me-2 text-primary"></i> Historique des récents versements & Reçus</h2>
-                    <p>Téléchargez les reçus / factures PDF certifiés des encaissements effectués.</p>
+                    <h2 id="recent-payments-title"><i class="bi bi-receipt me-2 text-primary"></i> {{ __("Historique des récents versements & Reçus") }}</h2>
+                    <p>{{ __("Téléchargez les reçus / factures PDF certifiés des encaissements effectués.") }}</p>
                 </div>
             </div>
 
@@ -146,13 +146,13 @@
                 <table class="table resource-data-table align-middle mb-0">
                     <thead>
                         <tr>
-                            <th scope="col">Réf. Paiement</th>
+                            <th scope="col">{{ __("Réf. Paiement") }}</th>
                             <th scope="col">{{ __("Client") }}</th>
                             <th scope="col">{{ __("Parcelle") }}</th>
                             <th scope="col">{{ __("Date & Heure") }}</th>
-                            <th scope="col">Mode</th>
+                            <th scope="col">{{ __("Mode") }}</th>
                             <th scope="col" class="text-end">{{ __("Montant") }}</th>
-                            <th scope="col" class="text-end">Reçu / Facture PDF</th>
+                            <th scope="col" class="text-end">{{ __("Reçu / Facture PDF") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -188,8 +188,8 @@
                                 <td class="text-end">
                                     @if($payment->receipt)
                                         @can('receipts.download')
-                                            <a href="{{ route('receipts.download', $payment->receipt) }}" class="btn btn-sm btn-outline-dark py-1 px-2" title="Télécharger le reçu">
-                                                <i class="bi bi-download me-1"></i> Reçu {{ $payment->receipt->receipt_number }}
+                                            <a href="{{ route('receipts.download', $payment->receipt) }}" class="btn btn-sm btn-outline-dark py-1 px-2" title="{{ __('Télécharger le reçu') }}">
+                                                <i class="bi bi-download me-1"></i> {{ __("Reçu") }} {{ $payment->receipt->receipt_number }}
                                             </a>
                                         @endcan
                                     @else

@@ -1,14 +1,14 @@
 <x-layouts.app :title="'Modifier · '.$user->first_name.' '.$user->last_name">
     <div class="form-page">
         <header class="resource-heading">
-            <div><p class="app-kicker">Gestion des accès</p><h1 class="resource-heading__title">Modifier l’utilisateur</h1><p class="resource-heading__description">{{ $user->first_name }} {{ $user->last_name }} · {{ $user->email }}</p></div>
-            <a href="{{ route('users.show', $user) }}" class="btn btn-outline-secondary resource-button">Retour à la fiche</a>
+            <div><p class="app-kicker">{{ __("Gestion des accès") }}</p><h1 class="resource-heading__title">{{ __("Modifier l’utilisateur") }}</h1><p class="resource-heading__description">{{ $user->first_name }} {{ $user->last_name }} · {{ $user->email }}</p></div>
+            <a href="{{ route('users.show', $user) }}" class="btn btn-outline-secondary resource-button">{{ __("Retour à la fiche") }}</a>
         </header>
         <form method="POST" action="{{ route('users.update', $user) }}" class="form-page__content">
             @csrf
             @method('PUT')
             <section class="form-section">
-                <div class="form-section__header"><span class="form-section__number">01</span><div><h2>Identité et accès</h2><p>Coordonnées, rôle, statut et informations de connexion.</p></div></div>
+                <div class="form-section__header"><span class="form-section__number">01</span><div><h2>{{ __("Identité et accès") }}</h2><p>{{ __("Coordonnées, rôle, statut et informations de connexion.") }}</p></div></div>
                 <div class="form-section__body"><x-user-form :roles="$roles" :user="$user" /></div>
             </section>
             <div class="form-actions">

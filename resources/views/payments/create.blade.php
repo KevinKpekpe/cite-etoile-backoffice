@@ -23,13 +23,13 @@
 
         <div class="record-metrics record-metrics--bordered">
             <div><span>{{ __("Montant contractuel") }}</span><strong>{{ number_format((float) $subscription->contract_total, 2, ',', ' ') }} <small>{{ $currency }}</small></strong><small>{{ $subscription->paymentPlan->name }}</small></div>
-            <div class="record-metric--success"><span>Déjà encaissé</span><strong>{{ number_format((float) $subscription->amount_paid, 2, ',', ' ') }} <small>{{ $currency }}</small></strong><small>Paiements validés</small></div>
-            <div class="record-metric--danger"><span>{{ __("Solde restant") }}</span><strong>{{ number_format((float) $subscription->balance, 2, ',', ' ') }} <small>{{ $currency }}</small></strong><small>Avant ce versement</small></div>
+            <div class="record-metric--success"><span>{{ __("Déjà encaissé") }}</span><strong>{{ number_format((float) $subscription->amount_paid, 2, ',', ' ') }} <small>{{ $currency }}</small></strong><small>{{ __("Paiements validés") }}</small></div>
+            <div class="record-metric--danger"><span>{{ __("Solde restant") }}</span><strong>{{ number_format((float) $subscription->balance, 2, ',', ' ') }} <small>{{ $currency }}</small></strong><small>{{ __("Avant ce versement") }}</small></div>
         </div>
 
         <section class="detail-sheet">
             <div class="detail-section">
-                <div class="detail-section__heading"><p class="app-kicker">{{ __("Échéancier") }}</p><h2>Situation actuelle</h2></div>
+                <div class="detail-section__heading"><p class="app-kicker">{{ __("Échéancier") }}</p><h2>{{ __("Situation actuelle") }}</h2></div>
                 <div class="installment-summary">
                     @if($overdueInstallments->isNotEmpty())
                         <div class="installment-summary__group installment-summary__group--danger">
@@ -41,7 +41,7 @@
                     @endif
                     @if($partialInstallments->isNotEmpty())
                         <div class="installment-summary__group installment-summary__group--warning">
-                            <div class="installment-summary__heading"><strong>Partiellement payées</strong><span>{{ number_format($partialTotal, 2, ',', ' ') }} {{ $currency }}</span></div>
+                            <div class="installment-summary__heading"><strong>{{ __("Partiellement payées") }}</strong><span>{{ number_format($partialTotal, 2, ',', ' ') }} {{ $currency }}</span></div>
                             @foreach($partialInstallments as $installment)
                                 <div class="installment-summary__row"><span>Échéance {{ $installment->installment_number }} · {{ $installment->due_date->format('d/m/Y') }}</span><strong>{{ number_format((float) $installment->balance, 2, ',', ' ') }} {{ $currency }}</strong></div>
                             @endforeach
@@ -73,7 +73,7 @@
             <section class="form-section">
                 <div class="form-section__header">
                     <span class="form-section__number">01</span>
-                    <div><h2>{{ __("Détails du versement") }}</h2><p>Date, montant et canal utilisé pour l’encaissement.</p></div>
+                    <div><h2>{{ __("Détails du versement") }}</h2><p>{{ __("Date, montant et canal utilisé pour l’encaissement.") }}</p></div>
                 </div>
                 <div class="form-section__body">
                     <div class="form-grid">
@@ -83,13 +83,13 @@
                             <div class="payment-amount-field">
                                 <input type="number" name="amount" id="amount-input" step="0.01" min="0.01" value="{{ old('amount', $suggestedAmount ? number_format($suggestedAmount, 2, '.', '') : '') }}" class="form-control" required>
                                 @if($suggestedAmount)
-                                    <button type="button" data-suggested-amount="{{ number_format($suggestedAmount, 2, '.', '') }}">Montant suggéré</button>
+                                    <button type="button" data-suggested-amount="{{ number_format($suggestedAmount, 2, '.', '') }}">{{ __("Montant suggéré") }}</button>
                                 @endif
                             </div>
                             @error('amount')<span class="form-field__error">{{ $message }}</span>@enderror
                         </label>
                         <label class="form-field">
-                            <span class="form-field__label">Mode de règlement<span class="text-danger ms-1 fw-bold">*</span></span>
+                            <span class="form-field__label">{{ __("Mode de règlement") }}<span class="text-danger ms-1 fw-bold">*</span></span>
                             <select name="payment_method" id="payment_method" class="form-select" required>
                                 @foreach($paymentMethods as $method)
                                     <option value="{{ $method }}" @selected(old('payment_method') === $method)>{{ __('payment_methods.'.$method) === 'payment_methods.'.$method ? ucfirst(str_replace('_', ' ', $method)) : __('payment_methods.'.$method) }}</option>
@@ -105,17 +105,17 @@
             <section class="form-section">
                 <div class="form-section__header">
                     <span class="form-section__number">02</span>
-                    <div><h2>Justificatif et observations</h2><p>Ajoutez, si nécessaire, la preuve associée à l’opération.</p></div>
+                    <div><h2>{{ __("Justificatif et observations") }}</h2><p>{{ __("Ajoutez, si nécessaire, la preuve associée à l’opération.") }}</p></div>
                 </div>
                 <div class="form-section__body">
                     <div class="form-grid">
                         <label class="form-field form-grid__wide">
-                            <span class="form-field__label">Preuve de paiement</span>
+                            <span class="form-field__label">{{ __("Preuve de paiement") }}</span>
                             <input type="file" name="proof" id="proof" accept=".pdf,.jpg,.jpeg,.png,.webp" class="form-control">
                             @error('proof')<span class="form-field__error">{{ $message }}</span>@enderror
                         </label>
                         <label class="form-field form-grid__wide">
-                            <span class="form-field__label">Commentaire</span>
+                            <span class="form-field__label">{{ __("Commentaire") }}</span>
                             <textarea name="notes" id="notes" rows="3" class="form-control" placeholder="Observations sur l’encaissement">{{ old('notes') }}</textarea>
                             @error('notes')<span class="form-field__error">{{ $message }}</span>@enderror
                         </label>

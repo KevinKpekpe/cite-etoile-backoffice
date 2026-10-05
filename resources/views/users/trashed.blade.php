@@ -1,20 +1,20 @@
-<x-layouts.app title="Corbeille utilisateurs">
+<x-layouts.app title="{{ __('Corbeille utilisateurs') }}">
     <div class="resource-page">
         <header class="resource-heading">
             <div>
-                <p class="app-kicker">Administration</p>
-                <h1 class="resource-heading__title">Corbeille utilisateurs</h1>
-                <p class="resource-heading__description">Restaurez les comptes utilisateurs supprimés ou supprimez-les définitivement.</p>
+                <p class="app-kicker">{{ __("Administration") }}</p>
+                <h1 class="resource-heading__title">{{ __("Corbeille utilisateurs") }}</h1>
+                <p class="resource-heading__description">{{ __("Restaurez les comptes utilisateurs supprimés ou supprimez-les définitivement.") }}</p>
             </div>
             <div class="resource-heading__actions">
-                <a href="{{ route('users.index') }}" class="btn btn-outline-secondary resource-button">Retour aux utilisateurs</a>
+                <a href="{{ route('users.index') }}" class="btn btn-outline-secondary resource-button">{{ __("Retour aux utilisateurs") }}</a>
             </div>
         </header>
 
         <section class="resource-table">
             <div class="resource-table__header">
                 <div>
-                    <h2>Comptes supprimés</h2>
+                    <h2>{{ __("Comptes supprimés") }}</h2>
                     <p>{{ $users->total() }} {{ Str::plural('utilisateur', $users->total()) }}</p>
                 </div>
             </div>
@@ -25,7 +25,7 @@
                             <th scope="col">{{ __("Nom & Prénom") }}</th>
                             <th scope="col">{{ __("E-mail") }}</th>
                             <th scope="col">{{ __("Rôle") }}</th>
-                            <th scope="col">Supprimé le</th>
+                            <th scope="col">{{ __("Supprimé le") }}</th>
                             <th scope="col" class="text-end">{{ __("Actions") }}</th>
                         </tr>
                     </thead>

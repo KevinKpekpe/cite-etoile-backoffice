@@ -18,8 +18,8 @@
             <div class="credentials-panel__title">
                 <span class="credentials-panel__icon" aria-hidden="true"><i class="bi bi-shield-lock-fill"></i></span>
                 <div>
-                    <h2>Identifiants générés</h2>
-                    <p>À transmettre au client. Copiez ou téléchargez la fiche.</p>
+                    <h2>{{ __("Identifiants générés") }}</h2>
+                    <p>{{ __("À transmettre au client. Copiez ou téléchargez la fiche.") }}</p>
                 </div>
             </div>
             <div class="credentials-panel__actions">
@@ -38,7 +38,7 @@
                     <div><dt>{{ __("Nom") }}</dt><dd>{{ $name }}</dd></div>
                 @endif
                 @if($email)
-                    <div><dt>Identifiant</dt><dd><code>{{ $email }}</code></dd></div>
+                    <div><dt>{{ __("Identifiant") }}</dt><dd><code>{{ $email }}</code></dd></div>
                 @endif
                 @if($password)
                     <div><dt>{{ __("Mot de passe") }}</dt><dd><code class="credentials-panel__password">{{ $password }}</code></dd></div>
