@@ -136,13 +136,32 @@
                     <p>{{ __('portal.security_profile_description') }}</p>
                 </div>
             </div>
-            <div class="form-section__body">
+            <div class="form-section__body d-flex flex-column gap-3">
+                {{-- Profile link --}}
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 border rounded">
                     <div>
                         <strong class="d-block">{{ __('portal.personal_information_and_password') }}</strong>
                         <span class="text-secondary small">{{ __('portal.profile_security_description') }}</span>
                     </div>
                     <a href="{{ route('portal.profile.edit') }}" class="btn btn-outline">{{ __('portal.open_my_profile') }}</a>
+                </div>
+
+                {{-- 2FA section --}}
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 p-3 border rounded">
+                    <div>
+                        <strong class="d-block">
+                            {{ __('portal.two_factor_security') }}
+                            @if(auth()->user()->hasTwoFactorAuthenticationEnabled())
+                                <span class="badge bg-success-subtle text-success ms-2">{{ __('ui.active') }}</span>
+                            @else
+                                <span class="badge bg-secondary-subtle text-secondary ms-2">{{ __('ui.disabled') }}</span>
+                            @endif
+                        </strong>
+                        <span class="text-secondary small">{{ __('portal.two_factor_security_description') }}</span>
+                    </div>
+                    <a href="{{ route('portal.two-factor.setup') }}" class="btn {{ auth()->user()->hasTwoFactorAuthenticationEnabled() ? 'btn-outline' : 'btn-primary' }}">
+                        {{ auth()->user()->hasTwoFactorAuthenticationEnabled() ? __('portal.two_factor_setup_label') : __('portal.two_factor_setup_label') }}
+                    </a>
                 </div>
             </div>
         </section>

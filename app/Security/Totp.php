@@ -6,6 +6,24 @@ use Illuminate\Support\Str;
 
 class Totp
 {
+    /**
+     * Build an otpauth:// URI for use in a QR code.
+     *
+     * @param  string  $secret  Base32 TOTP secret
+     * @param  string  $accountName  Label shown in the authenticator app (e.g. user email)
+     * @param  string  $issuer  Service name shown in the authenticator app
+     */
+    public function otpauthUri(string $secret, string $accountName, string $issuer): string
+    {
+        return sprintf(
+            'otpauth://totp/%s%%3A%s?secret=%s&issuer=%s&algorithm=SHA1&digits=6&period=30',
+            rawurlencode($issuer),
+            rawurlencode($accountName),
+            rawurlencode($secret),
+            rawurlencode($issuer)
+        );
+    }
+
     public function generateSecret(): string
     {
         $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';

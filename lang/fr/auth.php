@@ -37,4 +37,11 @@ return [
     'email_address' => 'Adresse e-mail',
     'user_password' => 'Mot de passe',
     'confirm_new_password' => 'Confirmer le nouveau mot de passe',
+    'two_factor_invalid_code' => 'Le code de vérification est incorrect.',
+    'two_factor_disabled' => 'La double authentification a été désactivée.',
+    'scan_qr_code' => 'Scannez le QR code avec votre application d\'authentification.',
+    'or_enter_key_manually' => 'Ou saisissez la clé manuellement',
+    'two_factor_setup_title' => 'Authentification à deux facteurs (2FA)',
+    'two_factor_setup_description' => 'Protégez votre compte avec une couche de sécurité supplémentaire. Scannez le QR code ou saisissez la clé manuellement dans votre application d\'authentification, puis confirmez avec le code généré.',
+    'portal_two_factor_setup_description' => 'Protégez votre compte avec une couche de sécurité supplémentaire. Scannez le QR code ou saisissez la clé manuellement dans votre application d\'authentification (Google Authenticator, Authy…), puis confirmez avec le code à 6 chiffres.',
 ];

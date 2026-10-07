@@ -42,4 +42,11 @@ return [
     'email_address' => 'Email address',
     'user_password' => 'Password',
     'confirm_new_password' => 'Confirm new password',
+    'two_factor_invalid_code' => 'The verification code is incorrect.',
+    'two_factor_disabled' => 'Two-factor authentication has been disabled.',
+    'scan_qr_code' => 'Scan the QR code with your authenticator app.',
+    'or_enter_key_manually' => 'Or enter the key manually',
+    'two_factor_setup_title' => 'Two-factor authentication (2FA)',
+    'two_factor_setup_description' => 'Protect your account with an additional security layer. Scan the QR code or enter the key manually in your authenticator app, then confirm with the generated code.',
+    'portal_two_factor_setup_description' => 'Protect your account with an additional security layer. Scan the QR code or enter the key manually in your authenticator app (Google Authenticator, Authy…), then confirm with the 6-digit code.',
 ];

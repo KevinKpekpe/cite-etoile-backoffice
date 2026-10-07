@@ -31,6 +31,7 @@ use App\Http\Controllers\Portal\ProfileController as PortalProfileController;
 use App\Http\Controllers\Portal\ReceiptController as PortalReceiptController;
 use App\Http\Controllers\Portal\SettingController as PortalSettingController;
 use App\Http\Controllers\Portal\SubscriptionController as PortalSubscriptionController;
+use App\Http\Controllers\Portal\TwoFactorAuthenticationController as PortalTwoFactorController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\ReportController;
@@ -171,6 +172,9 @@ Route::middleware('auth')->group(function (): void {
             Route::put('/profile/password', [PortalProfileController::class, 'updatePassword'])->middleware('can:profile.update')->name('profile.password.update');
             Route::get('/settings', [PortalSettingController::class, 'index'])->name('settings.index');
             Route::put('/settings', [PortalSettingController::class, 'update'])->name('settings.update');
+            Route::get('/settings/two-factor', [PortalTwoFactorController::class, 'setup'])->name('two-factor.setup');
+            Route::post('/settings/two-factor', [PortalTwoFactorController::class, 'enable'])->middleware('throttle:6,1')->name('two-factor.enable');
+            Route::delete('/settings/two-factor', [PortalTwoFactorController::class, 'disable'])->name('two-factor.disable');
         });
     });
 });

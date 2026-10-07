@@ -20,8 +20,9 @@ class TwoFactorAuthenticationController extends Controller
         $this->ensureSensitiveAccount($request);
         $secret = $request->session()->get('auth.two_factor_setup_secret', fn () => $totp->generateSecret());
         $request->session()->put('auth.two_factor_setup_secret', $secret);
+        $otpauthUri = $totp->otpauthUri($secret, $request->user()->email, config('app.name'));
 
-        return view('auth.two-factor-setup', ['secret' => $secret]);
+        return view('auth.two-factor-setup', ['secret' => $secret, 'otpauthUri' => $otpauthUri]);
     }
 
     public function enable(TwoFactorChallengeRequest $request, Totp $totp): RedirectResponse
@@ -30,7 +31,7 @@ class TwoFactorAuthenticationController extends Controller
         $secret = (string) $request->session()->get('auth.two_factor_setup_secret');
 
         if ($secret === '' || ! $totp->verify($secret, $request->string('code'))) {
-            throw ValidationException::withMessages(['code' => __('Le code de vérification est incorrect.')]);
+            throw ValidationException::withMessages(['code' => __('auth.two_factor_invalid_code')]);
         }
 
         $recoveryCodes = collect(range(1, 8))->map(fn () => Str::lower(Str::random(10).'-'.Str::random(10)))->all();
@@ -50,7 +51,7 @@ class TwoFactorAuthenticationController extends Controller
         $request->validate(['password' => ['required', 'current_password']]);
         $request->user()->forceFill(['two_factor_secret' => null, 'two_factor_recovery_codes' => null, 'two_factor_confirmed_at' => null])->save();
 
-        return redirect()->route('two-factor.setup')->with('status', __('Authentification à deux facteurs désactivée.'));
+        return redirect()->route('two-factor.setup')->with('status', __('auth.two_factor_disabled'));
     }
 
     public function challenge(): View
@@ -78,7 +79,7 @@ class TwoFactorAuthenticationController extends Controller
         }
 
         if (! $valid) {
-            throw ValidationException::withMessages(['code' => __('Le code est incorrect.')]);
+            throw ValidationException::withMessages(['code' => __('auth.two_factor_invalid_code')]);
         }
 
         $request->session()->forget('auth.two_factor_pending');
